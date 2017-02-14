@@ -1,0 +1,44 @@
+Ralink AP SDK - History
+
+Version 3.5.3.0
+===============
+
+- Support Ralink RT3883+RT5392 referenece board ( serial flash (SPI0) + vitesse switch (SPI1) )
+- Fix mips 24kec "Wrong EPC on Exceptional J/JAL Targets" issue
+- Fix raeth driver: hardware checksum offload only support ipv4 packets
+- Fix igmpproxy bug: go on searching if it hits the CPU entry and consider WAN port is PPP0
+- Fix static ip assigned issue of udhcpd
+- Fix GUI bugs and function improvement
+- Update ated: magic number check after wifi driver version 2.5
+
+Version 3.5.2.0
+===============
+
+- Improve the WebUI
+- Update the SPI CLK => BUS_CLK/8.
+- Fix Ethernet driver compile error while enable RT3883 GMAC2
+- Fix IPv6 neighbor solicitation issue for RT3352 and RT5350
+- Fix the RT3352 Uboot memory size display error issue
+- Fix the IGMP Proxy Makefile to support RT3352 and RT5350
+- Fix RT5350 CPU/SYSCLK setting issue
+- Fix RT3883 FLASH_CS0_CFG register for NOR flash controller
+- RT5350 Uboot support CPU PLL adjustment
+- RT3352/RT5350 support CPU Auto-Frequency adjustment
+- RT3352/RT5350 Uboot support SDR pre-charge power down
+- RT3352 Uboot support DDR self-refresh power save
+- RT5350 ethernet LED control setting to optimize power save for Ralink reference board
+- Add always check the erased word after erasing flash sector.
+ 
+- Update RT3883 Uboot to turn ON external DRAM ODT as 150 ohm when write DRAM. (1000034C=0x452)
+- Update RT3883 Uboot to turn ON RT3883 DDR IO ODT as 150 ohm when read DRAM. (10000014=0x03610180)
+
+Version 3.5.0.0
+===============
+
+- support RT2880/RT3052/RT3883/RT3352 
+- support NAND/SPI/NOR in the same firmware
+- support Hardware NAT on RT3052/RT3883/RT3352
+- support Software QoS (uplink/downlink)
+- super dmz support
+- support kernel mode pptp/l2tp to improve throughput significantly
+

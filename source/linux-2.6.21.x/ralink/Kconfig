@@ -1,0 +1,116 @@
+menu "Ralink Module"
+
+###########
+# Debuging
+###########
+source "drivers/net/rt_rdm/Kconfig"
+
+#############
+# Wire
+#############
+source "drivers/net/raeth/Kconfig"
+
+#############
+# Wireless
+#############
+
+config  RT2860V2_2850
+        bool "Dual Band"
+        depends on RALINK_RT2880
+
+choice
+        prompt "RF Type"
+        depends on RALINK_RT5350 
+        default RALINK_RT5350_1T1R
+
+        config  RALINK_RT5350_1T1R
+        bool "1T1R"
+endchoice
+
+choice
+        prompt "RF Type"
+        depends on RALINK_RT3052
+        default RALINK_RT3052_2T2R
+
+        config  RALINK_RT3050_1T1R
+        bool "1T1R"
+
+        config  RALINK_RT3051_1T2R
+        bool "1T2R"
+
+        config  RALINK_RT3052_2T2R
+        bool "2T2R"
+endchoice
+
+choice
+        prompt "RF Type"
+        depends on  RALINK_RT3352 
+
+        config  RALINK_RT3352_2T2R
+        bool "2T2R"
+endchoice
+
+choice
+	prompt "RF Type"
+	depends on RALINK_RT3883
+
+	config  RALINK_RT3662_2T2R
+	bool "2T3R (RT3662)"
+
+	config  RALINK_RT3883_3T3R
+	bool "3T3R (RT3883)"
+endchoice
+
+#source "drivers/net/wireless/rt2860v2_ap/Kconfig"
+#source "drivers/net/wireless/rt2860v2_sta/Kconfig"
+config  RA_CLASSIFIER
+	tristate "Ralink Flow Classifier"
+	depends on RT2860V2_AP_VIDEO_TURBINE || RT2860V2_STA_VIDEO_TURBINE
+	default n
+#source "drivers/net/wireless/rt2860v2_apsta/Kconfig"
+#source "drivers/net/wireless/RT3090_ap/Kconfig"
+#source "drivers/net/wireless/RT5392_ap/Kconfig"
+#source "drivers/net/wireless/RT3572_ap/Kconfig"
+#source "drivers/net/wireless/iNIC/Kconfig"
+#source "drivers/net/wireless/iNIC_RT305x/Kconfig"
+
+config RTDEV_USB
+bool
+default y if RT305x_INIC_USB || RT3572_AP || RT5572_AP
+
+config RTDEV_MII
+bool
+default y if RT2880v2_INIC_MII || RT305x_INIC_MII
+
+config RTDEV_PCI
+bool
+default y if RT2880v2_INIC_PCI || RT3090_AP || RT5392_AP
+
+config  UNIQUE_WPS
+	bool "Unique WPS for Concurrent AP"
+        depends on RT2860V2_AP_WSC 
+        depends on RT3090_AP_WSC || RT3572_AP_WSC || RT5392_AP_WSC || RT5572_AP_WSC
+	default n
+#######
+# USB
+#######
+source "drivers/usb/dwc_otg/Kconfig"
+
+#######
+# NAT
+#######
+choice
+prompt "Ralink NAT Type"
+depends on RALINK_RT3052 || RALINK_RT3352 || RALINK_RT3883
+	
+config  RA_NAT_NONE
+bool "None"
+config  RA_NAT_HW
+bool "Hardware"
+depends on !RALINK_RT5350
+endchoice
+
+source "net/nat/hw_nat/Kconfig"
+
+endmenu
+
