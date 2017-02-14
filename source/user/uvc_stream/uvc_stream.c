@@ -152,7 +152,7 @@ void help(char *progname)
   fprintf(stderr, "Usage: %s\n" \
                   " [-h | --help ]........: display this help\n" \
                   " [-d | --device ]......: video device to open (your camera)\n" \
-                  " [-r | --resolution ]..: 640x480, 320x240, 160x120\n" \
+                  " [-r | --resolution ]..: 1280x720, 640x480, 320x240, 160x120\n" \
                   " [-f | --fps ].........: frames per second\n" \
                   " [-m | --mode ]........: YUV, MJPG\n" \
                   " [-p | --port ]........: TCP-port for the server\n" \
@@ -275,7 +275,8 @@ int main(int argc, char *argv[])
       /* r, resolution */
       case 4:
       case 5:
-        if ( strcmp("640x480", optarg) == 0 ) { width=640; height=480; }
+        if ( strcmp("1280x720", optarg) == 0 ) { width=1280; height=720; }
+        else if ( strcmp("640x480", optarg) == 0 ) { width=640; height=480; }
         else if ( strcmp("320x240", optarg) == 0 ) { width=320; height=240; }
         else if ( strcmp("160x120", optarg) == 0 ) { width=160; height=120; }
         else fprintf(stderr, "ignoring unsupported resolution\n");
