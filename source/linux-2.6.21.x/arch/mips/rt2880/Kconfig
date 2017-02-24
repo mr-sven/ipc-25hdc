@@ -144,7 +144,7 @@ choice
        prompt "Flash Size"
        default RT2880_FLASH_4M
 #       depends on  FLASH_REMAP_NEED
-       depends on  FLASH_REMAP_NEED || DUAL_IMAGE
+#       depends on  FLASH_REMAP_NEED || DUAL_IMAGE
 
 config RT2880_FLASH_2M
        bool "2M"
