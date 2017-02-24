@@ -3,7 +3,7 @@
 CONFIG=$ROOTDIR/$LINUXDIR/.config
 if [ -f $CONFIG ] 
 then
-	source $CONFIG
+	. $CONFIG
 fi
 
 cons="  root root 622"
