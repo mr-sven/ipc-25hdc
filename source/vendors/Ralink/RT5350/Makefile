@@ -17,15 +17,12 @@ ROMFS_DIRS = \
 	tmp \
 	bin \
 	dev dev/pts \
-	home \
 	etc \
 	etc_ro etc_ro/wlan \
 	lib lib/modules lib/ipsec \
-	mnt \
 	proc \
 	sbin \
 	sys \
-	media \
 	usr usr/bin usr/sbin usr/codepages \
 	var 
 
