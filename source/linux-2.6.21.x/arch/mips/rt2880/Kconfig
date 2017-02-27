@@ -217,8 +217,8 @@ config  RT2880_ROOTFS_IN_RAM
 	select BLK_DEV_INITRD 
 	select BLK_DEV_RAM 
 
-#config  RT2880_ROOTFS_IN_FLASH
-#        bool "RootFS_in_FLASH"
+config  RT2880_ROOTFS_IN_FLASH
+        bool "RootFS_in_FLASH"
 endchoice
 
 config BLK_DEV_RAM_SIZE
