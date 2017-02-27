@@ -96,13 +96,13 @@ choice
 	bool "3T3R (RT3883)"
 endchoice
 
-#source "drivers/net/wireless/rt2860v2_ap/Kconfig"
+source "drivers/net/wireless/rt2860v2_ap/Kconfig"
 config  RA_CLASSIFIER
 	tristate "Ralink Flow Classifier"
 	depends on RT2860V2_AP_VIDEO_TURBINE || RT2860V2_STA_VIDEO_TURBINE
 	default n
 
-#source "drivers/net/wireless/rt2860v2_sta/Kconfig"
+source "drivers/net/wireless/rt2860v2_sta/Kconfig"
 
 #source "drivers/net/wireless/RT3090_ap/Kconfig"
 

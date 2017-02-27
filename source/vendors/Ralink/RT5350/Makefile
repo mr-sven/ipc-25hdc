@@ -17,17 +17,13 @@ ROMFS_DIRS = \
 	tmp \
 	bin \
 	dev dev/pts \
-	home \
 	etc \
-	etc_ro etc_ro/web etc_ro/ppp etc_ro/ppp/peers etc_ro/ppp/plugins etc_ro/ppp/3g \
-	etc_ro/wlan etc_ro/Wireless etc_ro/xml etc_ro/usb \
-	etc_ro/linuxigd etc_ro/Wireless/RT2860AP etc_ro/Wireless/RT61AP etc_ro/Wireless/iNIC \
+	etc_ro \
+	etc_ro/wlan \
 	lib lib/modules lib/ipsec \
-	mnt \
 	proc \
 	sbin \
 	sys \
-	media \
 	usr usr/bin usr/sbin usr/codepages \
 	var 
 
@@ -49,21 +45,7 @@ endif
 	$(ROMFSINST) /etc_ro/motd
 	$(ROMFSINST) /etc/fstab
 
-	$(ROMFSINST) /etc_ro/Wireless/RT2860AP/RT2860_default_novlan
-	$(ROMFSINST) /etc_ro/Wireless/RT2860AP/RT2860_default_vlan
 	$(ROMFSINST) /etc_ro/wlan/RT5350_AP_1T1R_V1_0.bin
-
-	$(ROMFSINST) -e CONFIG_RT3572_AP /etc_ro/Wireless/iNIC/RT2860AP.dat
-	$(ROMFSINST) -e CONFIG_RT5572_AP /etc_ro/Wireless/iNIC/RT2860AP.dat
-	$(ROMFSINST) -e CONFIG_RT3680_iNIC_AP iNIC_ap.dat /etc_ro/Wireless/iNIC/RT2860AP.dat
-#	$(ROMFSINST) -e CONFIG_RT3572_AP /etc_ro/Wireless/iNIC/RT3572_USB_2T2R_LNA_ALC_V1_4.bin
-	$(ROMFSINST) -e CONFIG_RT3572_AP /etc_ro/Wireless/iNIC/RT3572_USB_2T2R_LNA_without_ALC_V1_4.bin
-	$(ROMFSINST) -e CONFIG_RT5572_AP /etc_ro/Wireless/iNIC/RT5572_USB_2T2R_V1_3.BIN
-	$(ROMFSINST) -e CONFIG_RT3680_iNIC_AP /etc_ro/Wireless/iNIC/RT3680_iNIC.bin
-
-	$(ROMFSINST) -e CONFIG_RTUSB_AP /etc_ro/Wireless/RT2860APCard.dat
-	$(ROMFSINST) -e CONFIG_RTUSB_AP /etc_ro/Wireless/iNIC/RT3572_USB_2T2R_LNA_without_ALC_V1_4.bin
-	$(ROMFSINST) -e CONFIG_RTUSB_AP /etc_ro/Wireless/iNIC/RT5572_USB_2T2R_V1_3.BIN
 
 romfs.post:: 
 	[ -d $(IMAGEDIR) ] || mkdir -p $(IMAGEDIR)
