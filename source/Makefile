@@ -38,7 +38,7 @@ IMAGEDIR = $(ROOTDIR)/images
 ROMFSDIR = $(ROOTDIR)/romfs
 ROMFSINST= romfs-inst.sh
 SCRIPTSDIR = $(ROOTDIR)/config/scripts
-TFTPDIR    = /tftpboot
+TFTPDIR    = $(ROOTDIR)/tftpboot
 BUILD_START_STRING ?= $(shell date "+%a, %d %b %Y %T %z")
 
 #
@@ -300,6 +300,7 @@ romfs.post:
 image:
 	[ -d $(IMAGEDIR) ] || mkdir $(IMAGEDIR)
 	$(MAKEARCH) -C vendors image
+	[ -d $(TFTPDIR) ] || mkdir $(TFTPDIR)
 	cp $(IMAGEDIR)/$(USER)_uImage $(TFTPDIR)
 
 .PHONY: release
