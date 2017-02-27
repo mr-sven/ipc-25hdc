@@ -38,7 +38,7 @@ IMAGEDIR = $(ROOTDIR)/images
 ROMFSDIR = $(ROOTDIR)/romfs
 ROMFSINST= romfs-inst.sh
 SCRIPTSDIR = $(ROOTDIR)/config/scripts
-TFTPDIR    = $(ROOTDIR)/tftpboot
+TFTPDIR    = /tftpboot
 BUILD_START_STRING ?= $(shell date "+%a, %d %b %Y %T %z")
 
 #
@@ -300,7 +300,6 @@ romfs.post:
 image:
 	[ -d $(IMAGEDIR) ] || mkdir $(IMAGEDIR)
 	$(MAKEARCH) -C vendors image
-	[ -d $(TFTPDIR) ] || mkdir $(TFTPDIR)
 	cp $(IMAGEDIR)/$(USER)_uImage $(TFTPDIR)
 
 .PHONY: release
@@ -322,19 +321,11 @@ vendor_%:
 
 .PHONY: linux
 linux%_only:
-	@if [ $(LINUXDIR) = linux-2.4.x -a ! -f $(LINUXDIR)/.depend ] ; then \
-		echo "ERROR: you need to do a 'make dep' first" ; \
-		exit 1 ; \
-	fi
 	$(MAKEARCH_KERNEL) -j$(HOST_NCPU) -C $(LINUXDIR) $(LINUXTARGET) || exit 1
 	if [ -f $(LINUXDIR)/vmlinux ]; then \
 		ln -f $(LINUXDIR)/vmlinux $(LINUXDIR)/linux ; \
 	fi
 linux:
-	@if [ $(LINUXDIR) = linux-2.4.x -a ! -f $(LINUXDIR)/.depend ] ; then \
-		echo "ERROR: you need to do a 'make dep' first" ; \
-		exit 1 ; \
-	fi
 	$(MAKEARCH_KERNEL) -j$(HOST_NCPU) -C $(LINUXDIR) $(LINUXTARGET) || exit 1
 	if [ -f $(LINUXDIR)/vmlinux ]; then \
 		ln -f $(LINUXDIR)/vmlinux $(LINUXDIR)/linux ; \
@@ -360,16 +351,6 @@ dep:
 	
 	@if [ $(LINUXDIR) = linux-2.6.21.x ] ; then \
 	$(MAKEARCH_KERNEL) -C $(LINUXDIR) prepare ; \
-	fi
-	
-	@if [ $(LINUXDIR) = linux-2.6.36MT.x ] ; then \
-		$(MAKEARCH_KERNEL) -C $(LINUXDIR) prepare ; \
-		rm -fr $(LINUXDIR)/include/asm; \
-		rm -fr $(LINUXDIR)/include/linux/autoconf.h; \
-		rm -fr $(LINUXDIR)/arch/mips/include/asm/rt2880; \
-		ln -sf ../arch/mips/include/asm $(LINUXDIR)/include/asm; \
-		ln -sf ../../include/generated/autoconf.h $(LINUXDIR)/include/linux/autoconf.h; \
-		ln -sf ./mach-ralink $(LINUXDIR)/arch/mips/include/asm/rt2880; \
 	fi
 	
 	$(MAKEARCH_KERNEL) -C $(LINUXDIR) dep
