@@ -42,18 +42,18 @@ In my case I was used to install `libc6-i386` to run the BuildRoot components:
 $ apt install libc6-i386
 
 ```
-The lzma_alone binary is missing in the BuildRoot, the souce is located in tools/mksquash_lzma-3.2. Go to the lzma_alone dir, build and copy the binary to the BuildRoot:
+The lzma_alone binary is missing in the BuildRoot, the souce is located in toolchain/mksquash_lzma-3.2. Go to the lzma_alone dir, build and copy the binary to the BuildRoot:
 ```bash
 
-$ cd tools/mksquash_lzma-3.2/lzma443/C/7zip/Compress/LZMA_Alone
+$ cd toolchain/mksquash_lzma-3.2/lzma443/C/7zip/Compress/LZMA_Alone
 $ make
 $ copy lzma_alone /opt/buildroot-gcc342/bin/
 
 ```
-If your lzma version is not 4.xx you have to provide a other lzma binary. The source is located in tools/lzma-4.32.7. Build and copy the binary to the BuildRoot:
+If your lzma version is not 4.xx you have to provide a other lzma binary. The source is located in toolchain/lzma-4.32.7. Build and copy the binary to the BuildRoot:
 ```bash
 
-$ cd tools/lzma-4.32.7
+$ cd toolchain/lzma-4.32.7
 $ ./configure
 $ make
 $ cp src/lzma/lzma /opt/buildroot-gcc342/bin/
