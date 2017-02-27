@@ -122,7 +122,7 @@ endif
 
 CPPFLAGS=		$(CPPFLAGS.l2tptest) $(CPPFLAGS-y)
 CFLAGS=			-I. -Iusl -Icli -isystem $(KERNEL_BLDDIR)/include \
-				-isystem $(KERNEL_SRCDIR)/include -MMD -Wall -Werror $(CPPFLAGS) $(CPPFLAGS.dmalloc) -DSYS_LIBDIR=$(SYS_LIBDIR)
+				-isystem $(KERNEL_SRCDIR)/include -MMD -Wall $(CPPFLAGS) $(CPPFLAGS.dmalloc) -DSYS_LIBDIR=$(SYS_LIBDIR)
 LDFLAGS.l2tpd=		-Wl,-E -L. -Lusl -lusl -ldl $(LIBS.dmalloc) -lc
 LDFLAGS.l2tpconfig=	-Lcli -lcli -lreadline $(LIBS.dmalloc) $(READLINE_LDFLAGS) -lc
 
@@ -174,14 +174,7 @@ $(SUBDIRS:%=subdir-%):	FORCE
 
 ifeq ($(L2TP_FEATURE_LOCAL_CONF_FILE),y)
 # Config file parser
-LEX=			flex
-YACC=			bison
 LDFLAGS.l2tpd+=		-L $(ROOTDIR)/lib/lib -lfl
-%.c:	%.l
-			$(LEX) -o$@ $<
-
-%.h %.c: %.y
-#			$(YACC) -d -o l2tp_config_parse.c $<
 
 l2tp_config_token.o:	l2tp_config_token.c
 			$(CC) -I. -MMD -w $(CFLAGS.optimize) -c -DYY_NO_UNPUT $<

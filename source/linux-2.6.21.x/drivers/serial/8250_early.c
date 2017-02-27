@@ -108,6 +108,8 @@ static unsigned int __init probe_baud(struct uart_port *port)
     defined (CONFIG_RALINK_RT3883) || \
     defined (CONFIG_RALINK_RT3352) || \
     defined (CONFIG_RALINK_RT5350) || \
+    defined (CONFIG_RALINK_RT6855) || \
+    defined (CONFIG_RALINK_RT6352) || \
     defined (CONFIG_RALINK_RT3052)
 	quot= serial_in(port, UART_DLL);
 #else

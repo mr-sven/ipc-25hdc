@@ -1,6 +1,6 @@
 
-RT2860apd - user space IEEE 802.1X Authenticator
-          for RT2860 linux driver, Ralink Tech Corp.
+RTDOT1XD - user space IEEE 802.1X Authenticator
+          for RT_WIFI linux driver, Ralink Tech Corp.
 =================================================================
 Copyright (c) 2002-2003, Jouni Malinen <jkmaline@cc.hut.fi>
 
@@ -11,7 +11,7 @@ details.
 
 =================================================================
 
-This is the README file for the 802.1x daemon - rt2860apd, which comes with RT2860 linux driver.
+This is the README file for the 802.1x daemon - rtdot1xd, which comes with RT_WIFI linux driver.
 This README explains the relationship between the linux driver and 802.1x daemon.
 In addtiion, this will teach you how to use this 802.1x daemon.
 For programmers who want to add other interfaces for linux driver or 802.1x daemon,
@@ -19,33 +19,33 @@ This README has also mentions below.
 
 I.  Introduction
 =================================================================
-rt2860apd is an optional user space component for RT2860 linux driver. 
+rtdot1xd is an optional user space component for RT_WIFI linux driver. 
 It adds 802.1x Authenticator feature using external RADIUS Authentication
 Server(AS).
  
 
-II.  IEEE 802.1X features in rt2860apd
+II.  IEEE 802.1X features in rtdot1xd
 =================================================================
 IEEE Std 802.1X-2001 is a standard for port-based network access
 control. It introduces a extensible mechanism for authenticating 
 and authorizing users.
 
-rt2860apd implements partial IEEE 802.1x features that helps AS authenrizing
+rtdot1xd implements partial IEEE 802.1x features that helps AS authenrizing
 Supplicant and in the mean time proves itself a valid Authenticator for AS.
-Noticed that Key management state machine is not included in rt2860apd. 
-And those key management is included in RT2860 linux driver.
+Noticed that Key management state machine is not included in rtdot1xd. 
+And those key management is included in RT_WIFI linux driver.
 
-rt2860apd relays the frames between the Supplicant and the AS.
+rtdot1xd relays the frames between the Supplicant and the AS.
 Not until either one timeout or Success or Fail frame
-indicated does rt2860apd finish the authentication process.
-The port control entity is implemented in linux driver for RT2860.
+indicated does rtdot1xd finish the authentication process.
+The port control entity is implemented in linux driver for RT_WIFI.
 
 
-III.  How to start rt2860apd
+III.  How to start rtdot1xd
 =================================================================
 1. First we need to compile the source code using 'make' command
 2.	The command synopsis as below,
-	rt2860apd [-d debug_level] [-i card_number]
+	rtdot1xd [-d debug_level] [-i card_number]
 
 		-d debug_level
 				Allow user to set debug level. This debug_level 
@@ -57,7 +57,7 @@ III.  How to start rt2860apd
    	  			4 : RT_DEBUG_INFO	
 				
 		-i card_number
-				Only work for multiple card function of RT2860 linux 
+				Only work for multiple card function of RT_WIFI linux 
 				driver. This command provides users to assign the 
 				corresponding wireless card. 
 				p.s.
@@ -65,14 +65,14 @@ III.  How to start rt2860apd
 					The card_number set 2, it mean that the daemon works with the 2nd card(ra01-x).
 					....
 	
-3. 	Manually start rt2860apd, default type $rt2860apd
+3. 	Manually start rtdot1xd, default type $rtdot1xd
 
-IV.  rt2860apd configuration for IEEE 802.1X
+IV.  rtdot1xd configuration for IEEE 802.1X
 =================================================================
-When rt2860apd starts, it reads the configuraion file to derive parameters.
+When rtdot1xd starts, it reads the configuraion file to derive parameters.
 For any changes to make, one need to first edit the configuration file, then
-restart rt2860apd. Noted that manually restarting rt2860apd is unnecessary,
-because setting linux driver's SSID with command 'iwpriv' will automatically restart rt2860apd.
+restart rtdot1xd. Noted that manually restarting rtdot1xd is unnecessary,
+because setting linux driver's SSID with command 'iwpriv' will automatically restart rtdot1xd.
 In a word, edit the configuraion file and then set its SSID is all to do to change
 any settings related to 802.1x authenticaion.
 
@@ -80,7 +80,7 @@ This common configuraion file is RT2860AP.dat, located in /etc/Wireless/RT2860AP
 The format of configuraion file is "Paramater = Value". Each line contains one parameter setting.
 The following describes how to achieve :
 
-1.) How to configure RT2860 driver?
+1.) How to configure RT_WIFI driver?
 ========================================
 Add correct values for AuthMode and EncrypType parameters.
 If you edit like this, 
@@ -101,7 +101,7 @@ RADIUS_Key=password
 own_ip_addr=192.168.1.123
 This implies the RADIUS Server' IP is 192.168.2.3. Port 1812 is used for 802.1x authenticaion.
 The RADIUS secret between AP(RADIUS client) and RADIUS server is password. AP's IP is 192.168.1.123.
-For any changes to make, edit the configuraion file, and set the AP's SSID again to restart rt2860apd.
+For any changes to make, edit the configuraion file, and set the AP's SSID again to restart rtdot1xd.
 
 The optional variables as below,
 session_timeout_interval is for 802.1x reauthentication setting.
@@ -167,10 +167,10 @@ But the broadcast key is shared for all associated clients, it can be pre-set ma
 generated randomly by 802.1x daemon.
 
 Through the parameter "DefaultKeyID" and its corresponding parameter "KeyXStr"(i.e. X = the value of DefaultKeyID)
-in RT2860Ap.dat, the 802.1x daemon would use it as the broadcast key material. But if the corresponding parameter "KeyXStr" is
+in RT2860AP.dat, the 802.1x daemon would use it as the broadcast key material. But if the corresponding parameter "KeyXStr" is
 empty or unsuitable, the broadcast key would be generated randomly by the 802.1x daemon.
 
 The 802.1x daemon need to read RT2860AP.dat to decide whether the broadcast key is generated
-randomly or not, so please update the RT2860AP.dat and restart rt2860apd if those correlative parameters are changed. 
+randomly or not, so please update the RT2860AP.dat and restart rtdot1xd if those correlative parameters are changed. 
 
 

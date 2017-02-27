@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: config-pptp.sh,v 1.7 2010-07-09 07:45:58 steven Exp $
+# $Id: config-pptp.sh,v 1.7.6.1 2012-02-16 12:26:46 chhung Exp $
 #
 # usage: config-pptp.sh <mode> <mode_params> <server> <user> <password>
 #
@@ -43,7 +43,7 @@ if [ "$1" = "static" ]; then
 	pptp_optime=${10}
 elif [ "$1" = "dhcp" ]; then
 	killall -q udhcpc
-	udhcpc -i $2 -s /sbin/udhcpc.sh -p /var/run/udhcpd.pid &
+	udhcpc -i $2 -s /sbin/udhcpc.sh -p /var/run/udhcpc.pid &
 	pptp_srv=$3
 	pptp_u=$4
 	pptp_pw=$5

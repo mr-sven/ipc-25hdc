@@ -84,12 +84,6 @@ endif
 ifeq ($(CONFIG_LIB_LIBUPNP_FORCE),y)
     DIRS += libupnp
 endif
-ifeq ($(CONFIG_LIB_LIBGDBM_FORCE),y)
-    DIRS += libgdbm-1.8.3
-endif
-ifeq ($(CONFIG_LIB_LIBD3TAG_FORCE),y)
-    DIRS += libid3tag-0.15.1b
-endif
 ifeq ($(CONFIG_LIB_LIBZEBRA_FORCE),y)
     DIRS += libzebra
 endif
@@ -162,12 +156,6 @@ ifeq ($(CONFIG_LIB_FLEX_FORCE),y)
 endif
 ifeq ($(CONFIG_LIB_LIBUPNP_FORCE),y)
 	@$(MAKE) -C libupnp shared
-endif
-ifeq ($(CONFIG_LIB_LIBGDBM_FORCE),y)
-	@$(MAKE) -C libgdbm-1.8.3 shared
-endif
-ifeq ($(CONFIG_LIB_LIBID3TAG_FORCE),y)
-	@$(MAKE) -C libid3tag-0.15.1b shared
 endif
 ifeq ($(CONFIG_LIB_LIBM_FORCE),y)
 	@$(MAKE) -C libm shared
@@ -505,12 +493,6 @@ clean:
 
 ifeq ($(CONFIG_LIB_LIBUPNP_FORCE),y)
 	$(MAKE) -C libupnp clean
-endif
-ifeq ($(CONFIG_LIB_LIBGDBM_FORCE),y)
-	$(MAKE) -C libgdbm-1.8.3 clean
-endif
-ifeq ($(CONFIG_LIB_LIBID3TAG_FORCE),y)
-	$(MAKE) -C libid3tag-0.15.1b clean
 endif
 ifeq ($(CONFIG_LIB_LIBBT_FORCE),y)
 	$(MAKE) -C libbluetooth clean

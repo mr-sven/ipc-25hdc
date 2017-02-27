@@ -48,12 +48,12 @@ dir_$(CONFIG_DHRYSTONE)		    	    += dhrystone
 dir_$(CONFIG_DHCPFWD)		    	    += dhcpforwarder
 dir_$(CONFIG_USER_DNSMASQ)                  += dnsmasq-2.40
 dir_$(CONFIG_USER_DISKTYPE)		    += disktype-9
+dir_$(CONFIG_USER_EBTABLES)		    += ebtables-v2.0.9-2
+dir_$(CONFIG_USER_ECMH)			    += ecmh
 dir_$(CONFIG_USER_ETHTOOL)		    += ethtool
-dir_$(CONFIG_USER_GDBSERVER_GDBREPLAY)      += gdbserver
-dir_$(CONFIG_USER_GDBSERVER_GDBSERVER)      += gdbserver
+dir_$(CONFIG_USER_GDBREPLAY)                += gdbserver
+dir_$(CONFIG_USER_GDBSERVER)                += gdbserver
 dir_$(CONFIG_USER_MATRIXSSL)                += matrixssl-1.8.3
-dir_$(CONFIG_USER_MTDAAPD)                  += mt-daapd-0.2.4.2
-dir_$(CONFIG_USER_DNS_RESPONDER)            += mDNSResponder-107.6
 dir_$(CONFIG_USER_GOAHEAD_HTTPD)            += goahead
 ifeq ($(CONFIG_LINUXDIR), linux-2.6.21.x)
 ifeq ($(CONFIG_RALINKAPP_SWQOS),y)
@@ -63,15 +63,26 @@ else
 dir_$(CONFIG_USER_IPTABLES_IPTABLES)   	    += iptables
 dir_$(CONFIG_USER_IPTABLES_IP6TABLES)	    += iptables
 endif
-else #linux 2.4
+else #linux 2.4 or linux 2.6.36
+
+ifeq ($(CONFIG_LINUXDIR), linux-2.6.36.x)
+dir_$(CONFIG_USER_IPTABLES_IPTABLES)	    += iptables-1.4.10
+dir_$(CONFIG_USER_IPTABLES_IP6TABLES)	    += iptables-1.4.10
+else
+ifeq ($(CONFIG_LINUXDIR), linux-2.6.36MT.x)
+dir_$(CONFIG_USER_IPTABLES_IPTABLES)	    += iptables-1.4.10
+dir_$(CONFIG_USER_IPTABLES_IP6TABLES)	    += iptables-1.4.10
+else
 dir_$(CONFIG_USER_IPTABLES_IPTABLES)	    += iptables
 dir_$(CONFIG_USER_IPTABLES_IP6TABLES)	    += iptables
 endif
-
+endif
+endif
 dir_$(CONFIG_USER_IXIA_ENDPOINT)	    += ixia_endpoint
+dir_$(CONFIG_USER_IPERF)            	    += iperf-2.0.5
 dir_$(CONFIG_USER_INADYN)                   += inadyn
 dir_$(CONFIG_USER_IGMP_PROXY)  		    += igmpproxy
-dir_$(CONFIG_USER_IPROUTE2)  		    += iproute2-2.6.24-rc7
+dir_$(CONFIG_USER_IPROUTE2)          	    += iproute2-2.6.38
 dir_$(CONFIG_USER_LMBENCH3)		    += lmbench3
 dir_$(CONFIG_USER_LLTD)			    += lldt
 dir_$(CONFIG_USER_LSUSB)		    += lsusb
@@ -89,7 +100,6 @@ dir_$(CONFIG_USER_NTFSPROGS)                += ntfsprogs
 dir_$(CONFIG_USER_OPENL2TP)                 += openl2tp-1.6
 dir_$(CONFIG_USER_OPENSSL)	   	    += openssl-0.9.8e
 dir_$(CONFIG_USER_PARPROUTED)	   	    += parprouted-0.7
-dir_$(CONFIG_USER_PORTMAP)                  += portmap
 dir_$(CONFIG_USER_PPPOECD)                  += ppp-2.4.1/pppoecd
 dir_$(CONFIG_USER_PPPD)                     += ppp-2.4.2
 dir_$(CONFIG_USER_PPPD_PPPSTATS)            += ppp-2.4.2
@@ -107,7 +117,7 @@ dir_$(CONFIG_USER_RPPPPOE_SNIFF)  	    += rp-pppoe-3.8
 dir_$(CONFIG_USER_STRACE_STRACE)            += strace
 dir_$(CONFIG_USER_STUPID_FTPD)              += stupid-ftpd
 dir_$(CONFIG_USER_SAMBA)		    += samba-3.0.2
-dir_$(CONFIG_USER_SNORT)                     += snort-2.8.5.2
+dir_$(CONFIG_USER_SNORT)                    += snort-2.8.5.2
 dir_$(CONFIG_USER_TOTD)                     += totd-1.5
 dir_$(CONFIG_USER_TCPDUMP)                  += tcpdump
 dir_$(CONFIG_USER_UVC_STREAM)		    += uvc_stream

@@ -10,33 +10,21 @@
 #include "mtr_ioctl.h"
 #include "mtr_api.h"
 
-unsigned int ChipVer=0;
-unsigned int ChipId=0;
 
 void show_usage(void)
 {
 
     printf("Add Mac Upload Meter Rule\n");
-    if(ChipId == RT2880 && ChipVer < RT2880_MP2){ 
-	    printf("mtr -a -m [Mac] -t [KB/s] -s [BucketSize:0K/1K/2K/4K/8K/16K/32K]\n");
-	    printf("mtr -a -m 00:11:22:33:44:55 -t 10 -s 8K\n\n");
-    }else{
-	    printf("mtr -a -m [Mac] -t [KB/s] -s [BucketSize:4K/8K/16K/32K or 0~127]\n");
-	    printf("    -u [MtrIntval:1ms/10ms/50ms/100ms/500ms/1000ms/5000ms/10000ms] -v [Base:Byte/Pkt]\n");
-	    printf("ByteBase:mtr -a -m 00:11:22:33:44:55 -t 10 -s 8K -v Byte\n\n");
-	    printf("PktBase:mtr -a -m 00:11:22:33:44:55 -s 100 -u 1ms -v Pkt\n\n");
-    }
+    printf("mtr -a -m [Mac] -t [KB/s] -s [BucketSize:4K/8K/16K/32K or 0~127]\n");
+    printf("    -u [MtrIntval:1ms/10ms/50ms/100ms/500ms/1000ms/5000ms/10000ms] -v [Base:Byte/Pkt]\n");
+    printf("ByteBase:mtr -a -m 00:11:22:33:44:55 -t 10 -s 8K -v Byte\n\n");
+    printf("PktBase:mtr -a -m 00:11:22:33:44:55 -s 100 -u 1ms -v Pkt\n\n");
 
     printf("Add Mac Download Meter Rule\n");
-    if(ChipId == RT2880 && ChipVer < RT2880_MP2){ 
-	    printf("mtr -b -m [Mac] -t [KB/s] -s [BucketSize:0K/1K/2K/4K/8K/16K/32K]\n");
-	    printf("Ex: mtr -b -m 00:11:22:33:44:55 -t 10 -s 8K\n\n");
-    }else{
-	    printf("mtr -b -m [Mac] -t [KB/s] -s [BucketSize:4K/8K/16K/32K or 0~127]\n");
-	    printf("    -u [MtrIntval:1ms/10ms/50ms/100ms/500ms/1000ms/5000ms/10000ms] -v [Base:Byte/Pkt]\n");
-	    printf("ByteBase: mtr -b -m 00:11:22:33:44:55 -t 10 -s 8K -v Byte\n\n");
-	    printf("PktBase: mtr -b -m 00:11:22:33:44:55 -s 100 -u 1ms -v Pkt\n\n");
-    }
+    printf("mtr -b -m [Mac] -t [KB/s] -s [BucketSize:4K/8K/16K/32K or 0~127]\n");
+    printf("    -u [MtrIntval:1ms/10ms/50ms/100ms/500ms/1000ms/5000ms/10000ms] -v [Base:Byte/Pkt]\n");
+    printf("ByteBase: mtr -b -m 00:11:22:33:44:55 -t 10 -s 8K -v Byte\n\n");
+    printf("PktBase: mtr -b -m 00:11:22:33:44:55 -s 100 -u 1ms -v Pkt\n\n");
     printf("Del Mac Upload Meter Rule\n");
     printf("mtr -c -m [Mac]\n");
     printf("Ex: mtr -c -m 00:11:22:33:44:55\n\n");
@@ -47,26 +35,16 @@ void show_usage(void)
    
 
     printf("Add IP Upload Meter Rule\n");
-    if(ChipId == RT2880 && ChipVer < RT2880_MP2){ 
-	    printf("mtr -e -i [IpS] -j [IpE] -t [KB/s] -s [BucketSize:0K/1K/2K/4K/8K/16K/32K]\n");
-	    printf("mtr -e -i 10.10.10.3 -j 10.10.10.3 -t 10 -s 8K\n\n");
-    }else{
-	    printf("mtr -e -i [IpS] -j [IpE] -t [KB/s] -s [BucketSize:4K/8K/16K/32K or 0~127]\n");
-	    printf("    -u [MtrIntval:1ms/10ms/50ms/100ms/500ms/1000ms/5000ms/10000ms] -v [Base:Byte/Pkt]\n");
-	    printf("ByteBase: mtr -e -i 10.10.10.3 -j 10.10.10.3 -t 10 -s 8K -v Byte\n\n");
-	    printf("PktBase: mtr -e -i 10.10.10.3 -j 10.10.10.3 -s 100 -u 1ms -v Pkt\n\n");
-    }
+    printf("mtr -e -i [IpS] -j [IpE] -t [KB/s] -s [BucketSize:4K/8K/16K/32K or 0~127]\n");
+    printf("    -u [MtrIntval:1ms/10ms/50ms/100ms/500ms/1000ms/5000ms/10000ms] -v [Base:Byte/Pkt]\n");
+    printf("ByteBase: mtr -e -i 10.10.10.3 -j 10.10.10.3 -t 10 -s 8K -v Byte\n\n");
+    printf("PktBase: mtr -e -i 10.10.10.3 -j 10.10.10.3 -s 100 -u 1ms -v Pkt\n\n");
     
     printf("Add IP Download Meter Rule\n");
-    if(ChipId == RT2880 && ChipVer < RT2880_MP2){ 
-	    printf("mtr -f -i [IpS] -j [IpE] -t [KB/s] -s [BucketSize:0K/1K/2K/4K/8K/16K/32K]\n");
-	    printf("mtr -f -i 10.10.10.3 -j 10.10.10.3 -t 10 -s 8K\n\n");
-    }else{
-	    printf("mtr -f -i [IpS] -j [IpE] -t [KB/s] -s [BucketSize:4K/8K/16K/32K or 0~127] \n");
-	    printf("    -u [MtrIntval:1ms/10ms/50ms/100ms/500ms/1000ms/5000ms/10000ms] -v [Base:Byte/Pkt]\n");
-	    printf("ByteBase: mtr -f -i 10.10.10.3 -t 10 -s 8K -v Byte\n\n");
-	    printf("PktBase: mtr -f -i 10.10.10.3 -j 10.10.10.3 -s 100 -u 50ms -v Pkt\n\n");
-    }
+    printf("mtr -f -i [IpS] -j [IpE] -t [KB/s] -s [BucketSize:4K/8K/16K/32K or 0~127] \n");
+    printf("    -u [MtrIntval:1ms/10ms/50ms/100ms/500ms/1000ms/5000ms/10000ms] -v [Base:Byte/Pkt]\n");
+    printf("ByteBase: mtr -f -i 10.10.10.3 -t 10 -s 8K -v Byte\n\n");
+    printf("PktBase: mtr -f -i 10.10.10.3 -j 10.10.10.3 -s 100 -u 50ms -v Pkt\n\n");
 
     printf("Del IP Upload Meter Rule\n");
     printf("mtr -g -i [IpS] -j [IpE]\n");
@@ -90,17 +68,22 @@ void show_usage(void)
     printf("Del UDP  Meter Rule:mtr -r\n");
     printf("Del ICMP Meter Rule:mtr -y\n\n");
 
+    printf("Get All Mtr Entries: mtr -w\n");
 }
 
 int main(int argc, char *argv[])
 {
     int opt;
-    char options[] = "abcdefghklnopqryz?m:i:j:t:s:u:v:";
+    char options[] = "abcdefghklnopqryz?m:i:j:t:s:u:v:w";
 
     int fd;
     int method=-1;
     struct mtr_args args;
+    struct mtr_list_args *args2;
+    int result;
+    int i;
 
+    args2=malloc(sizeof(struct mtr_list_args) + sizeof(struct mtr_args)*511);
     fd = open("/dev/"MTR_DEVNAME, O_RDONLY);
     if (fd < 0)
     {
@@ -108,15 +91,6 @@ int main(int argc, char *argv[])
 	return 0;
     }
 
-    SetMtrEntry(&args, MTR_GET_CHIP_VER);
-    if(args.result == MTR_SUCCESS) {
-	    ChipVer=args.chip_ver;
-	    ChipId=args.chip_id;
-    }else{
-	    printf("Can't Get RT2880 Chip Verion\n");
-	    return 0;
-    }
-    
     if(argc < 2) {
 	show_usage();
 	return 0;
@@ -189,78 +163,61 @@ int main(int argc, char *argv[])
 	    args.token_rate=strtoll(optarg, NULL, 10);
 	    break;
 	case 's': /* Bucket Size */
-	    if(ChipId == RT2880 && ChipVer < RT2880_MP2){ 
-	        if(strcasecmp(optarg,"0K")==0){
-			args.bk_size=0;
-		}else if(strcasecmp(optarg,"1K")==0){
-			args.bk_size=1;
-		}else if(strcasecmp(optarg,"2K")==0){
-			args.bk_size=2;
-		}else if(strcasecmp(optarg,"4K")==0){
-			args.bk_size=3;
-		}else if(strcasecmp(optarg,"8K")==0){
-			args.bk_size=4;
-		}else if(strcasecmp(optarg,"16K")==0){
-			args.bk_size=5;
-		}else if(strcasecmp(optarg,"32K")==0){
-			args.bk_size=6;
-		}else {
-			printf("Error: -s 0K/1K/2K/4K/8K/16K/32K\n");
-			return 0;
-		}
-	    }else{
-		if(strcasecmp(optarg,"4K")==0){
-			args.bk_size=0;
-		}else if(strcasecmp(optarg,"8K")==0){
-			args.bk_size=1;
-		}else if(strcasecmp(optarg,"16K")==0){
-			args.bk_size=2;
-		}else if(strcasecmp(optarg,"32K")==0){
-			args.bk_size=3;
-		}else {
-			args.bk_size=strtoll(optarg, NULL, 10);
-		}
+	    if(strcasecmp(optarg,"4K")==0){
+		args.bk_size=0;
+	    }else if(strcasecmp(optarg,"8K")==0){
+		args.bk_size=1;
+	    }else if(strcasecmp(optarg,"16K")==0){
+		args.bk_size=2;
+	    }else if(strcasecmp(optarg,"32K")==0){
+		args.bk_size=3;
+	    }else {
+		args.bk_size=strtoll(optarg, NULL, 10);
 	    }
-		break;
+	    break;
 	case 'u':
-		if(strcasecmp(optarg,"1ms")==0){
-			args.mtr_intval=_1MS;
-		}else if(strcasecmp(optarg,"10ms")==0){
-			args.mtr_intval=_10MS;
-		}else if(strcasecmp(optarg,"50ms")==0){
-			args.mtr_intval=_50MS;
-		}else if(strcasecmp(optarg,"100ms")==0){
-			args.mtr_intval=_100MS;
-		}else if(strcasecmp(optarg,"500ms")==0){
-			args.mtr_intval=_500MS;
-		}else if(strcasecmp(optarg,"1000ms")==0){
-			args.mtr_intval=_1000MS;
-		}else if(strcasecmp(optarg,"5000ms")==0){
-			args.mtr_intval=_5000MS;
-		}else if(strcasecmp(optarg,"10000ms")==0){
-			args.mtr_intval=_10000MS;
-		}else {
-			printf("Error: -u 10ms/50ms/100ms/500ms/1000ms/5000ms/10000ms\n");
-			return 0;
-		}
-		break;
+	    if(strcasecmp(optarg,"1ms")==0){
+		args.mtr_intval=_1MS;
+	    }else if(strcasecmp(optarg,"10ms")==0){
+		args.mtr_intval=_10MS;
+	    }else if(strcasecmp(optarg,"50ms")==0){
+		args.mtr_intval=_50MS;
+	    }else if(strcasecmp(optarg,"100ms")==0){
+		args.mtr_intval=_100MS;
+	    }else if(strcasecmp(optarg,"500ms")==0){
+		args.mtr_intval=_500MS;
+	    }else if(strcasecmp(optarg,"1000ms")==0){
+		args.mtr_intval=_1000MS;
+	    }else if(strcasecmp(optarg,"5000ms")==0){
+		args.mtr_intval=_5000MS;
+	    }else if(strcasecmp(optarg,"10000ms")==0){
+		args.mtr_intval=_10000MS;
+	    }else {
+		printf("Error: -u 10ms/50ms/100ms/500ms/1000ms/5000ms/10000ms\n");
+		return 0;
+	    }
+	    break;
 	case 'v':
-		if(strcasecmp(optarg,"Byte")==0){
-			args.mtr_mode=0;
-		}else if(strcasecmp(optarg,"Pkt")==0){
-			args.mtr_mode=1;
-		}else {
-			printf("Error: -v Byte/Pkt\n");
-			return 0;
-		}
-		break;
+	    if(strcasecmp(optarg,"Byte")==0){
+		args.mtr_mode=0;
+	    }else if(strcasecmp(optarg,"Pkt")==0){
+		args.mtr_mode=1;
+	    }else {
+		printf("Error: -v Byte/Pkt\n");
+		return 0;
+	    }
+	    break;
+	case 'w':
+	    method=MTR_GET_ALL_ENTRIES;
+	    break;
 	case '?': /* Help */
 	    show_usage();
 	    break;
 	}
     } 
 
-    switch(method) {
+    switch(method) 
+    {
     case MTR_ADD_MAC_UL_ENTRY:
     case MTR_ADD_MAC_DL_ENTRY:
     case MTR_DEL_MAC_UL_ENTRY:
@@ -279,14 +236,30 @@ int main(int argc, char *argv[])
     case MTR_DEL_UDP_ENTRY:
     case MTR_DEL_ICMP_ENTRY:
 	    SetMtrEntry(&args, method);
-	    if(args.result == MTR_TBL_FULL) {
-		    printf("Meter Table Full!!\n");
-	    }else if(args.result == MTR_FAIL){
-		    printf("Meter command fail!\n");
-	    }else{
-		    printf("Meter command ok!\n");
+	    result = args.result;
+	    break;
+    case MTR_GET_ALL_ENTRIES:
+	    MtrGetAllEntries(args2);
+	    result = args2->result;
+
+	    printf("Total Entry Count = %d\n",args2->num_of_entries);
+	    for(i=0;i<args2->num_of_entries;i++){
+		printf("#%d :MAC=%02X:%02X:%02X:%02X:%02X:%02X\n", \
+			i, args2->entries[i].mac[0], args2->entries[i].mac[1], args2->entries[i].mac[2], \
+			args2->entries[i].mac[3], args2->entries[i].mac[4], args2->entries[i].mac[5]);
+		printf("   :SIP %u.%u.%u.%u->%u.%u.%u.%u\n\r", NIPQUAD(args2->entries[i].ip_s), NIPQUAD(args2->entries[i].ip_e));
+		printf("   :BucketSize=%d Token_Rate:%d MtrInterval=%d\n", args2->entries[i].bk_size, args2->entries[i].token_rate, args2->entries[i].mtr_intval);
 	    }
 	    break;
+    }
+
+
+    if(result == MTR_TBL_FULL) {
+	printf("table full\n");
+    }else if(result == MTR_FAIL){
+	printf("fail\n");
+    }else{
+	printf("done\n");
     }
 
     return 0;

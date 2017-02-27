@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (C) 2004,2005,2006,2007 Katalix Systems Ltd
+ * Copyright (C) 2004-2010 Katalix Systems Ltd
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -4862,17 +4862,18 @@ static void l2tp_config_dump_ppp_profile(FILE *file, struct l2tp_api_ppp_profile
  			    L2TP_API_PPP_PROFILE_FLAG_LOCAL_IP_ADDR |
  			    L2TP_API_PPP_PROFILE_FLAG_PEER_IP_ADDR |
  			    L2TP_API_PPP_PROFILE_FLAG_IP_POOL_NAME |
+ 			    L2TP_API_PPP_PROFILE_FLAG_USE_AS_DEFAULT_ROUTE |
+ 			    L2TP_API_PPP_PROFILE_FLAG_MULTILINK |
  			    L2TP_API_PPP_PROFILE_FLAG_LOCAL_NAME |
  			    L2TP_API_PPP_PROFILE_FLAG_REMOTE_NAME |
- 			    L2TP_API_PPP_PROFILE_FLAG_MULTILINK |
+ 			    L2TP_API_PPP_PROFILE_FLAG_PROXY_ARP |
 			    L2TP_API_PPP_PROFILE_FLAG_AUTH_NONE |
-			    L2TP_API_PPP_PROFILE_FLAG_AUTH_PEER |
-			    L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_PAP |
-			    L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_CHAP |
-			    L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_MSCHAP |
-			    L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_MSCHAPV2 |
 			    L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_EAP |
- 			    L2TP_API_PPP_PROFILE_FLAG_PROXY_ARP))) {
+			    L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_MSCHAPV2 |
+			    L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_MSCHAP |
+			    L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_CHAP |
+			    L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_PAP |
+			    L2TP_API_PPP_PROFILE_FLAG_AUTH_PEER))) {
  
  		fprintf(file, "ppp profile modify profile_name=%s \\\n", cfg->profile_name);
 

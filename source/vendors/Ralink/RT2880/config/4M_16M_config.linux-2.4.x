@@ -124,10 +124,6 @@ CONFIG_MTD_PARTITIONS=y
 # CONFIG_MTD_CONCAT is not set
 # CONFIG_MTD_REDBOOT_PARTS is not set
 # CONFIG_MTD_CMDLINE_PARTS is not set
-
-#
-# User Modules And Translation Layers
-#
 CONFIG_MTD_CHAR=y
 CONFIG_MTD_BLOCK=y
 # CONFIG_FTL is not set
@@ -180,10 +176,6 @@ CONFIG_MTD_RT2880=y
 # CONFIG_MTD_SLRAM is not set
 # CONFIG_MTD_MTDRAM is not set
 # CONFIG_MTD_BLKMTD is not set
-
-#
-# Disk-On-Chip Device Drivers
-#
 # CONFIG_MTD_DOC1000 is not set
 # CONFIG_MTD_DOC2000 is not set
 # CONFIG_MTD_DOC2001 is not set
@@ -389,10 +381,6 @@ CONFIG_IPV6=y
 # CONFIG_IP_SCTP is not set
 # CONFIG_ATM is not set
 CONFIG_VLAN_8021Q=y
-
-#
-#  
-#
 # CONFIG_IPX is not set
 # CONFIG_ATALK is not set
 # CONFIG_DECNET is not set
@@ -524,10 +512,6 @@ CONFIG_NET_RADIO=y
 # CONFIG_PLX_HERMES is not set
 # CONFIG_TMD_HERMES is not set
 # CONFIG_PCI_HERMES is not set
-
-#
-# Prism54 PCI/PCMCIA GT/Duette Driver - 802.11(a/b/g)
-#
 # CONFIG_PRISM54 is not set
 CONFIG_NET_WIRELESS=y
 
@@ -549,16 +533,6 @@ CONFIG_NET_WIRELESS=y
 #
 CONFIG_RALINK_DRIVER=y
 CONFIG_RALINK_RDM=y
-# CONFIG_RT2561_AP is not set
-# CONFIG_RT2561_AP is not set
-# CONFIG_RT2561_AP_WSC is not set
-# CONFIG_RT2561_AP_LLTD is not set
-# CONFIG_RT2561_AP_WDS is not set
-# CONFIG_RT2561_AP_MBSS is not set
-# CONFIG_RT2561_AP_APCLI is not set
-# CONFIG_RT2561_AP_IGMP_SNOOP is not set
-# CONFIG_RT2561_AP_NETIF_BLOCK is not set
-# CONFIG_RT2561_AP_CARRIER is not set
 CONFIG_RT2860V2_AP=m
 # CONFIG_RT2860V2_AP_2850 is not set
 CONFIG_RT2860V2_AP_LED=y
@@ -592,6 +566,17 @@ CONFIG_RT2860V2_STA_DPB=y
 # CONFIG_RT2860V2_STA_MESH is not set
 # CONFIG_RT2860V2_STA_WAPI is not set
 # CONFIG_RT2860V2_STA_VIDEO_TURBINE is not set
+# CONFIG_RT2880v2_INIC_PCI is not set
+# CONFIG_RT2880v2_INIC_MII is not set
+# CONFIG_RT2561_AP is not set
+# CONFIG_RT2561_AP_WSC is not set
+# CONFIG_RT2561_AP_LLTD is not set
+# CONFIG_RT2561_AP_WDS is not set
+# CONFIG_RT2561_AP_MBSS is not set
+# CONFIG_RT2561_AP_APCLI is not set
+# CONFIG_RT2561_AP_IGMP_SNOOP is not set
+# CONFIG_RT2561_AP_NETIF_BLOCK is not set
+# CONFIG_RT2561_AP_CARRIER is not set
 CONFIG_RT2880_GMAC=y
 # CONFIG_RAETH_NAPI is not set
 # CONFIG_RAETH_JUMBOFRAME is not set
@@ -604,6 +589,9 @@ CONFIG_LAN_WAN_SUPPORT=y
 CONFIG_WAN_AT_P0=y
 CONFIG_RALINK_VISTA_BASIC=y
 # CONFIG_PSEUDO_SUPPORT is not set
+CONFIG_RA_NAT_NONE=y
+# CONFIG_RA_NAT_SW is not set
+# CONFIG_RA_NAT_HW is not set
 
 #
 # Amateur Radio support
@@ -682,14 +670,6 @@ CONFIG_UNIX98_PTY_COUNT=256
 # Joysticks
 #
 # CONFIG_INPUT_GAMEPORT is not set
-
-#
-# Input core support is needed for gameports
-#
-
-#
-# Input core support is needed for joysticks
-#
 # CONFIG_QIC02_TAPE is not set
 # CONFIG_IPMI_HANDLER is not set
 # CONFIG_IPMI_PANIC_EVENT is not set

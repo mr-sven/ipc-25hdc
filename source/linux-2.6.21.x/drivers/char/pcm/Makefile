@@ -1,19 +1,11 @@
-EXTRA_CFLAGS   +=-DSI321X 
+EXTRA_CFLAGS += -Idrivers/char/pcm/proslic_api/inc -Idrivers/char/pcm/proslic_api/custom
+EXTRA_CFLAGS += -Idrivers/char/pcm/proslic_api/example_drivers/ralink/proslic_ppt_mb
+EXTRA_CFLAGS += -Idrivers/char/pcm/proslic_api/example_drivers/ralink/timer
 
+SRC_DIR = ./proslic_api/src
+SRC_OBJ = $(SRC_DIR)/si_voice_version.o $(SRC_DIR)/vdaa.o \
+			$(SRC_DIR)/proslic.o $(SRC_DIR)/si_voice.o
 
-SI321X_DIR = ./si321x
-SI321X_OBJ = $(SI321X_DIR)/proslic_api/ralink/timer/proslic_timer_intf_linux.o \
-			$(SI321X_DIR)/proslic_api/ralink/proslic_ppt_mb/si321x/proslic_spi_api.o \
-			$(SI321X_DIR)/proslic_api/proslic.o	\
-			$(SI321X_DIR)/proslic_api/si321x_intf.o	\
-			$(SI321X_DIR)/pbx.o	\
-			$(SI321X_DIR)/si321x_constants.o
-
-SI3220_DIR = ./si3220_rev1.5
-SI3220_OBJ = $(SI3220_DIR)/slic.o $(SI3220_DIR)/isr.o $(SI3220_DIR)/dual_i2o.o $(SI3220_DIR)/data.o \
-			$(SI3220_DIR)/slic_data.o $(SI3220_DIR)/countries.o
-
-		
-obj-$(CONFIG_RALINK_PCM)  += ralink_pcm.o
-ralink_pcm-objs       		:= pcm_ctrl.o ./codec_lib/codec_api.o $(SI3220_OBJ) $(SI321X_OBJ)
-
+RALINK_OBJ = $(RALINK_DIR)/proslic_spi_api.o
+TIMER_DIR = ./proslic_api/example_drivers/ralink/timer
+RALINK_OBJ += $(TIMER_DIR)/proslic_timer_intf_linux.o ./proslic_api/slic_init.o

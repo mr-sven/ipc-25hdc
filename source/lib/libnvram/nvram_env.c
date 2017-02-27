@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
 
 #include "nvram.h"
 #include "nvram_env.h"
@@ -11,35 +14,6 @@
 char libnvram_debug = 0;
 #define LIBNV_PRINT(x, ...) do { if (libnvram_debug) printf("%s %d: " x, __FILE__, __LINE__, ## __VA_ARGS__); } while(0)
 #define LIBNV_ERROR(x, ...) do { printf("%s %d: ERROR! " x, __FILE__, __LINE__, ## __VA_ARGS__); } while(0)
-
-
-typedef struct environment_s {
-	unsigned long crc;		//CRC32 over data bytes
-	char *data;
-} env_t;
-
-typedef struct cache_environment_s {
-	char *name;
-	char *value;
-} cache_t;
-
-#define MAX_CACHE_ENTRY 500
-typedef struct block_s {
-	char *name;
-	env_t env;			//env block
-	cache_t	cache[MAX_CACHE_ENTRY];	//env cache entry by entry
-	unsigned long flash_offset;
-	unsigned long flash_max_len;	//ENV_BLK_SIZE
-
-	char valid;
-	char dirty;
-} block_t;
-
-#ifdef CONFIG_DUAL_IMAGE
-#define FLASH_BLOCK_NUM	5
-#else
-#define FLASH_BLOCK_NUM	4
-#endif
 
 static block_t fb[FLASH_BLOCK_NUM] =
 {
@@ -105,12 +79,39 @@ void nvram_init(int index)
 	unsigned long from;
 	int i, len;
 	char *p, *q;
+#ifdef CONFIG_KERNEL_NVRAM
+	int fd;
+	nvram_ioctl_t nvr;
+#endif
 
 	LIBNV_PRINT("--> nvram_init %d\n", index);
 	LIBNV_CHECK_INDEX();
+
 	if (fb[index].valid)
 		return;
 
+#ifdef CONFIG_KERNEL_NVRAM
+	/*
+	 * read data from flash
+	 * skip crc checking which is done by Kernel NVRAM module 
+	 */
+	from = fb[index].flash_offset + sizeof(fb[index].env.crc);
+	len = fb[index].flash_max_len - sizeof(fb[index].env.crc);
+	fb[index].env.data = (char *)malloc(len);
+	nvr.index = index;
+	nvr.value = fb[index].env.data;
+	fd = open(NV_DEV, O_RDONLY);
+	if (fd < 0) {
+		perror(NV_DEV);
+		goto out;
+	}
+	if (ioctl(fd, RALINK_NVRAM_IOCTL_GETALL, &nvr) < 0) {
+		perror("ioctl");
+		close(fd);
+		goto out;
+	}
+	close(fd);
+#else
 	//read crc from flash
 	from = fb[index].flash_offset;
 	len = sizeof(fb[index].env.crc);
@@ -132,6 +133,7 @@ void nvram_init(int index)
 		fb[index].dirty = 0;
 		return;
 	}
+#endif
 
 	//parse env to cache
 	p = fb[index].env.data;
@@ -161,9 +163,11 @@ void nvram_init(int index)
 	if (i == MAX_CACHE_ENTRY)
 		LIBNV_PRINT("run out of env cache, please increase MAX_CACHE_ENTRY\n");
 
-	FREE(fb[index].env.data); //free it to save momery
 	fb[index].valid = 1;
 	fb[index].dirty = 0;
+
+out:
+	FREE(fb[index].env.data); //free it to save momery
 }
 
 void nvram_close(int index)
@@ -172,6 +176,7 @@ void nvram_close(int index)
 
 	LIBNV_PRINT("--> nvram_close %d\n", index);
 	LIBNV_CHECK_INDEX();
+
 	if (!fb[index].valid)
 		return;
 	if (fb[index].dirty)
@@ -206,18 +211,30 @@ static int cache_idx(int index, char *name)
 	return -1;
 }
 
-char *nvram_get(int index, char *name)
+const char *nvram_get(int index, char *name)
 {
 	//LIBNV_PRINT("--> nvram_get\n");
+
+#ifdef CONFIG_KERNEL_NVRAM
+	/* Get the fresh value from Kernel NVRAM moduel,
+	 * so there is no need to do nvram_close() and nvram_init() again
+	 */
+	//nvram_close(index);
+	//nvram_init(index);
+#else
 	nvram_close(index);
 	nvram_init(index);
+#endif
+
 	return nvram_bufget(index, name);
 }
 
 int nvram_set(int index, char *name, char *value)
 {
 	//LIBNV_PRINT("--> nvram_set\n");
+
 	if (-1 == nvram_bufset(index, name, value))
+
 		return -1;
 	return nvram_commit(index);
 }
@@ -226,16 +243,45 @@ char const *nvram_bufget(int index, char *name)
 {
 	int idx;
 	static char const *ret;
+#ifdef CONFIG_KERNEL_NVRAM
+	int fd;
+	nvram_ioctl_t nvr;
+#endif
 
 	//LIBNV_PRINT("--> nvram_bufget %d\n", index);
 	LIBNV_CHECK_INDEX("");
 	LIBNV_CHECK_VALID();
+
+#ifdef CONFIG_KERNEL_NVRAM
+	nvr.index = index;
+	nvr.name = name;
+	nvr.value = malloc(MAX_VALUE_LEN);
+	fd = open(NV_DEV, O_RDONLY);
+	if (fd < 0) {
+		perror(NV_DEV);
+		FREE(nvr.value);
+		return "";
+	}
+	if (ioctl(fd, RALINK_NVRAM_IOCTL_GET, &nvr) < 0) {
+		perror("ioctl");
+		close(fd);
+		FREE(nvr.value);
+		return "";
+	}
+	close(fd);
+#endif
+
 	idx = cache_idx(index, name);
 
 	if (-1 != idx) {
 		if (fb[index].cache[idx].value) {
 			//duplicate the value in case caller modify it
 			//ret = strdup(fb[index].cache[idx].value);
+#ifdef CONFIG_KERNEL_NVRAM
+			FREE(fb[index].cache[idx].value);
+			fb[index].cache[idx].value = strdup(nvr.value);
+			FREE(nvr.value);
+#endif
 			ret = fb[index].cache[idx].value;
 			LIBNV_PRINT("bufget %d '%s'->'%s'\n", index, name, ret);
 			return ret;
@@ -245,16 +291,44 @@ char const *nvram_bufget(int index, char *name)
 	//no default value set?
 	//btw, we don't return NULL anymore!
 	LIBNV_PRINT("bufget %d '%s'->''(empty) Warning!\n", index, name);
+
+#ifdef CONFIG_KERNEL_NVRAM
+	FREE(nvr.value);
+#endif
+
 	return "";
 }
 
 int nvram_bufset(int index, char *name, char *value)
 {
 	int idx;
+#ifdef CONFIG_KERNEL_NVRAM
+	int fd;
+	nvram_ioctl_t nvr;
+#endif
 
 	//LIBNV_PRINT("--> nvram_bufset\n");
+
 	LIBNV_CHECK_INDEX(-1);
 	LIBNV_CHECK_VALID();
+
+#ifdef CONFIG_KERNEL_NVRAM
+	nvr.index = index;
+	nvr.name = name;
+	nvr.value = value;
+	fd = open(NV_DEV, O_RDONLY);
+	if (fd < 0) {
+		perror(NV_DEV);
+		return -1;
+	}
+	if (ioctl(fd, RALINK_NVRAM_IOCTL_SET, &nvr) < 0) {
+		perror("ioctl");
+		close(fd);
+		return -1;
+	}
+	close(fd);
+#endif
+
 	idx = cache_idx(index, name);
 
 	if (-1 == idx) {
@@ -301,14 +375,33 @@ void nvram_buflist(int index)
  */
 int nvram_commit(int index)
 {
+#ifdef CONFIG_KERNEL_NVRAM
+	int fd;
+	nvram_ioctl_t nvr;
+#else
 	unsigned long to;
 	int i, len;
 	char *p;
+#endif
 
 	//LIBNV_PRINT("--> nvram_commit %d\n", index);
 	LIBNV_CHECK_INDEX(-1);
 	LIBNV_CHECK_VALID();
 
+#ifdef CONFIG_KERNEL_NVRAM
+	nvr.index = index;
+	fd = open(NV_DEV, O_RDONLY);
+	if (fd < 0) {
+		perror(NV_DEV);
+		return -1;
+	}
+	if (ioctl(fd, RALINK_NVRAM_IOCTL_COMMIT, &nvr) < 0) {
+		perror("ioctl");
+		close(fd);
+		return -1;
+	}
+	close(fd);
+#else
 	if (!fb[index].dirty) {
 		LIBNV_PRINT("nothing to be committed\n");
 		return 0;
@@ -348,7 +441,10 @@ int nvram_commit(int index)
 	len = fb[index].flash_max_len - len;
 	flash_write(fb[index].env.data, to, len);
 	FREE(fb[index].env.data);
+#endif
+
 	fb[index].dirty = 0;
+
 	return 0;
 }
 
@@ -357,13 +453,32 @@ int nvram_commit(int index)
  */
 int nvram_clear(int index)
 {
+#ifdef CONFIG_KERNEL_NVRAM
+	int fd;
+	nvram_ioctl_t nvr;
+#else
 	unsigned long to;
 	int len;
+#endif
 
 	LIBNV_PRINT("--> nvram_clear %d\n", index);
 	LIBNV_CHECK_INDEX(-1);
 	nvram_close(index);
 
+#ifdef CONFIG_KERNEL_NVRAM
+	nvr.index = index;
+	fd = open(NV_DEV, O_RDONLY);
+	if (fd < 0) {
+		perror(NV_DEV);
+		return -1;
+	}
+	if (ioctl(fd, RALINK_NVRAM_IOCTL_CLEAR, &nvr) < 0) {
+		perror("ioctl");
+		close(fd);
+		return -1;
+	}
+	close(fd);
+#else
 	//construct all 1s env block
 	len = fb[index].flash_max_len - sizeof(fb[index].env.crc);
 	fb[index].env.data = (char *)malloc(len);
@@ -381,6 +496,8 @@ int nvram_clear(int index)
 	flash_write(fb[index].env.data, to, len);
 	FREE(fb[index].env.data);
 	LIBNV_PRINT("clear flash from 0x%x for 0x%x bytes\n", (unsigned int *)to, len);
+#endif
+
 	fb[index].dirty = 0;
 	return 0;
 }

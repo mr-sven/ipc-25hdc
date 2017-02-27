@@ -246,7 +246,7 @@ function initValue()
 
 	document.getElementById("div_channel").style.visibility = "hidden";
 	document.getElementById("div_channel").style.display = "none";
-	document.profile_page.channel.disabled = true;
+//	document.profile_page.channel.disabled = true;
 
 	document.getElementById("div_b_premable_type").style.visibility = "hidden";
 	document.getElementById("div_b_premable_type").style.display = "none";
@@ -396,7 +396,7 @@ function networkTypeChange()
 
 	document.getElementById("div_channel").style.visibility = "hidden";
 	document.getElementById("div_channel").style.display = "none";
-	document.profile_page.channel.disabled = true;
+//	document.profile_page.channel.disabled = true;
 
 	document.getElementById("div_security_infra_mode").style.visibility = "hidden";
 	document.getElementById("div_security_infra_mode").style.display = "none";

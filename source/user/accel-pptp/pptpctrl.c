@@ -3,7 +3,13 @@
  *
  * PPTP control connection between PAC-PNS pair
  *
- * $Id: pptpctrl.c,v 1.1 2009-01-07 09:38:03 steven Exp $
+ * $Id: pptpctrl.c,v 1.2 2010-11-19 06:52:42 steven Exp $
+ *
+ * 24.02.2008 Bugs fixed by Serbulov D. (SDY)
+ *  + added SIGCHLD control
+ *  + added PPPD kill on stop ses
+ *  + correct exit on duplicate connection
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -192,21 +198,34 @@ int main(int argc, char **argv)
 
 	/* be ready for a grisly death */
 	sigpipe_create();
+	sigpipe_assign(SIGCHLD);
 	sigpipe_assign(SIGTERM);
 	NOTE_VALUE(PAC, call_id_pair, htons(-1));
 	NOTE_VALUE(PNS, call_id_pair, htons(-1));
 
 	syslog(LOG_INFO, "CTRL: Client %s control connection started", inet_ntoa(addr.sin_addr));
 	pptp_handle_ctrl_connection(pppaddrs, inetaddrs);
-	syslog(LOG_DEBUG, "CTRL: Reaping child PPP[%i]", pppfork);
-	if (pppfork > 0)
-		waitpid(pppfork, NULL, 0);
-	syslog(LOG_INFO, "CTRL: Client %s control connection finished", inet_ntoa(addr.sin_addr));
 
+	syslog(LOG_DEBUG, "CTRL: Reaping child PPP[%i]", pppfork);
 	bail(0);		/* NORETURN */
+	syslog(LOG_INFO, "CTRL: Client %s control connection finished", inet_ntoa(addr.sin_addr));
 	return 1;		/* make gcc happy */
 }
 
+//SDY special for prevent pppd session stay on air then need to stop
+void waitclosefork(int sigraised)
+{
+	//SDY senf term to fork();
+	if (pppfork > 0)
+	{
+		if (sigraised != SIGCHLD) {
+			syslog(LOG_INFO, "CTRL: Client pppd TERM sending");
+			kill(pppfork,SIGTERM);
+		}
+		syslog(LOG_INFO, "CTRL: Client pppd finish wait");
+		waitpid(pppfork, NULL, 0);
+	}
+}
 
 /*
  * Local functions only below
@@ -288,7 +307,10 @@ static void pptp_handle_ctrl_connection(char **pppaddrs, struct in_addr *inetadd
 
 		/* check for pending SIGTERM delivery */
 		if (FD_ISSET(sig_fd, &fds)) {
-			if (sigpipe_read() == SIGTERM)
+			int signum = sigpipe_read();
+			if (signum == SIGCHLD)
+				bail(SIGCHLD);
+			else if (signum == SIGTERM)
 				bail(SIGTERM);
 		}
 
@@ -322,18 +344,14 @@ static void pptp_handle_ctrl_connection(char **pppaddrs, struct in_addr *inetadd
 				NOTE_VALUE(PAC, call_id_pair, ((struct pptp_out_call_rply *) (rply_packet))->call_id);
 				NOTE_VALUE(PNS, call_id_pair, ((struct pptp_out_call_rply *) (rply_packet))->call_id_peer);
 
-				pptp_timeout*=1000;
-				if (setsockopt(pptp_sock,0,PPTP_SO_TIMEOUT,&pptp_timeout,sizeof(pptp_timeout)))
-					syslog(LOG_WARNING,"CTRL: failed to setsockopt SO_TIMEOUT\n");
-
 				dst_addr.sa_family=AF_PPPOX;
 				dst_addr.sa_protocol=PX_PROTO_PPTP;
 				dst_addr.sa_addr.pptp.call_id=htons(((struct pptp_out_call_rply *) (rply_packet))->call_id_peer);
 				dst_addr.sa_addr.pptp.sin_addr=inetaddrs[1];
 
 				if (connect(pptp_sock,(struct sockaddr*)&dst_addr,sizeof(dst_addr))){
-					syslog(LOG_ERR,"CTRL: failed to connect PPTP socket (%s)\n",strerror(errno));
-					exit(-1);
+					syslog(LOG_INFO,"CTRL: failed to connect PPTP socket (%s)\n",strerror(errno));
+					goto leave_drop_call; //SDY close on correct!
 					break;
 				}
 
@@ -347,18 +365,6 @@ static void pptp_handle_ctrl_connection(char **pppaddrs, struct in_addr *inetadd
 				/* start the call, by launching pppd */
 				syslog(LOG_INFO, "CTRL: Starting call (launching pppd, opening GRE)");
 				startCall(pppaddrs, inetaddrs);
-				if (PPP_WAIT) {
-					switch(ioctl(pptp_sock,PPPTPIOWFP,PPP_WAIT)){
-					case -1:
-						syslog(LOG_ERR,
-						       "CTRL: waiting for first packet failed, ignoring");
-						break;
-					case 0:
-						syslog(LOG_ERR,
-						       "CTRL: timeout waiting for first packet");
-						break;
-					}
-				}
 				close(pptp_sock);
 				pptp_sock=-1;
 				break;
@@ -428,6 +434,8 @@ static void bail(int sigraised)
 	if (sigraised)
 		syslog(LOG_INFO, "CTRL: Exiting on signal %d", sigraised);
 
+	waitclosefork(sigraised);
+
 	/* send a disconnect to the other end */
 	/* ignore any errors */
 	if (GET_VALUE(PAC, call_id_pair) != htons(-1)) {
@@ -487,6 +495,8 @@ static void bail(int sigraised)
 		}
 
 	skip:
+		NOTE_VALUE(PAC, call_id_pair, htons(-1));
+		NOTE_VALUE(PNS, call_id_pair, htons(-1));
 		close(clientSocket);
 	}
 
@@ -689,4 +699,3 @@ static void launch_pppd(char **pppaddrs, struct in_addr *inetaddrs)
 	       "CTRL (PPPD Launcher): Failed to launch PPP daemon. %s",
 	       strerror(errno));
 }
-

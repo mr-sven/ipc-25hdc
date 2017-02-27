@@ -10,3 +10,6 @@ telnetd
 
 #for syslogd
 mkdir -p /var/log
+
+/sbin/internet.sh
+/sbin/ntp.sh

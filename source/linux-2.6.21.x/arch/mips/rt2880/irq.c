@@ -237,11 +237,15 @@ void surfboard_hw0_irqdispatch(void)
 #if defined (CONFIG_RALINK_RT2880_SHUTTLE) || \
     defined (CONFIG_RALINK_RT2880_MP)
 	if (irq == 0) {
-#else
-	if (irq == 1) {
-#endif
 		irq = SURFBOARDINT_TIMER0;
 	}
+#else
+	if (irq == 1) {
+		irq = SURFBOARDINT_TIMER0;
+	}else if (irq == 2) {
+		irq = SURFBOARDINT_WDG;
+	}
+#endif
 #endif
 
 #if defined (CONFIG_RALINK_RT2880_SHUTTLE) ||   \
@@ -337,7 +341,8 @@ void __init arch_init_irq(void)
 void rt2880_irqdispatch(void)
 {
 	unsigned long mips_cp0_status, mips_cp0_cause, irq_x, irq, i;
-#if defined(CONFIG_RALINK_RT2880) || defined (CONFIG_RALINK_RT2883) || defined(CONFIG_RALINK_RT3883) 
+#if defined(CONFIG_RALINK_RT2880) || defined (CONFIG_RALINK_RT2883) || \
+    defined(CONFIG_RALINK_RT3883) || defined(CONFIG_RALINK_RT6855) || defined (CONFIG_RALINK_RT6352)
 	unsigned long pci_status=0;
 #endif
 
@@ -375,11 +380,7 @@ void rt2880_irqdispatch(void)
 	for (i = 0; i< 5; i++) {
 		if(irq_x & 0x10)
 		{
-#ifdef CONFIG_RALINK_RT3883
 			clear_c0_status(0x7c00);
-#else
-			disable_rt2880_cp_int(1<<(irq+10));
-#endif
 			if(irq > 2)
 				do_IRQ(irq);
 			else if(irq == 2){
@@ -400,6 +401,30 @@ void rt2880_irqdispatch(void)
 #elif defined (CONFIG_RALINK_RT3352)
 
 #elif defined (CONFIG_RALINK_RT5350)
+
+#elif defined (CONFIG_RALINK_RT6855) || defined (CONFIG_RALINK_RT6352)
+			 	pci_status = RALINK_PCI_PCIINT_ADDR;
+				if(pci_order==0){
+					if(pci_status &(1<<20)){
+						//PCIe0
+						do_IRQ(RALINK_INT_PCIE0);
+					}else if(pci_status &(1<<21)){
+						//PCIe1
+						do_IRQ(RALINK_INT_PCIE1);
+					}else{
+						printk("pcie inst = %x\n", pci_status);
+					}
+				}else{
+					if(pci_status &(1<<21)){
+						//PCIe1
+						do_IRQ(RALINK_INT_PCIE1);
+					}else if(pci_status &(1<<20)){
+						//PCIe0
+						do_IRQ(RALINK_INT_PCIE0);
+					}else{
+						printk("pcie inst = %x\n", pci_status);
+					}
+				}
 
 #else // 2880
 
@@ -431,11 +456,7 @@ void rt2880_irqdispatch(void)
 			else {
 				surfboard_hw0_irqdispatch();
 			}
-#ifdef CONFIG_RALINK_RT3883
 			set_c0_status(0x7c00);
-#else
-			enable_rt2880_cp_int(1<<(irq+10));
-#endif
 		}
 		irq--;
 		irq_x <<= 1;

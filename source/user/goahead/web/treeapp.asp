@@ -55,12 +55,12 @@ var smbb = '<% getSmbBuilt(); %>';
 var mediab = '<% getMediaBuilt(); %>';
 var webcamb = '<% getWebCamBuilt(); %>';
 var printersrvb = '<% getPrinterSrvBuilt(); %>';
-var usbiNICb = '<% getUSBiNICBuilt(); %>';
 var itunesb = '<% getiTunesBuilt(); %>';
 var syslogb = '<% getSysLogBuilt(); %>';
 var swqos = '<% getSWQoSBuilt(); %>';
 var ad = '<% isAntennaDiversityBuilt(); %>';
 var wizardb = '<% getWizardBuilt(); %>';
+var ipv6b = '<% getIPv6Built(); %>';
 
 a = new dTree('a');
 a.config.useStatusText=true;
@@ -86,8 +86,11 @@ if (opmode != '0') {
 	a.add(305, 300, _("treeapp routing"),       "javascript:go('internet/routing.asp');");
 }
 
-if (swqos == '1') {
+if (opmode == '1' && swqos == '1') {
 	a.add(306, 300, _("treeapp qos"),		"javascript:go('internet/qos.asp');");
+}
+if (ipv6b == "1") {
+	a.add(307, 300, _("treeapp ipv6"), 		    "javascript:go('internet/ipv6.asp');");
 }
 
 if ((opmode == '0' && dpbsta == '1' && ethconv == '1') || opmode == '2')
@@ -117,7 +120,9 @@ else
 		a.add(404, 400, _("treeapp wds"),                   "javascript:go('wireless/wds.asp');");
 	if (wscb == "1")
 		a.add(405, 400, _("treeapp wps"),                   "javascript:go('wps/wps.asp');");
-	if (opmode == '3')
+	var apclib = "<% getWlanApcliBuilt(); %>";
+	var apcli_en = "<% getCfgZero(1, "apClient"); %>";
+	if (opmode == '3' || (opmode == '0' && apclib == "1" && apcli_en == "1"))
 		a.add(406, 400, _("treeapp ap client"),     "javascript:go('wireless/apcli.asp');");
 	a.add(407, 400, _("treeapp station list"),          "javascript:go('wireless/stainfo.asp');");
 	a.add(408, 400, _("treeapp statistics"),            "javascript:go('wireless/apstatistics.asp');");
@@ -138,15 +143,13 @@ if (opmode != '0') {
 
 if (usbb == "1")
 {
-	var usbapp = 1*webcamb | 1*printersrvb | 1*usbiNICb | 1*itunesb;
+	var usbapp = 1*webcamb | 1*printersrvb |  1*itunesb;
 	if (usbapp == 1)
 		a.add(800,   0, _("treeapp usbapp"),		"javascript:a.oo(800);");
 	if (webcamb == "1")
 		a.add(801, 800, _("treeapp webcam"),		"javascript:go('usb/UVCwebcam.asp');");
 	if (printersrvb == "1")
 		a.add(802, 800, _("treeapp printersrv"),	"javascript:go('usb/P910NDprintersrv.asp');");
-	if (usbiNICb == "1")
-		a.add(803, 800, _("treeapp usbinic"),		"javascript:go('usb/INICusb_inic.asp');");
 	if (itunesb == "1")
 		a.add(804, 800, _("treeapp itunes"),		"javascript:go('usb/iTunesServer.asp');");
 	if (storageb == "1")

@@ -285,19 +285,24 @@ static int ppp_unix_params_to_argv(struct ppp_context *ppp, struct l2tp_api_ppp_
 	}
 
 	/* ppp auth options */
-	if (params->flags2 & L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_EAP) {
+	if ((params->flags2 & L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_EAP) &&
+	     params->auth_refuse_eap) {
 		argv[arg++] = "refuse-eap";
 	}
-	if (params->flags2 & L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_MSCHAPV2) {
+	if ((params->flags2 & L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_MSCHAPV2) &&
+	     params->auth_refuse_mschapv2) {
 		argv[arg++] = "refuse-mschap-v2";
 	}
-	if (params->flags2 & L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_MSCHAP) {
+	if ((params->flags2 & L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_MSCHAP) &&
+	     params->auth_refuse_mschap) {
 		argv[arg++] = "refuse-mschap";
 	}
-	if (params->flags2 & L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_CHAP) {
+	if ((params->flags2 & L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_CHAP) &&
+	     params->auth_refuse_chap) {
 		argv[arg++] = "refuse-chap";
 	}
-	if (params->flags2 & L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_PAP) {
+	if ((params->flags2 & L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_PAP) &&
+	     params->auth_refuse_pap) {
 		argv[arg++] = "refuse-pap";
 	}
 
@@ -313,25 +318,53 @@ static int ppp_unix_params_to_argv(struct ppp_context *ppp, struct l2tp_api_ppp_
 				       L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_MSCHAP |
 				       L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_CHAP |
 				       L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_PAP);
-	if (auth_flags == (L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_EAP |
+	if ((auth_flags & ~L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_PAP) ==
+			  (L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_EAP |
 			   L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_MSCHAPV2 |
 			   L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_MSCHAP |
-			   L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_CHAP)) {
+			   L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_CHAP) &&
+	    params->auth_refuse_eap &&
+	    params->auth_refuse_mschapv2 &&
+	    params->auth_refuse_mschap &&
+	    params->auth_refuse_chap &&
+	    (!(auth_flags & L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_PAP) ||
+		!params->auth_refuse_pap)) {
 		argv[arg++] = "require-pap";
-	} else if (auth_flags == (L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_EAP |
+	} else if ((auth_flags & ~L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_CHAP) ==
+				 (L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_EAP |
 				  L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_MSCHAPV2 |
 				  L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_MSCHAP |
-				  L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_PAP)) {
+				  L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_PAP) &&
+		   params->auth_refuse_eap &&
+	    	   params->auth_refuse_mschapv2 &&
+	    	   params->auth_refuse_mschap &&
+	    	   params->auth_refuse_pap &&
+		   (!(auth_flags & L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_CHAP) ||
+			!params->auth_refuse_chap)) {
 		argv[arg++] = "require-chap";
-	} else if (auth_flags == (L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_EAP |
+	} else if ((auth_flags & ~L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_MSCHAP) ==
+				 (L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_EAP |
 				  L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_MSCHAPV2 |
 				  L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_CHAP |
-				  L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_PAP)) {
+				  L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_PAP) &&
+		   params->auth_refuse_eap &&
+	    	   params->auth_refuse_mschapv2 &&
+	    	   params->auth_refuse_chap &&
+	    	   params->auth_refuse_pap &&
+		   (!(auth_flags & L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_MSCHAP) ||
+			!params->auth_refuse_mschap)) {
 		argv[arg++] = "require-mschap";
-	} else if (auth_flags == (L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_EAP |
+	} else if ((auth_flags & ~L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_MSCHAPV2) ==
+				 (L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_EAP |
 				  L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_MSCHAP |
 				  L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_CHAP |
-				  L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_PAP)) {
+				  L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_PAP) &&
+		   params->auth_refuse_eap &&
+	    	   params->auth_refuse_mschap &&
+	    	   params->auth_refuse_chap &&
+	    	   params->auth_refuse_pap &&
+		   (!(auth_flags & L2TP_API_PPP_PROFILE_FLAG_AUTH_REFUSE_MSCHAPV2) ||
+			!params->auth_refuse_mschapv2)) {
 		argv[arg++] = "require-mschap-v2";
 	}
 

@@ -3,7 +3,7 @@
  *
  *	Copyright (c) Ralink Technology Corporation All Rights Reserved.
  *
- *	$Id: utils.h,v 1.26 2010-02-25 05:02:39 winfred Exp $
+ *	$Id: utils.h,v 1.27 2012-01-03 03:08:36 chhung Exp $
  */
 #include 	"webs.h"
 #include	"uemf.h"
@@ -37,3 +37,4 @@ void arplookup(char *ip, char *arp);
 void websLongWrite(webs_t wp, char *longstr);
 int netmask_aton(const char *ip);
 inline int getOnePortOnly(void);
+void ConverterStringToDisplay(char *str);

@@ -37,3 +37,9 @@ config BRIDGE_2WAYS_FDB
 	---help---
 	  prevent ARP flooding attack (memory protection code)
 
+config BRIDGE_IGMP_REPORT_NO_FLOODING
+	bool "IGMP report packets to CPU only(No flooding)"
+	depends on BRIDGE
+	---help---
+	  prevent IGMP report packet flooding to all NICs.
+

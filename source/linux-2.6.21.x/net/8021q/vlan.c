@@ -494,6 +494,11 @@ static struct net_device *register_vlan_device(const char *eth_IF_name,
 	 */
 	new_dev->mtu = real_dev->mtu;
 
+#if defined (CONFIG_RAETH_TSO)
+	/* make pseudo interface has same capacity like real interface */
+	new_dev->features = real_dev->features;
+#endif
+
 	/* TODO: maybe just assign it to be ETHERNET? */
 	new_dev->type = real_dev->type;
 

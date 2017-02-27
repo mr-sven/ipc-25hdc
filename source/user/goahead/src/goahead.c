@@ -6,7 +6,7 @@
  *
  * See the file "license.txt" for usage and redistribution license requirements
  *
- * $Id: goahead.c,v 1.122 2010-03-31 13:05:57 chhung Exp $
+ * $Id: goahead.c,v 1.126.2.4 2012-03-12 07:52:27 chhung Exp $
  */
 
 /******************************** Description *********************************/
@@ -224,6 +224,12 @@ static void goaInitGpio()
 	//set gpio direction to input
 #ifdef CONFIG_RALINK_RT3883
 	if (ioctl(fd, RALINK_GPIO3924_SET_DIR_IN, RALINK_GPIO(26-24)) < 0)
+#elif defined (CONFIG_RALINK_RT6855A)
+#if defined (CONFIG_RT6855A_PCIE_PORT0_ENABLE)
+	if (ioctl(fd, RALINK_GPIO_SET_DIR_IN, 1) < 0)	// rt6855 WPS PBC
+#else
+	if (ioctl(fd, RALINK_GPIO_SET_DIR_IN, 6) < 0)	// rt6856 WPS PBC
+#endif
 #else
 	if (ioctl(fd, RALINK_GPIO_SET_DIR_IN, RALINK_GPIO(0)) < 0)
 #endif
@@ -233,8 +239,14 @@ static void goaInitGpio()
 		goto ioctl_err;
 	//register my information
 	info.pid = getpid();
-#ifdef CONFIG_RALINK_RT3883
+#if defined (CONFIG_RALINK_RT3883)
 	info.irq = 26;
+#elif defined (CONFIG_RALINK_RT6855A)
+#if defined (CONFIG_RT6855A_PCIE_PORT0_ENABLE)
+	info.irq = 1;	// rt6855 WPS PBC
+#else
+	info.irq = 6;	// rt6856 WPS PBC
+#endif
 #else
 	info.irq = 0;
 #endif
@@ -260,6 +272,9 @@ static void dhcpcHandler(int signum)
 	doSystem("/sbin/config-igmpproxy.sh");
 #ifdef CONFIG_RALINKAPP_SWQOS
 	QoSInit();
+#endif
+#if defined (CONFIG_IPV6)
+	ipv6Config(strtol(nvram_bufget(RT2860_NVRAM, "IPv6OpMode"), NULL, 10));
 #endif
 }
 
@@ -322,14 +337,14 @@ int setDefault(void)
 		}
 		else {
 			fclose(fp);
-#if defined (CONFIG_RT2860V2_AP_MBSS)
+#if defined (RT2860_MBSS_SUPPORT)
 			int bssidnum = strtol(nvram_get(RT2860_NVRAM, "BssidNum"), NULL, 10);
 			char newBssidNum[3];
 #ifdef CONFIG_RT2860V2_AP_MESH
 			if (bssidnum > 6)
 				bssidnum--;
 #endif
-#ifdef CONFIG_RT2860V2_AP_APCLI
+#if defined (RT2860_APCLI_SUPPORT)
 			if (bssidnum > 6)
 				bssidnum--;
 #endif

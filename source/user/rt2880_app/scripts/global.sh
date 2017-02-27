@@ -20,6 +20,8 @@ getWanIfName()
 		    else
 			wan_if="eth2.2"
 		    fi
+		elif [ "$CONFIG_GE1_RGMII_AN" = "y" -a "$CONFIG_GE2_RGMII_AN" = "y" ]; then
+			wan_if="eth3"
 		else
 			wan_if="eth2"
 		fi
@@ -52,11 +54,13 @@ getLanIfName()
 			else
 				lan_if="ra0"
 			fi
+		elif [ "$CONFIG_GE1_RGMII_AN" = "y" -a "$CONFIG_GE2_RGMII_AN" = "y" ]; then
+			lan_if="br0"
 		else
 			lan_if="ra0"
 		fi
 	elif [ "$opmode" = "2" ]; then
-		lan_if="eth2"
+		lan_if="br0"
 	elif [ "$opmode" = "3" ]; then
 		lan_if="br0"
 	fi

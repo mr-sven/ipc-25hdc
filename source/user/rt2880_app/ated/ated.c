@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
     if (argc == 3) {
 	if (!strcmp(argv[1], "-i")) {
 		if (getIfIsUp(argv[2]) == 1)
-	    strcpy(IF_NAME, argv[2]);
+			strcpy(IF_NAME, argv[2]);
 		else
 			return 0;
 	} else {

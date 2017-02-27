@@ -6,6 +6,67 @@
 #include "rdm.h"
 
 
+int ra_reg_write(int offset, int value)
+{
+    int fd;
+    int method = RT_RDM_CMD_WRITE | (offset << 16);
+
+    fd = open("/dev/rdm0", O_RDONLY);
+    if (fd < 0)
+    {
+	printf("Open pseudo device failed\n");
+	return -1;
+    }
+
+    if(ioctl(fd, method, &value)<0) {
+	printf("ioctl error\n");
+	close(fd);
+	return -1;
+    }
+	
+    close(fd);
+    return 0;
+}
+
+int ra_reg_read(int offset)
+{
+    int fd;
+
+    fd = open("/dev/rdm0", O_RDONLY);
+    if (fd < 0)
+    {
+	printf("Open pseudo device failed\n");
+	return -1;
+    }
+
+    if(ioctl(fd, RT_RDM_CMD_READ, &offset)<0) {
+	printf("ioctl error\n");
+	close(fd);
+	return -1;
+    }
+	
+    close(fd);
+	
+    return offset;
+}
+
+void ra_reg_mod_bits(int offset, int data, int  start_bit, int len)
+{
+    int Mask=0;
+    int Value;
+    int i;
+
+    for (i = 0; i < len; i++) {
+        Mask |= 1 << (start_bit + i);
+    }
+
+    Value = ra_reg_read(offset);
+    Value &= ~Mask;
+    Value |= (data << start_bit) & Mask;;
+
+    ra_reg_write(offset, Value);
+}
+
 //  syntax: reg [r/w] [offset(hex)] [value(hex, w only)] 
 //  example reg r 18
 //  example reg w 18 12345678
@@ -16,14 +77,17 @@ int main(int argc, char *argv[])
 
 	if (argc < 3)
 	{
-		printf("syntax: reg [method(r/w/s/d)] [offset(hex)] [value(hex, w only)]\n");
+		printf("syntax: reg [method(r/w/s/d/f)] [offset(Hex)] [value(hex, w only)]\n");
 		printf("read example : reg r 18\n");
 		printf("write example : reg w 18 12345678\n");
 		printf("dump example : reg d 18 \n");
+		printf("dump example [FPGA emulation]: reg f 18 \n");
+		printf("modify example : reg m [Offset:Hex] [Data:Hex] [StartBit:Decimal] [DataLen:Decimal] \n");
 		printf("To use system register: reg s 0\n");
 		printf("To use wireless register: reg s 1\n");
 		printf("To use other base address offset: reg s [offset]\n");
 		printf("for example: reg s 0xa0500000\n");
+		printf("for example: reg m c8 1 31 1\n");
 		printf("To show current base address offset: reg s 2\n");
 		return 0;
 	}
@@ -40,6 +104,10 @@ int main(int argc, char *argv[])
 	else if (*p == 'd')
 	{
 		method = RT_RDM_CMD_DUMP;
+	}
+	else if (*p == 'f')
+	{
+		method = RT_RDM_CMD_DUMP_FPGA_EMU;
 	}
 	else if (*p == 'w')
 	{
@@ -82,9 +150,17 @@ int main(int argc, char *argv[])
 			return 0;
 		}
 	}
+	else if (*p == 'm')
+	{
+	    int offset=strtoul(argv[2], NULL, 16);
+	    int data=strtoul(argv[3], NULL, 16);
+	    int start_bit=strtoul(argv[4], NULL, 10);
+	    int len=strtoul(argv[5], NULL, 10);
+	    ra_reg_mod_bits(offset,data, start_bit,len);
+	}
 	else
 	{
-		printf("method must be either r or w\n");
+		printf("method must be either r p d f w s m\n");
 		return 0;
 	}
 	

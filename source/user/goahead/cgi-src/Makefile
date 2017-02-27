@@ -4,7 +4,7 @@
 #
 # Copyright (c) GoAhead Software, Inc. 1995-2000
 #
-# $Id: Makefile,v 1.29 2009-12-14 03:45:48 winfred Exp $
+# $Id: Makefile,v 1.30.2.1 2012-03-30 12:31:44 chhung Exp $
 #
 
 
@@ -40,8 +40,15 @@ ALL_EXE += $(UPLOAD_CA_CLIENT_CERT_CGI)
 ALL_EXE += $(UPLOAD_KEY_CERT_CGI)
 endif
 endif
+ifeq ("$(CONFIG_RT_FIRST_CARD)", "2860")
+FIRST_WAPI=CONFIG_RT$(CONFIG_RT_FIRST_CARD)V2_AP_WAPI
+else
+FIRST_WAPI=CONFIG_RT$(CONFIG_RT_FIRST_CARD)_AP_WAPI
+endif
+SECOND_WAPI=CONFIG_RT$(CONFIG_RT_SECOND_CARD)_AP_WAPI
+WAPI_ON = $($(FIRST_WAPI))$($(SECOND_WAPI))
 ifeq ("$(CONFIG_RALINKAPP_WAPI)", "y")
-ifeq ("$(CONFIG_RT2860V2_AP_WAPI)", "y")
+ifeq ($(findstring y, $(WAPI_ON)), y)
 ALL_EXE += $(UPLOAD_WAPI_AS_CERT_CGI)
 ALL_EXE += $(UPLOAD_WAPI_USER_CERT_CGI)
 endif
@@ -114,7 +121,7 @@ ifeq ("$(CONFIG_RT2860V2_STA_WPA_SUPPLICANT)", "y")
 endif
 endif
 ifeq ("$(CONFIG_RALINKAPP_WAPI)", "y")
-ifeq ("$(CONFIG_RT2860V2_AP_WAPI)", "y")
+ifeq ($(findstring y, $(WAPI_ON)), y)
 	$(ROMFSINST) $(UPLOAD_WAPI_AS_CERT_CGI) $(ROOT_DIRECTORY)/cgi-bin/$(UPLOAD_WAPI_AS_CERT_CGI)
 	$(ROMFSINST) $(UPLOAD_WAPI_USER_CERT_CGI) $(ROOT_DIRECTORY)/cgi-bin/$(UPLOAD_WAPI_USER_CERT_CGI)
 endif

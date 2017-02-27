@@ -25,7 +25,7 @@
 ***********************************************************************/
 
 static char const RCSID[] =
-"$Id: plugin.c,v 1.1.1.1 2007-08-16 00:41:39 steven Exp $";
+"$Id: plugin.c,v 1.2 2010-12-02 09:02:50 steven Exp $";
 
 #define _GNU_SOURCE 1
 #include "pppoe.h"
@@ -52,6 +52,9 @@ static char const RCSID[] =
 #include <net/ethernet.h>
 #include <net/if_arp.h>
 #include <linux/ppp_defs.h>
+#ifndef aligned_u64
+/* should be defined in sys/types.h */                                                                                                                       #define aligned_u64 unsigned long long __attribute__((aligned(8)))
+#endif 
 #include <linux/if_ppp.h>
 #include <linux/if_pppox.h>
 
@@ -60,6 +63,7 @@ static char const RCSID[] =
 #endif
 
 #define _PATH_ETHOPT         _ROOT_PATH "/etc/ppp/options."
+
 
 char pppd_version[] = VERSION;
 

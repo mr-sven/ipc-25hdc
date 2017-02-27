@@ -16,6 +16,7 @@
   <message msgid="treeapp internet settings" msgstr="Internet Settings" />
   <message msgid="treeapp wan" msgstr="WAN" />
   <message msgid="treeapp lan" msgstr="LAN" />
+  <message msgid="treeapp ipv6" msgstr="IPv6" />
   <message msgid="treeapp dhcp clients" msgstr="DHCP clients" />
   <message msgid="treeapp vpn passthrough" msgstr="VPN Passthrough" />
   <message msgid="treeapp routing" msgstr="Advanced Routing" />

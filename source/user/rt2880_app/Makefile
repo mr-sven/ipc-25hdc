@@ -17,6 +17,7 @@ ra_dir_$(CONFIG_RALINKAPP_CLS)		+= clscmd
 ra_dir_$(CONFIG_RALINKAPP_SUPERDMZ)	+= super_dmz
 ra_dir_$(CONFIG_RALINKAPP_SWQOS)	+= sw_qos
 #ra_dir_$(CONFIG_RALINKAPP_WAPI)		+= wapi
+
 all romfs:
 	for i in $(ra_dir_y) ; do make -C $$i $@ || exit $?; done
 

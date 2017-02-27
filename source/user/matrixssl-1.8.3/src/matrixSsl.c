@@ -1,6 +1,6 @@
 /*
  *	matrixSsl.c
- *	Release $Name: SDK_3_5_0_0_BRANCH $
+ *	Release $Name: SDK_4_0_0_0_BRANCH $
  *
  *	Secure Sockets Layer session management
  */

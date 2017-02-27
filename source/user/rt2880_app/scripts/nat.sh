@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: nat.sh,v 1.4 2009-12-09 08:45:37 steven Exp $
+# $Id: nat.sh,v 1.5 2011-02-16 10:26:21 chhung Exp $
 #
 # usage: nat.sh
 #
@@ -13,8 +13,6 @@ lan_ip=`nvram_get 2860 lan_ipaddr`
 nat_en=`nvram_get 2860 natEnabled`
 tcp_timeout=`nvram_get 2860 TcpTimeout`
 udp_timeout=`nvram_get 2860 UdpTimeout`
-
-echo 1 > /proc/sys/net/ipv4/ip_forward
 
 if [ "$nat_en" = "1" ]; then
 	if [ "$CONFIG_NF_CONNTRACK_SUPPORT" = "1" ]; then

@@ -12,15 +12,19 @@ fi
 
 NETBIOS_NAME="$1"
 WORKGROUP="$2"
+LOGPATH="$3"
+
+echo "$LOGPATH"
 
 echo "[global]
+use sendfile = yes
 netbios name = $NETBIOS_NAME
 server string = Samba Server
 workgroup = $WORKGROUP
 security = user
 guest account = guest
 log file = /var/log.samba
-socket options = TCP_NODELAY SO_RCVBUF=16384 SO_SNDBUF=8192
+socket options = TCP_NODELAY SO_RCVBUF=48000 SO_SNDBUF=40000
 encrypt passwords = yes
 use spne go = no
 client use spnego = no
@@ -29,7 +33,7 @@ smb passwd file = /etc/smbpasswd
 host msdfs = no
 strict allocate = No
 os level = 20
-log level = 3
+log level = 0
 max log size = 100
 null passwords = yes
 mangling method = hash
@@ -48,3 +52,9 @@ elif [ "$opmode" = 3 ]; then
 else
 	echo "interfaces = lo" >> $SAMBA_FILE
 fi
+
+iptables -t raw -D PREROUTING -p tcp --dport 445  -j NOTRACK
+iptables -t raw -A PREROUTING -p tcp --dport 445  -j NOTRACK
+iptables -t raw -D OUTPUT -p tcp --sport 445  -j NOTRACK
+iptables -t raw -A OUTPUT -p tcp --sport 445  -j NOTRACK
+

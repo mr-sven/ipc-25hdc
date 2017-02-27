@@ -91,3 +91,4 @@ HT_BAWinSize=64
 HT_GI=1
 HT_STBC=1
 HT_MCS=33
+HT_DisallowTKIP=1

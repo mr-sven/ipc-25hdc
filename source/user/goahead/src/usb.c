@@ -4,7 +4,7 @@
  *
  *	Copyright (c) Ralink Technology Corporation All Rights Reserved.
  *
- *	$Id: usb.c,v 1.23 2010-07-23 09:12:59 chhung Exp $
+ *	$Id: usb.c,v 1.24 2011-12-19 14:02:39 chhung Exp $
  */
 
 #include	<stdlib.h>
@@ -61,9 +61,6 @@ static void webcamra(webs_t wp, char_t *path, char_t *query);
 #if defined CONFIG_USB && defined CONFIG_USER_P910ND
 static void printersrv(webs_t wp, char_t *path, char_t *query);
 #endif
-#if defined CONFIG_USB && CONFIG_RTDEV_USB 
-static void USBiNIC(webs_t wp, char_t *path, char_t *query);
-#endif
 #if defined CONFIG_USER_MTDAAPD 
 static void iTunesSrv(webs_t wp, char_t *path, char_t *query);
 #endif
@@ -118,9 +115,6 @@ void formDefineUSB(void) {
 #endif
 #if defined CONFIG_USB && defined CONFIG_USER_P910ND
 	websFormDefine(T("printersrv"), printersrv);
-#endif
-#if defined CONFIG_RTDEV_USB
-	websFormDefine(T("USBiNIC"), USBiNIC);
 #endif
 #if defined CONFIG_USER_MTDAAPD 
 	websFormDefine(T("iTunesSrv"), iTunesSrv);
@@ -956,29 +950,6 @@ static void printersrv(webs_t wp, char_t *path, char_t *query)
 	websHeader(wp);
 	websWrite(wp, T("<h2>Printer Server Settings</h2><br>\n"));
 	websWrite(wp, T("enabled: %s<br>\n"), enable);
-	websFooter(wp);
-	websDone(wp, 200);
-}
-#endif
-
-#if defined CONFIG_RTDEV_USB 
-static void USBiNIC(webs_t wp, char_t *path, char_t *query)
-{
-	char_t *enable;
-
-	// fetch from web input
-	enable = websGetVar(wp, T("inic_enable"), T(""));
-	// set to nvram
-	nvram_bufset(RTDEV_NVRAM, "InicUSBEnable", enable);
-	nvram_commit(RTDEV_NVRAM);
-
-	// setup device
-	initInternet();
-
-	// debug print
-	websHeader(wp);
-	websWrite(wp, T("<h2>USV iNIC Settings</h2><br>\n"));
-	websWrite(wp, T("inic_enable: %s<br>\n"), enable);
 	websFooter(wp);
 	websDone(wp, 200);
 }

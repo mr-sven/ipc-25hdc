@@ -4,7 +4,7 @@
  *
  *	Copyright (c) Ralink Technology Corporation All Rights Reserved.
  *
- *	$Id: utils.c,v 1.112 2010-07-21 04:55:27 chhung Exp $
+ *	$Id: utils.c,v 1.125 2012-02-03 03:37:08 chhung Exp $
  */
 #include	<time.h>
 #include	<signal.h>
@@ -549,7 +549,7 @@ void formDefineUtilities(void)
 }
 
 
-/*
+/* 
  * arguments: type - 0 = return the status of module insertion (default)
  *                   1 = write the status of module insertion
  *            modname - module name
@@ -1040,20 +1040,44 @@ static int getMiiInicBuilt(int eid, webs_t wp, int argc, char_t **argv)
  */
 static int getPlatform(int eid, webs_t wp, int argc, char_t **argv)
 {
+	char platform[8];
+#if defined CONFIG_RALINK_RT2883
+	strcpy(platform, "RT2883");
+#elif defined CONFIG_RALINK_RT3052
+	strcpy(platform, "RT3052");
+#elif defined CONFIG_RALINK_RT3883
+	strcpy(platform, "RT3883");
+#elif defined CONFIG_RALINK_RT3352
+	strcpy(platform, "RT3352");
+#elif defined CONFIG_RALINK_RT5350
+	strcpy(platform, "RT5350");
+#elif defined CONFIG_RALINK_RT6855
+	strcpy(platform, "RT6855");
+#elif defined CONFIG_RALINK_RT6352
+	strcpy(platform, "RT6352");
+#elif defined CONFIG_RALINK_RT71100
+	strcpy(platform, "RT71100");
+#else
+	strcpy(platform, "RT2880");
+#endif
+
 #ifdef CONFIG_RAETH_ROUTER
-	return websWrite(wp, T("RT2880 with IC+ MACPHY"));
+	return websWrite(wp, T("%s with IC+ MACPHY"), platform);
 #endif
 #ifdef CONFIG_ICPLUS_PHY
-    return websWrite(wp, T("RT2880 with IC+ PHY"));
+    return websWrite(wp, T("%s with IC+ PHY"), platform);
 #endif
 #ifdef CONFIG_RT_MARVELL
-	return websWrite(wp, T("RT2880 with MARVELL"));
+	return websWrite(wp, T("%s with MARVELL"), platform);
 #endif
 #ifdef CONFIG_MAC_TO_MAC_MODE
-	return websWrite(wp, T("RT2880 with Vitesse"));
+	return websWrite(wp, T("%s with Vitesse"), platform);
 #endif
 #ifdef CONFIG_RT_3052_ESW
-	return websWrite(wp, T("RT3052 embedded switch"));
+	return websWrite(wp, T("%s embedded switch"), platform);
+#endif
+#if defined (CONFIG_GE1_RGMII_AN) && defined (CONFIG_GE2_RGMII_AN)
+	return websWrite(wp, T("%s with Two Giga PHY"), platform);
 #endif
     
 	return 0;
@@ -1293,9 +1317,9 @@ static void setOpMode(webs_t wp, char_t *path, char_t *query)
 	char	*wan_ip, *lan_ip;
 #endif
 #if defined (CONFIG_RT2860V2_STA_DPB) || defined (CONFIG_RT2860V2_STA_ETH_CONVERT)
-	char_t	*econv = "";
+	char_t	*econv = "", *econv_mode, *econv_mac;
 #endif
-#ifdef CONFIG_RT2860V2_AP_APCLI
+#if defined (RT2860_APCLI_SUPPORT)
 	char_t	*apcli = "";
 #endif
 #if defined (CONFIG_RTDEV_MII)
@@ -1378,11 +1402,19 @@ static void setOpMode(webs_t wp, char_t *path, char_t *query)
 		const char *old;
 
 		econv = websGetVar(wp, T("ethConv"), T("0"));
+		econv_mode = websGetVar(wp, T("oEthConvMode"), T("0"));
+		econv_mac = websGetVar(wp, T("oEthConvMac"), T(""));
 		old = nvram_bufget(RT2860_NVRAM, "ethConvert");
 		if (strncmp(old, econv, 2)) {
 			nvram_bufset(RT2860_NVRAM, "ethConvert", econv);
 			need_commit = 1;
 		}
+		if (!strcmp(econv_mode, "0"))
+			nvram_bufset(RT2860_NVRAM, "ethConvertMAC", "00:00:00:00:00:00");
+		else if (!strcmp(econv_mode, "1"))
+			nvram_bufset(RT2860_NVRAM, "ethConvertMAC", "FF:FF:FF:FF:FF:FF");
+		else
+			nvram_bufset(RT2860_NVRAM, "ethConvertMAC", econv_mac);
 		if (!strncmp(econv, "1", 2)) {
 			//disable dhcp server in this mode
 			old = nvram_bufget(RT2860_NVRAM, "dhcpEnabled");
@@ -1393,7 +1425,7 @@ static void setOpMode(webs_t wp, char_t *path, char_t *query)
 		}
 	}
 #endif
-#ifdef CONFIG_RT2860V2_AP_APCLI
+#if defined (RT2860_APCLI_SUPPORT)
 	if (!strncmp(mode, "0", 2)) {
 		apcli = websGetVar(wp, T("apcliEnbl"), T("0"));
 		nvram_bufset(RT2860_NVRAM, "apClient", apcli);
@@ -1492,3 +1524,69 @@ final:
 		initInternet();
 	}
 }
+
+void ConverterStringToDisplay(char *str)
+{
+    int  len, i;
+    char buffer[193];
+    char *pOut;
+
+    memset(buffer,0,193);
+    len = strlen(str);
+    pOut = &buffer[0];
+
+    for (i = 0; i < len; i++) {
+		switch (str[i]) {
+			case 38:
+				strcpy (pOut, "&amp;");
+				pOut += 5;
+				break;
+
+			case 60: 
+				strcpy (pOut, "&lt;");
+				pOut += 4;
+				break;
+
+			case 62: 
+				strcpy (pOut, "&gt;");
+				pOut += 4;
+				break;
+
+			case 34:
+				strcpy (pOut, "&#34;");
+				pOut += 5;
+				break;
+
+			case 39:
+				strcpy (pOut, "&#39;");
+				pOut += 5;
+				break;
+			case 32:
+				strcpy (pOut, "&nbsp;");
+				pOut += 6;
+				break;
+
+			default:
+				if ((str[i]>=0) && (str[i]<=31)) {
+					//Device Control Characters
+					sprintf(pOut, "&#%02d;", str[i]);
+					pOut += 5;
+				} else if ((str[i]==39) || (str[i]==47) || (str[i]==59) || (str[i]==92)) {
+					// ' / ; (backslash)
+					sprintf(pOut, "&#%02d;", str[i]);
+					pOut += 5;
+				} else if (str[i]>=127) {
+					//Device Control Characters
+					sprintf(pOut, "&#%03d;", str[i]);
+					pOut += 6;
+				} else {
+					*pOut = str[i];
+					pOut++;
+				}
+				break;
+		}
+    }
+    *pOut = '\0';
+    strcpy(str, buffer);
+}
+

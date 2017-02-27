@@ -1,6 +1,6 @@
 /*
  *	debug.c
- *	Release $Name: SDK_3_5_0_0_BRANCH $
+ *	Release $Name: SDK_4_0_0_0_BRANCH $
  */
 /*
  *	Copyright (c) PeerSec Networks, 2002-2007. All Rights Reserved.

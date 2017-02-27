@@ -4,9 +4,32 @@
 struct qos_rule_s;
 struct af_group_s;
 
+/* Flush anything about QoS */
 void QoSFlush(void);
+
+/* Init Ralin SW QoS, WAN interface is needed, ex: "eth2.2", or "ppp0"  */
 void QoSCreate(char *wanif);
 
+/*
+ * Run DRR/SPQ/SPQDRR QoS
+ *
+ * interface:	To apply the QoS model on egress packets on WAN, please fill the string "imq1" ;
+ *		To apply the QoS model on ingress packets on WAN, please fill the string "imq0" .
+ *
+ * rules:	The QoS rules. Please see the comment of struct qos_rules_s below.
+ *
+ * rule_count:	The QoS rules count.
+ *
+ * chain:	To apply the QoS rules on egress packets on WAN, please assign QOS_POSTROUTING_RULE_CHAIN;
+ *		To apply the QoS rules on ingress packets on WAN, please assign QOS_PREROUTING_RULE_CHAIN.
+ *
+ * bandwidth:	The maximum bandwidth of WAN interface in kbit/s. (Its direction depends on the 
+ *              'interface' argument assigned previously.)
+ *
+ * af_group:	Four groups attributes, including the min/max bandwidth of each group in kbit/s.
+ *		Use QOS_QUEUE_MAX/QOS_QUEUE_MIN macro to setup this structure with floating value.
+ *
+ */
 void DRRQoSRun(char *interface, struct qos_rule_s *rules, int rule_count, const char *chain, int bandwidth, struct af_group_s *af_group);
 void SPQQoSRun(char *interface, struct qos_rule_s *rules, int rule_count, const char *chain, int bandwidth);
 void SPQDRRQoSRun(char *interface, struct qos_rule_s *rules, int rule_count, const char *chain, int bandwidth, struct af_group_s *af_group);
@@ -14,12 +37,16 @@ void SPQDRRQoSRun(char *interface, struct qos_rule_s *rules, int rule_count, con
 struct qos_rule_s
 {
 	int		af_index;			/*	which queue this rule belong to, QOS_QUEUE[4-1] */
+                                                        /*      Queue1 is the highest priority. */
+                                                        /*      Queue2 is the high priority. */                                                        
+                                                        /*      Queue3 is default priority. */
+                                                        /*      Queue4 is the lowest priority. */
 
 	int		dp_index;			/*	reserved									*/
 
-	char	mac_address[18];	/*	src mac address, ex: 11:22:33:44:55:66  	*/
+	char	mac_address[18];	/*	src mac address, ex: "11:22:33:44:55:66"  	*/
 
-	char	sip[32];			/*	source ip, 		ex: 111.222.111.222 		*/
+	char	sip[32];			/*	source ip, 		ex: "111.222.111.222" 		*/
 
 	char	dip[32];			/*	dest ip 									*/
 
@@ -44,6 +71,13 @@ struct qos_rule_s
 									or "N/A"(not change).						*/
 };
 
+
+#define QOS_QUEUE1		5		/* highest queue */
+#define QOS_QUEUE2		2		/* middle  queue */
+#define QOS_QUEUE3		6		/* default queue */
+#define QOS_QUEUE4		1		/* lowest  queue */
+
+
 struct port_based_rule_s
 {
 	unsigned int port;
@@ -63,11 +97,6 @@ struct af_group_s
 extern int debug_buildrule;
 
 #define FIFO_QUEUE_LEN	100
-
-#define QOS_QUEUE1		5		/* highest queue */
-#define QOS_QUEUE2		2		/* middle  queue */
-#define QOS_QUEUE3		6		/* default queue */
-#define QOS_QUEUE4		1		/* lowest  queue */
 
 #define DEFAULT_GROUP			QOS_QUEUE3
 

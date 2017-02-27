@@ -9,7 +9,7 @@ LIBS= -L$(LIB_PATH) -lpthread -lupnp -lixml -lthreadutil
 FILES= main.o gatedevice.o pmlist.o util.o config.o
 
 CFLAGS += -Wall -g -O2
-CFLAGS += -I$(ROOTDIR)/linux-2.6.21.x/drivers/net/raeth 
+CFLAGS += -I$(ROOTDIR)/$(LINUXDIR)/drivers/net/raeth 
 
 ifdef HAVE_LIBIPTC
 ifdef LIBIPTC_PREFIX

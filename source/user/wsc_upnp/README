@@ -31,6 +31,20 @@ Build WPS upnp daemon
 
 Release Notes
 --------
+0.2.2:
+	1. Fix libupnp null pointer issue
+	2. Add NewWLANEventMAC support
+
+0.2.1:
+	1. Fix the incomplete of mac address in ProbeRequest message.
+
+0.2.0:
+	1. The "MULTIPLE_CARD_SUPPORT" was obsoleted and now this feature is natively build-in.
+	2. This verion should work with linux wireless driver version >= 2.2.0.0
+
+0 .1.2:
+	1. Add extra include file to fix compile error of wireless.h after linux kernel version 2.6.19(WIRELESS_EXT >= 21)
+
 0.1.1:
 	1. Add execution cmd parameter "-i [infName]" to indicate the wscd run WPS with the specific wireless interface.
 	2. Support multiple ralink wireless card by add compile flag -DMULTIPLE_CARD_SUPPORT in Makefile.

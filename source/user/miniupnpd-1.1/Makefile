@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.1 2008-09-15 12:28:52 winfred Exp $
+# $Id: Makefile,v 1.2 2010-11-18 06:54:37 steven Exp $
 # MiniUPnP project
 # http://miniupnp.free.fr/
 # Author : Thomas Bernard
@@ -12,8 +12,6 @@
 #
 #CFLAGS = -Wall -O -D_GNU_SOURCE -g -DDEBUG
 CFLAGS = -Wall -Os -D_GNU_SOURCE
-IPTB = ../iptables
-CFLAGS += -I$(IPTB)/include
 #CC = gcc
 RM = rm -f
 INSTALL = install
@@ -34,7 +32,16 @@ NETFILTEROBJS = netfilter/iptcrdr.o
 ALLOBJS = $(BASEOBJS) $(LNXOBJS) $(NETFILTEROBJS)
 
 # LIBS = -liptc
-LIBS = $(IPTB)/libiptc/libiptc.a
+#
+ifeq ($(CONFIG_LINUXDIR), linux-2.6.21.x)
+CFLAGS += -I../iptables/include
+LIBS = ../iptables/libiptc/libiptc.a
+endif
+
+ifeq ($(CONFIG_LINUXDIR), linux-2.6.36.x)
+CFLAGS += -I../iptables-1.4.10/include
+LIBS = ../iptables-1.4.10/libiptc/.libs/libip4tc.a
+endif
 
 TESTUPNPDESCGENOBJS = testupnpdescgen.o upnpdescgen.o
 

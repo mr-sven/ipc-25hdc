@@ -3,9 +3,9 @@ CONF_DIR=/etc/l2tp
 CONF_FILE=/etc/l2tp/l2tp.conf
 L2TP_FILE=/etc/options.l2tp
 
-if [ ! -n "$3" ]; then
+if [ ! -n "$5" ]; then
   echo "insufficient arguments!"
-  echo "Usage: $0 <user> <password> <serv_ip>"
+  echo "Usage: $0 <user> <password> <serv_ip> <opmode> <optime>"
   exit 0
 fi
 
@@ -47,8 +47,9 @@ elif [ $L2TP_OPMODE == "OnDemand" ]; then
 	echo "demand" >> $L2TP_FILE
 	echo "idle $L2TP_OPTIME" >> $L2TP_FILE
 fi
-echo "defaultroute 
-ipcp-accept-remote ipcp-accept-local noipdefault
+
+#echo "defaultroute" >> $L2TP_FILE
+echo "ipcp-accept-remote ipcp-accept-local noipdefault
 ktune
 default-asyncmap nopcomp noaccomp
 novj nobsdcomp nodeflate

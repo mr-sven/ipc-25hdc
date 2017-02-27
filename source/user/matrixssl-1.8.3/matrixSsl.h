@@ -1,6 +1,6 @@
 /*
  *	matrixSsl.h
- *	Release $Name: SDK_3_5_0_0_BRANCH $
+ *	Release $Name: SDK_4_0_0_0_BRANCH $
  *	
  *	Public header file for MatrixSSL
  *	Implementations interacting with the matrixssl library should

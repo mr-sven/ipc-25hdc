@@ -57,7 +57,7 @@ SECTIONS
      * warning:
      *
      *  CC      arch/mips/kernel/init_task.o
-     * arch/mips/kernel/init_task.c:30: warning: alignment of ?�init_thread_union?
+     * arch/mips/kernel/init_task.c:30: warning: alignment of ‘init_thread_union’
      * is greater than maximum object file alignment.  Using 32768
      */
     . = ALIGN(_PAGE_SIZE);

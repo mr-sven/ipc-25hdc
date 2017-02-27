@@ -4,7 +4,7 @@
  *	Authors:
  *	Pedro Roque		<roque@di.fc.ul.pt>
  *
- *	$Id: ipv6.h,v 1.1.1.1 2007-05-25 06:50:11 bruce Exp $
+ *	$Id: ipv6.h,v 1.2 2011-02-23 12:01:31 yy Exp $
  *
  *	This program is free software; you can redistribute it and/or
  *      modify it under the terms of the GNU General Public License
@@ -386,6 +386,11 @@ static inline int ipv6_addr_any(const struct in6_addr *a)
 {
 	return ((a->s6_addr32[0] | a->s6_addr32[1] | 
 		 a->s6_addr32[2] | a->s6_addr32[3] ) == 0); 
+}
+
+static inline int ipv6_addr_loopback(const struct in6_addr *a)
+{
+	return ((a->s6_addr32[0] | a->s6_addr32[1] | a->s6_addr32[2] | (a->s6_addr32[3] ^ htonl(1))) == 0);
 }
 
 /*

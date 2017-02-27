@@ -1,4 +1,4 @@
-/* $Id: iptcrdr.c,v 1.1 2008-09-15 12:28:53 winfred Exp $ */
+/* $Id: iptcrdr.c,v 1.2 2010-12-02 03:41:36 roger Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
  * (c) 2006-2008 Thomas Bernard
@@ -28,6 +28,8 @@
 #endif
 
 #include "iptcrdr.h"
+
+typedef struct iptc_handle *iptc_handle_t;
 
 /* dummy init and shutdown functions */
 int init_redirect(void)

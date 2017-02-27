@@ -1,7 +1,7 @@
 /* ==========================================================================
  * $File: //dwh/usb_iip/dev/software/otg_ipmate/linux/drivers/dwc_otg_driver.c $
- * $Revision: 1.7 $
- * $Date: 2008-11-21 05:39:15 $
+ * $Revision: 1.8 $
+ * $Date: 2010-12-01 03:26:14 $
  * $Change: 791271 $
  *
  * Synopsys HS OTG Linux Software Driver and documentation (hereinafter,
@@ -770,8 +770,13 @@ static int dwc_otg_driver_probe(struct lm_device *lmdev)
 	 */
 	DWC_DEBUGPL(DBG_CIL, "registering (common) handler for irq%d\n",
 		    lmdev->irq);
+#if defined(IRQF_SHARED)
+	retval = request_irq(lmdev->irq, dwc_otg_common_irq,
+			     IRQF_SHARED, "dwc_otg", dwc_otg_device);
+#else
 	retval = request_irq(lmdev->irq, dwc_otg_common_irq,
 			     SA_SHIRQ, "dwc_otg", dwc_otg_device);
+#endif
 	if (retval) {
 		DWC_ERROR("request of irq%d failed\n", lmdev->irq);
 		retval = -EBUSY;

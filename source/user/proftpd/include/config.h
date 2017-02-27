@@ -39,7 +39,7 @@
 /* #undef socklen_t */
 
 /* Define to `mode_t' if <sys/types.h> doesn't define. */
-#define umode_t mode_t
+//#define umode_t mode_t
 
 /* Define if you have AIX send_file() semantics. */
 /* #undef HAVE_AIX_SENDFILE */
@@ -105,7 +105,7 @@
 /* #undef HAVE_SETPASSENT */
 
 /* Define if your system has the setspent function.  */
-#define HAVE_SETSPENT 1
+//#define HAVE_SETSPENT 1
 
 /* Define if your DIR structure has member d_fd */
 /* #undef HAVE_STRUCT_DIR_D_FD */
@@ -811,7 +811,7 @@
 #define PR_USE_SENDFILE 1
 
 /* Define if using /etc/shadow files.  */
-#define PR_USE_SHADOW 1
+//#define PR_USE_SHADOW 1
 
 /* Define if using Tru64's C2 SIA authentication.  */
 /* #undef PR_USE_SIA */

@@ -134,7 +134,9 @@ SampleUtil_GetFirstDocumentItem(
     if( nodeList ) {
         if( ( tmpNode = ixmlNodeList_item( nodeList, 0 ) ) ) {
             textNode = ixmlNode_getFirstChild( tmpNode );
-
+//+++Add by shiang for make sure textNode->nodeValue is not NULL
+		if (ixmlNode_getNodeValue( textNode ) != NULL)
+//---Add by shiang for make sure textNode->nodeValue is not NULL
             ret = strdup( ixmlNode_getNodeValue( textNode ) );
         }
     }

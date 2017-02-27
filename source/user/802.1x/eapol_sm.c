@@ -1,19 +1,3 @@
-/*
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation. See README and COPYING for
- * more details.
-
-	Module Name:
-	eapol_sm.c
-
-	Revision History:
-	Who         When          What
-	--------    ----------    ----------------------------------------------
-	Jan, Lee    Dec --2003    modified
-
-*/
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -22,7 +6,7 @@
 #include <string.h>
 #include <sys/socket.h>
 
-#include "rt2860apd.h"
+#include "rtdot1x.h"
 #include "ieee802_1x.h"
 #include "eapol_sm.h"
 #include "eloop.h"

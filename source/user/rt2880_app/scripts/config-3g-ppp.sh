@@ -75,6 +75,6 @@ echo "usepeerdns" >> $PPP_3G_FILE
 #fi
 echo "nodeflate" >> $PPP_3G_FILE 
 echo "connect \"/bin/comgt -d $MODEM -s /etc_ro/ppp/3g/$CONN\"" >> $PPP_3G_FILE 
-echo "disconnect \"/bin/comgt -d $MODEM -s /etc_ro/ppp/3g/$DISCONN\"" >> $PPP_3G_FILE 
+#echo "disconnect \"/bin/comgt -d $MODEM -s /etc_ro/ppp/3g/$DISCONN\"" >> $PPP_3G_FILE 
 
 

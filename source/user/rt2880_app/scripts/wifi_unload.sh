@@ -19,26 +19,49 @@
 kill_apps="udhcpd udhcpc syslogd klogd zebra ripd wscd rt2860apd rt61apd inadyn \
 iwevent stupid-ftpd smbd ated ntpclient lld2d igmpproxy dnsmasq telnetd"
 
-bssidnum=`nvram_get 2860 BssidNum`
 is_ra0_in_br0=`brctl show | sed -n '/ra0/p'`
 is_eth21_in_br0=`brctl show | sed -n '/eth2\.1/p'`
 is_usb0_in_br0=`brctl show | sed -n '/usb0/p'`
 br0_mirror=eth2
 
-unload_ra0()
+ifRaxDown()
 {
-	num=$bssidnum
+	ifconfig wds0 down 1>/dev/null 2>&1
+	ifconfig wds1 down 1>/dev/null 2>&1
+	ifconfig wds2 down 1>/dev/null 2>&1
+	ifconfig wds3 down 1>/dev/null 2>&1
+
+	ifconfig apcli0 down 1>/dev/null 2>&1
+
+	ifconfig mesh0 down 1>/dev/null 2>&1
+	num=`nvram_get 2860 BssidNum`
 	while [ "$num" -gt 0 ]
 	do
 		num=`expr $num - 1`
 		ifconfig ra$num down
 	done
+	echo -e "\n##### disable 1st wireless interface #####"
+}
+
+ifRaixDown()
+{
+	ifconfig wdsi0 down 1>/dev/null 2>&1
+	ifconfig wdsi1 down 1>/dev/null 2>&1
+	ifconfig wdsi2 down 1>/dev/null 2>&1
+	ifconfig wdsi3 down 1>/dev/null 2>&1
 	num=`nvram_get rtdev BssidNum`
 	while [ "$num" -gt 0 ]
 	do
 		num=`expr $num - 1`
 		ifconfig rai$num down
 	done
+	echo -e "\n##### disable 2nd wireless interface #####"
+}
+
+unload_ra0()
+{
+	ifRaxDown
+	ifRaixDown
 	if [ "$CONFIG_RAETH_SPECIAL_TAG" = "y" ]; then
 		if [ "$CONFIG_WAN_AT_P0" = "y" ]; then
 			ifconfig eth2.1 down

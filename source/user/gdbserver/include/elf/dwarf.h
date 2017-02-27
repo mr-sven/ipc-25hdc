@@ -1,32 +1,32 @@
 /* Declarations and definitions of codes relating to the DWARF symbolic
    debugging information format.
 
-   Written by Ron Guilmette (rfg@ncd.com)
+   Written by Ron Guilmette (rfg@netcom.com)
 
-Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright 1992, 1993, 1995, 1999, 2005, 2010 Free Software Foundation, Inc.
 
-This file is part of GNU CC.
+   This file is part of both GCC and the BFD library.
 
-GNU CC is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
-GNU CC is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not, write to the Free
+   Software Foundation, 51 Franklin Street - Fifth Floor, Boston, MA
+   02110-1301, USA.  */
 
 /* This file is derived from the DWARF specification (a public document)
    Revision 1.0.1 (April 8, 1992) developed by the UNIX International
    Programming Languages Special Interest Group (UI/PLSIG) and distributed
    by UNIX International.  Copies of this specification are available from
-   UNIX International, 20 Waterview Boulevard, Parsippany, NJ, 07054.
-*/
+   UNIX International, 20 Waterview Boulevard, Parsippany, NJ, 07054.  */
 
 #ifndef _ELF_DWARF_H
 #define _ELF_DWARF_H
@@ -170,8 +170,8 @@ enum dwarf_attribute {
     AT_body_end			= (0x8050|FORM_ADDR)
 };
 
-#define AT_lo_user	0x8000  /* implementation-defined range start */
-#define AT_hi_user	0xffff  /* implementation-defined range end */
+#define AT_lo_user	0x2000	/* implementation-defined range start */
+#define AT_hi_user	0x3ff0	/* implementation-defined range end */
 
 /* Location atom names and codes.  */
 
@@ -182,7 +182,11 @@ enum dwarf_location_atom {
     OP_CONST	= 0x04,
     OP_DEREF2	= 0x05,
     OP_DEREF4	= 0x06,
-    OP_ADD	= 0x07
+    OP_ADD	= 0x07,
+
+    /* GNU extensions.  */
+
+    OP_MULT	= 0x80
 };
 
 #define OP_LO_USER	0x80  /* implementation-defined range start */
@@ -217,7 +221,7 @@ enum dwarf_fundamental_type {
   
     /* GNU extensions
        The low order byte must indicate the size (in bytes) for the type.
-       All of these types will probably break "classic" svr4 SDB */
+       All of these types will probably break "classic" svr4 SDB.  */
 
     FT_long_long	= 0x8008,
     FT_signed_long_long	= 0x8108,
@@ -235,6 +239,9 @@ enum dwarf_fundamental_type {
     FT_int64		= 0x9908,
     FT_signed_int64	= 0x9a08,
     FT_unsigned_int64	= 0x9b08,
+    FT_int128		= 0x9c10,
+    FT_signed_int128	= 0x9d10,
+    FT_unsigned_int128	= 0x9e10,
 
     FT_real32		= 0xa004,
     FT_real64		= 0xa108,
@@ -280,10 +287,10 @@ enum dwarf_subscr_data_formats {
 
 /* Derived from above for ease of use.  */
 
-#define FMT_CODE(_FUNDAMENTAL_TYPE_P, _UB_CONST_P, _LB_CONST_P) \
+#define FMT_CODE(_FUNDAMENTAL_TYPE_P, _LB_CONST_P, _UB_CONST_P) \
  (((_FUNDAMENTAL_TYPE_P) ? 0 : 4)	\
-  | ((_UB_CONST_P) ? 0 : 2)		\
-  | ((_LB_CONST_P) ? 0 : 1))
+  | ((_LB_CONST_P) ? 0 : 2)		\
+  | ((_UB_CONST_P) ? 0 : 1))
 
 /* Source language names and codes.  */
 
@@ -298,10 +305,7 @@ enum dwarf_source_language {
     LANG_FORTRAN90	= 0x00000008,
     LANG_PASCAL83	= 0x00000009,
     LANG_MODULA2	= 0x0000000a,
-
-    /* GNU extensions */
-
-    LANG_CHILL		= 0x00009af3	/* random value for GNU Chill */
+    LANG_JAVA		= 0x0000000b
 };
 
 #define LANG_lo_user	0x00008000  /* implementation-defined range start */

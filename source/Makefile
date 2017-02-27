@@ -38,7 +38,7 @@ IMAGEDIR = $(ROOTDIR)/images
 ROMFSDIR = $(ROOTDIR)/romfs
 ROMFSINST= romfs-inst.sh
 SCRIPTSDIR = $(ROOTDIR)/config/scripts
-TFTPDIR    = $(ROOTDIR)/tftpboot
+TFTPDIR    = /tftpboot
 BUILD_START_STRING ?= $(shell date "+%a, %d %b %Y %T %z")
 
 #
@@ -52,19 +52,10 @@ BUILD_START_STRING ?= $(shell date "+%a, %d %b %Y %T %z")
 #
 #-include $(LINUXDIR)/.config
 
-#ifneq ($(CONFIG_RT2860V2_AP),)
-# ifneq ($(CONFIG_RT2860V2_STA),)
-#  HOST_NCPU = 1   # AP & STA driver
-# else
-#  HOST_NCPU = $(shell if [ -f /proc/cpuinfo ]; then n=`grep -c processor /proc/cpuinfo`; if [ $$n -gt 1 ];then echo 2; else echo $$n; fi; else echo 1; fi)  
-# endif
-#else
-#  HOST_NCPU = $(shell if [ -f /proc/cpuinfo ]; then n=`grep -c processor /proc/cpuinfo`; if [ $$n -gt 1 ];then echo 2; else echo $$n; fi; else echo 1; fi)  
-#endif
 #--
 
 #uncomment this line if you want to use single cpu to compiile your code.
-HOST_NCPU =1
+HOST_NCPU = 1
 
 LINUX_CONFIG  = $(ROOTDIR)/$(LINUXDIR)/.config
 CONFIG_CONFIG = $(ROOTDIR)/config/.config
@@ -309,7 +300,6 @@ romfs.post:
 image:
 	[ -d $(IMAGEDIR) ] || mkdir $(IMAGEDIR)
 	$(MAKEARCH) -C vendors image
-	[ -d $(TFTPDIR) ] || mkdir $(TFTPDIR)
 	cp $(IMAGEDIR)/$(USER)_uImage $(TFTPDIR)
 
 .PHONY: release
@@ -366,10 +356,21 @@ dep:
 		echo "ERROR: you need to do a 'make config' first" ; \
 		exit 1 ; \
 	fi
+	
 	@if [ $(LINUXDIR) = linux-2.6.21.x ] ; then \
 	$(MAKEARCH_KERNEL) -C $(LINUXDIR) prepare ; \
 	fi
-
+	
+	@if [ $(LINUXDIR) = linux-2.6.36MT.x ] ; then \
+		$(MAKEARCH_KERNEL) -C $(LINUXDIR) prepare ; \
+		rm -fr $(LINUXDIR)/include/asm; \
+		rm -fr $(LINUXDIR)/include/linux/autoconf.h; \
+		rm -fr $(LINUXDIR)/arch/mips/include/asm/rt2880; \
+		ln -sf ../arch/mips/include/asm $(LINUXDIR)/include/asm; \
+		ln -sf ../../include/generated/autoconf.h $(LINUXDIR)/include/linux/autoconf.h; \
+		ln -sf ./mach-ralink $(LINUXDIR)/arch/mips/include/asm/rt2880; \
+	fi
+	
 	$(MAKEARCH_KERNEL) -C $(LINUXDIR) dep
 
 # This one removes all executables from the tree and forces their relinking

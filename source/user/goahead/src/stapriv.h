@@ -4,7 +4,7 @@
  *
  * Copyright (c) Ralink Technology Corporation All Rights Reserved.
  *
- * $Id: stapriv.h,v 1.18 2010-07-16 06:25:23 chhung Exp $
+ * $Id: stapriv.h,v 1.19.4.1 2012-03-19 08:06:08 chhung Exp $
  */
 
 #include "linux/autoconf.h"
@@ -139,6 +139,10 @@ typedef struct _NDIS_802_11_STATISTICS
 	LARGE_INTEGER   ReceivedFragmentCount;
 	LARGE_INTEGER   MulticastReceivedFrameCount;
 	LARGE_INTEGER   FCSErrorCount;
+#if 1
+	LARGE_INTEGER	TransmittedFrameCount;
+	LARGE_INTEGER	WEPUndecryptableCount;
+#endif
 	LARGE_INTEGER   TKIPLocalMICFailures;
 	LARGE_INTEGER   TKIPRemoteMICErrors;
 	LARGE_INTEGER   TKIPICVErrors;

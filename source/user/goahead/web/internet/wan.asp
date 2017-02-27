@@ -685,8 +685,10 @@ function initValue()
 			document.wanCfg.Dev3G.options.selectedIndex = 4;
 		else if (dev_3g == "DATANG-M5731")
 			document.wanCfg.Dev3G.options.selectedIndex = 5;
-		else
+		else if (dev_3g == "MobilePeak-Titan")
 			document.wanCfg.Dev3G.options.selectedIndex = 6;
+		else
+			document.wanCfg.Dev3G.options.selectedIndex = 1;
 
 		//w3GOPModeSwitch();
 
@@ -1015,6 +1017,7 @@ function initValue()
       <option value="BandLuxe-C270" id="C270">BandLuxe C270</option>
       <option value="OPTION-ICON225" id="ICON225">OPTION ICON 225</option>
       <option value="DATANG-M5731" id="M5731">DATANG M5731</option>
+      <option value="MobilePeak-Titan" id="Titan">MobilePeak-Titan</option>
     </select>
   </td>
 </tr>

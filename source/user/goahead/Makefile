@@ -7,6 +7,14 @@ DIRS = src cgi-src
 endif
 
 ROOT_DIRECTORY = /etc_ro/web
+ifeq ("$(CONFIG_RT_FIRST_CARD)", "2860")
+FIRST_CARD=$(CONFIG_RT_FIRST_CARD)V2
+else
+FIRST_CARD=$(CONFIG_RT_FIRST_CARD)
+endif
+FIRST_WDS=CONFIG_RT$(FIRST_CARD)_AP_WDS
+SECOND_WDS=CONFIG_RT$(CONFIG_RT_SECOND_CARD)_AP_WDS
+FIRST_APCLI=CONFIG_RT$(FIRST_CARD)_AP_APCLI
 
 all:
 	for i in $(DIRS) ; do make -C $$i $@ || exit $?; done
@@ -23,11 +31,10 @@ ifeq ("$(CONFIG_RT2860V2_STA_MESH)", "")
 	rm $(ROMFSDIR)$(ROOT_DIRECTORY)/wireless/mesh.asp
 endif
 endif
-ifeq ("$(CONFIG_RT2860V2_AP_WDS)", "")
-	rm $(ROMFSDIR)$(ROOT_DIRECTORY)/wireless/wds.asp
-endif
-ifeq ("$(CONFIG_RT2860V2_AP_APCLI)", "")
+ifeq ("$($(FIRST_APCLI))", "")
+ifeq ($(findstring y, $(CONFIG_RTPCI_AP_APCLI))$(CONFIG_RTUSB_AP_APCLI)),)
 	rm -rf $(ROMFSDIR)$(ROOT_DIRECTORY)/wireless/apcli.asp
+endif
 endif
 ifeq ("$(CONFIG_RT2860V2_RT3XXX_ANTENNA_DIVERSITY)", "")
 	rm -rf $(ROMFSDIR)$(ROOT_DIRECTORY)/wireless/ant_diversity.asp
@@ -73,16 +80,17 @@ ifeq ("$(CONFIG_USER_WIZARD)", "")
 	rm -rf $(ROMFSDIR)$(ROOT_DIRECTORY)/adm/wizard.asp
 endif
 
-ifneq ("$(CONFIG_RTDEV_MII)", "") 
+ifeq ("$($(FIRST_WDS))", "")
+ifeq ($(findstring y, $(CONFIG_RTPCI_AP_WDS)$(CONFIG_RTUSB_AP_WDS)),)
+	rm $(ROMFSDIR)$(ROOT_DIRECTORY)/wireless/wds.asp
+endif
+endif
+
+ifneq ("$(CONFIG_RTDEV)", "") 
 	$(ROMFSINST) inic $(ROOT_DIRECTORY)
-else
-ifneq ("$(CONFIG_RTDEV_USB)", "") 
-	$(ROMFSINST) inic $(ROOT_DIRECTORY)
-else
-ifneq ("$(CONFIG_RTDEV_PCI)", "") 
-	$(ROMFSINST) inic $(ROOT_DIRECTORY)
-else
-	rm -rf $(ROMFSDIR)$(ROOT_DIRECTORY)/wps/wps_inic.asp
+ifeq ("$($(SECOND_WDS))", "")
+ifeq ($(findstring y, $(CONFIG_RTPCI_AP_WDS)$(CONFIG_RTUSB_AP_WDS)),)
+	rm $(ROMFSDIR)$(ROOT_DIRECTORY)/inic/wds.asp
 endif
 endif
 endif
@@ -93,7 +101,6 @@ ifeq ("$(CONFIG_UNIQUE_WPS)", "y")
 else
 	rm -rf $(ROMFSDIR)$(ROOT_DIRECTORY)/wps/wps_unique.asp
 endif
-
 ifneq ("$(CONFIG_RT2561_AP)", "")
 	$(ROMFSINST) legacy $(ROOT_DIRECTORY)
 endif

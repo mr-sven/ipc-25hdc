@@ -5,7 +5,7 @@
  *	Authors:
  *	Pedro Roque		<roque@di.fc.ul.pt>
  *
- *	$Id: ip6_output.c,v 1.1.1.1 2007-05-25 06:49:59 bruce Exp $
+ *	$Id: ip6_output.c,v 1.3 2011-03-30 02:53:08 yy Exp $
  *
  *	Based on linux/net/ipv4/ip_output.c
  *
@@ -139,6 +139,13 @@ static int ip6_output2(struct sk_buff *skb)
 
 int ip6_output(struct sk_buff *skb)
 {
+	struct inet6_dev *idev = ip6_dst_idev(skb->dst);
+	if (unlikely(idev->cnf.disable_ipv6)) {
+		IP6_INC_STATS(idev, IPSTATS_MIB_OUTDISCARDS);
+		kfree_skb(skb);
+		return 0;
+	}
+
 	if ((skb->len > dst_mtu(skb->dst) && !skb_is_gso(skb)) ||
 				dst_allfrag(skb->dst))
 		return ip6_fragment(skb, ip6_output2);
@@ -449,10 +456,16 @@ int ip6_forward(struct sk_buff *skb)
 		 */
 		if (xrlim_allow(dst, 1*HZ))
 			ndisc_send_redirect(skb, n, target);
-	} else if (ipv6_addr_type(&hdr->saddr)&(IPV6_ADDR_MULTICAST|IPV6_ADDR_LOOPBACK
-						|IPV6_ADDR_LINKLOCAL)) {
+	} else {
+		int addrtype = ipv6_addr_type(&hdr->saddr);
+
 		/* This check is security critical. */
-		goto error;
+		if (addrtype == IPV6_ADDR_ANY || addrtype & (IPV6_ADDR_MULTICAST | IPV6_ADDR_LOOPBACK))
+			goto error;
+		if (addrtype & IPV6_ADDR_LINKLOCAL) {
+			icmpv6_send(skb, ICMPV6_DEST_UNREACH, ICMPV6_NOT_NEIGHBOUR, 0, skb->dev);
+			goto error;
+		}
 	}
 
 	if (skb->len > dst_mtu(dst)) {

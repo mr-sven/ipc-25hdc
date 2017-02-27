@@ -3,7 +3,7 @@
  *
  *	Copyright (c) Ralink Technology Corporation All Rights Reserved.
  *
- *	$Id: internet.h,v 1.8 2008-03-17 07:47:16 yy Exp $
+ *	$Id: internet.h,v 1.8.22.1 2012-02-08 05:30:41 chhung Exp $
  */
 
 void formDefineInternet(void);
@@ -17,5 +17,6 @@ char* getWanIfNamePPP(void);
 char* getLanIfName(void);
 char *getLanWanNamebyIf(char *ifname);
 int initInternet(void);
+void ipv6Config(int mode);
 
 

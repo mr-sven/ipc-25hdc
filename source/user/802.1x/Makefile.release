@@ -1,11 +1,11 @@
-all: rt2860apd
+all: rtdot1xd
 
-rt2860apd: $(OBJS)
-	$(CC) -o rt2860apd $(OBJS)
+rtdot1xd: $(OBJS)
+	$(CC) -o rtdot1xd $(OBJS)
 
 clean:
 	rm -f core *~ *.o  *.d
 
 romfs:
-	$(ROMFSINST) rt2860apd /bin/rt2860apd
+	$(ROMFSINST) rtdot1xd /bin/rt2860apd
 

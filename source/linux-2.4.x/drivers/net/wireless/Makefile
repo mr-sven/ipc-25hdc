@@ -33,12 +33,12 @@ subdir-$(CONFIG_PRISM54)	+= prism54
 ifeq ($(CONFIG_RT2880v2_INIC_MII),y)
 obj-$(CONFIG_RT2880v2_INIC_MII)    += iNIC/mii/iNIC_mii.o
 endif
-#subdir-$(CONFIG_RT2880v2_INIC_MII) += iNIC/mii
+subdir-$(CONFIG_RT2880v2_INIC_MII) += iNIC/mii
 
 ifeq ($(CONFIG_RT2880v2_INIC_PCI),y)
 obj-$(CONFIG_RT2880v2_INIC_PCI)    += iNIC/pci/iNIC_pci.o
 endif
-#subdir-$(CONFIG_RT2880v2_INIC_PCI) += iNIC/pci
+subdir-$(CONFIG_RT2880v2_INIC_PCI) += iNIC/pci
 
 
 ifeq ($(CONFIG_RT2860V2_AP),y)
@@ -54,7 +54,7 @@ subdir-$(CONFIG_RT2860V2_STA)	+= rt2860v2_sta
 ifeq ($(CONFIG_RT2561_AP),y)
 obj-$(CONFIG_RT2561_AP)		+= rt2561_ap/rt2561ap.o
 endif
-#subdir-$(CONFIG_RT2561_AP)	+= rt2561_ap
+subdir-$(CONFIG_RT2561_AP)	+= rt2561_ap
 
 #ifeq ($(CONFIG_RT2680_AP),y)
 #obj-$(CONFIG_RT2680_AP)	+= rt2680_ap/rt2680ap.o

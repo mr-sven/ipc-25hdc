@@ -10,7 +10,7 @@
 
 #include "nvram.h"
 
-#ifdef CONFIG_RALINK_GPIO
+#if defined (CONFIG_RALINK_GPIO) || defined (CONFIG_RALINK_GPIO_MODULE)
 #include "ralink_gpio.h"
 #define GPIO_DEV "/dev/gpio"
 #endif
@@ -37,10 +37,10 @@ void loadDefault(int chip_id)
 	break;
     case 2880:
 	system("ralink_init clear rtdev");
-#if defined (CONFIG_RTDEV_MII) || defined (CONFIG_RTDEV_USB) || defined (CONFIG_RTDEV_PCI)
+#if defined (CONFIG_RTDEV)
 	system("ralink_init renew rtdev /etc_ro/Wireless/iNIC/RT2860AP.dat");
-#else
-	system("ralink_init renew rtdev /etc_ro/Wireless/iNIC/RT2860AP.dat");
+#elif defined (CONFIG_RTDEV_PLC)
+	system("ralink_init renew rtdev /etc_ro/PLC/plc_default.dat");
 #endif
 	break;
     case 2561: 
@@ -86,7 +86,8 @@ static void nvramIrqHandler(int signum)
 	} else if (signum == SIGUSR2) {
 		printf("load default and reboot..\n");
 		loadDefault(2860);
-#if defined (CONFIG_RTDEV_MII) || defined (CONFIG_RTDEV_USB) || defined (CONFIG_RTDEV_PCI) 
+#if defined (CONFIG_RTDEV) || \
+    defined (CONFIG_RTDEV_PLC)
 		loadDefault(2880);
 #elif defined (CONFIG_RT2561_AP) || defined (CONFIG_RT2561_AP_MODULE)
 		loadDefault(2561);
@@ -103,7 +104,7 @@ static void nvramIrqHandler(int signum)
  */
 int initGpio(void)
 {
-#ifndef CONFIG_RALINK_GPIO
+#if !defined (CONFIG_RALINK_GPIO) && !defined (CONFIG_RALINK_GPIO_MODULE)
 	signal(SIGUSR1, nvramIrqHandler);
 	signal(SIGUSR2, nvramIrqHandler);
 	return 0;
@@ -112,19 +113,23 @@ int initGpio(void)
 	ralink_gpio_reg_info info;
 
 	info.pid = getpid();
-#ifdef CONFIG_RALINK_RT2880
+#if defined (CONFIG_RALINK_RT2880)
 	info.irq = 0;
-#else
-#if defined CONFIG_RALINK_RT3052 && ((CONFIG_RALINK_I2S) || defined (CONFIG_RALINK_I2S_MODULE))
+#elif defined (CONFIG_RALINK_RT3052) && ((CONFIG_RALINK_I2S) || defined (CONFIG_RALINK_I2S_MODULE))
 	info.irq = 43;
-#elif defined CONFIG_RALINK_RT3883
+#elif defined (CONFIG_RALINK_RT3883)
 	//RT3883 uses gpio 27 for load-to-default
 	info.irq = 27;
+#elif defined (CONFIG_RALINK_RT6855A)
+#if defined (CONFIG_RT6855A_PCIE_PORT0_ENABLE)
+	info.irq = 0;	// rt6855 reset default
 #else
-	//RT2883, RT3052, RT3352 use gpio 10 for load-to-default
+	info.irq = 2;	// rt6856 reset default
+#endif
+#else
+	//RT2883, RT3052, RT3352, RT6855 use gpio 10 for load-to-default
 	info.irq = 10;
 #endif	
-#endif
 
 	fd = open(GPIO_DEV, O_RDONLY);
 	if (fd < 0) {
@@ -132,11 +137,26 @@ int initGpio(void)
 		return -1;
 	}
 	//set gpio direction to input
+#if !defined (CONFIG_RALINK_RT6855A)
 	if (info.irq < 24) {
 		if (ioctl(fd, RALINK_GPIO_SET_DIR_IN, (1<<info.irq)) < 0)
 			goto ioctl_err;
 	}
-#ifdef RALINK_GPIO_HAS_5124
+#if defined (RALINK_GPIO_HAS_2722)
+	else if (22 <= info.irq) {
+		if (ioctl(fd, RALINK_GPIO2722_SET_DIR_IN, (1<<(info.irq-22))) < 0)
+			goto ioctl_err;
+	}
+#elif defined (RALINK_GPIO_HAS_4524)
+	else if (24 <= info.irq && info.irq < 40) {
+		if (ioctl(fd, RALINK_GPIO3924_SET_DIR_IN, (1<<(info.irq-24))) < 0)
+			goto ioctl_err;
+	}
+	else {
+		if (ioctl(fd, RALINK_GPIO4540_SET_DIR_IN, (1<<(info.irq-40))) < 0)
+			goto ioctl_err;
+	}
+#elif defined (RALINK_GPIO_HAS_5124)
 	else if (24 <= info.irq && info.irq < 40) {
 		if (ioctl(fd, RALINK_GPIO3924_SET_DIR_IN, (1<<(info.irq-24))) < 0)
 			goto ioctl_err;
@@ -144,6 +164,27 @@ int initGpio(void)
 	else {
 		if (ioctl(fd, RALINK_GPIO5140_SET_DIR_IN, (1<<(info.irq-40))) < 0)
 			goto ioctl_err;
+	}
+#elif defined (RALINK_GPIO_HAS_9524)
+	else if (24 <= info.irq && info.irq < 40) {
+		if (ioctl(fd, RALINK_GPIO3924_SET_DIR_IN, (1<<(info.irq-24))) < 0)
+			goto ioctl_err;
+	}
+	else if (40 <= info.irq && info.irq < 72) {
+		if (ioctl(fd, RALINK_GPIO7140_SET_DIR_IN, (1<<(info.irq-40))) < 0)
+			goto ioctl_err;
+	}
+	else {
+		if (ioctl(fd, RALINK_GPIO9572_SET_DIR_IN, (1<<(info.irq-72))) < 0)
+			goto ioctl_err;
+	}
+#endif
+#else
+	if (info.irq < 16) {
+		if (ioctl(fd, RALINK_GPIO_SET_DIR_IN, info.irq) < 0)
+			goto ioctl_err;
+	} else {
+		goto ioctl_err;
 	}
 #endif
 	//enable gpio interrupt
@@ -213,14 +254,15 @@ int main(int argc,char **argv)
 	}
 	
 	if (strcmp(nvram_bufget(RTDEV_NVRAM, "WebInit"),"1")) {
-#if defined CONFIG_RTDEV_MII || defined CONFIG_RTDEV_USB || defined (CONFIG_RTDEV_PCI) 
+#if defined (CONFIG_RTDEV) || \
+    defined (CONFIG_RTDEV_PLC)
 		loadDefault(2880);
 #elif defined (CONFIG_RT2561_AP) || defined (CONFIG_RT2561_AP_MODULE)
 		loadDefault(2561);
 #endif
 	}
 	nvram_close(RT2860_NVRAM);
-#if defined (CONFIG_RTDEV_MII) || defined (CONFIG_RTDEV_USB) || defined (CONFIG_RTDEV_PCI) || \
+#if defined (CONFIG_RTDEV) || \
 	defined (CONFIG_RT2561_AP) || defined (CONFIG_RT2561_AP_MODULE)
 	nvram_close(RTDEV_NVRAM);
 #endif

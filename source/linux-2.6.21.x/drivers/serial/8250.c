@@ -12,7 +12,7 @@
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- *  $Id: 8250.c,v 1.7 2010-02-12 08:07:52 michael Exp $
+ *  $Id: 8250.c,v 1.9 2011-11-21 02:03:19 bruce Exp $
  *
  * A note about mapbase / membase
  *
@@ -331,6 +331,8 @@ static unsigned int serial_in(struct uart_8250_port *up, int offset)
     defined (CONFIG_RALINK_RT3883) || \
     defined (CONFIG_RALINK_RT3352) || \
     defined (CONFIG_RALINK_RT5350) || \
+    defined (CONFIG_RALINK_RT6855) || \
+    defined (CONFIG_RALINK_RT6352) || \
     defined (CONFIG_RALINK_RT3052)
 		return (*(int*)(up->port.iobase + offset));
 #else
@@ -374,6 +376,8 @@ serial_out(struct uart_8250_port *up, int offset, int value)
     defined (CONFIG_RALINK_RT3883) || \
     defined (CONFIG_RALINK_RT3352) || \
     defined (CONFIG_RALINK_RT5350) || \
+    defined (CONFIG_RALINK_RT6855) || \
+    defined (CONFIG_RALINK_RT6352) || \
     defined (CONFIG_RALINK_RT3052)
 		*(int*)(up->port.iobase + offset) = value;
 #else
@@ -426,6 +430,8 @@ static inline void _serial_dl_write(struct uart_8250_port *up, int value)
     defined (CONFIG_RALINK_RT3883) || \
     defined (CONFIG_RALINK_RT3352) || \
     defined (CONFIG_RALINK_RT5350) || \
+    defined (CONFIG_RALINK_RT6855) || \
+    defined (CONFIG_RALINK_RT6352) || \
     defined (CONFIG_RALINK_RT3052)
 /* Ralink haven't got a standard divisor latch */
 static int serial_dl_read(struct uart_8250_port *up)
@@ -617,6 +623,8 @@ static unsigned int autoconfig_read_divisor_id(struct uart_8250_port *p)
     defined (CONFIG_RALINK_RT3883) || \
     defined (CONFIG_RALINK_RT3352) || \
     defined (CONFIG_RALINK_RT5350) || \
+    defined (CONFIG_RALINK_RT6855) || \
+    defined (CONFIG_RALINK_RT6352) || \
     defined (CONFIG_RALINK_RT3052)
 	unsigned short old_dl;
 
@@ -2774,7 +2782,7 @@ static int __init serial8250_init(void)
 	if (nr_uarts > UART_NR)
 		nr_uarts = UART_NR;
 
-	printk(KERN_INFO "Serial: 8250/16550 driver $Revision: 1.7 $ "
+	printk(KERN_INFO "Serial: 8250/16550 driver $Revision: 1.9 $ "
 		"%d ports, IRQ sharing %sabled\n", nr_uarts,
 		share_irqs ? "en" : "dis");
 
@@ -2835,7 +2843,7 @@ EXPORT_SYMBOL(serial8250_suspend_port);
 EXPORT_SYMBOL(serial8250_resume_port);
 
 MODULE_LICENSE("GPL");
-MODULE_DESCRIPTION("Generic 8250/16x50 serial driver $Revision: 1.7 $");
+MODULE_DESCRIPTION("Generic 8250/16x50 serial driver $Revision: 1.9 $");
 
 module_param(share_irqs, uint, 0644);
 MODULE_PARM_DESC(share_irqs, "Share IRQs with other non-8250/16x50 devices"

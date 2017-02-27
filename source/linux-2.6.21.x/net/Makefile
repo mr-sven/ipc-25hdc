@@ -59,7 +59,7 @@ endif
 
 obj-$(CONFIG_RA_HW_NAT)         += nat/hw_nat/
 
-obj-$(CONFIG_RA_CLASSIFIER)     += ra_classifier/
 ifneq ($(CONFIG_RA_CLASSIFIER),)
-obj-y 				+= ra_classifier/cls_hook/
+obj-m     += ra_classifier/
+obj-y 							+= ra_classifier/cls_hook/
 endif

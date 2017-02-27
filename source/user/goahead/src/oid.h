@@ -4,7 +4,7 @@
  *
  *	Copyright (c) Ralink Technology Corporation All Rights Reserved.
  *
- *	$Id: oid.h,v 1.11 2010-04-01 07:41:02 chhung Exp $
+ *	$Id: oid.h,v 1.17 2012-02-03 03:37:08 chhung Exp $
  */
 
 #if WIRELESS_EXT <= 11
@@ -84,6 +84,7 @@
 #define RT_OID_802_11_HARDWARE_REGISTER             0x0525
 #endif
 #define OID_802_11_ENCRYPTION_STATUS                OID_802_11_WEP_STATUS
+#define OID_802_11_ACL_LIST                         0x052A
 
 #define RT_OID_DEVICE_NAME                          0x0607
 #define RT_OID_VERSION_INFO                         0x0608
@@ -137,7 +138,7 @@
 #define RT_OID_QUERY_MULTIPLE_CARD_SUPPORT          0x0647
 #define OID_802_11_SET_PSPXLINK_MODE				0x0648
 #define OID_802_11_SET_PASSPHRASE					0x0649
-#ifdef CONFIG_RT2860V2_AP_V24_DATA_STRUCTURE
+#if 1 //def CONFIG_RT2860V2_AP_V24_DATA_STRUCTURE
 #define RT_OID_802_11_SNR_2							0x067A
 #define RT_OID_802_11_STREAM_SNR					0x067b
 #define RT_OID_802_11_QUERY_TXBF_TABLE				0x067C
@@ -189,7 +190,7 @@
 #define RT_OID_WSC_QUERY_STATUS                     ((RT_OID_SYNC_RT61 + 0x01) & 0xffff)
 #define RT_OID_WSC_PIN_CODE							((RT_OID_SYNC_RT61 + 0x02) & 0xffff)
 
-#if defined(CONFIG_RT2860V2_AP_TXBF) || defined(CONFIG_RT2860V2_STA_TXBF)
+#if defined (CONFIG_RT2860V2_AP_TXBF) || defined (CONFIG_RT2860V2_STA_TXBF)
 #define MAX_NUMBER_OF_TXBF	96
 
 // RT_OID_802_11_QUERY_TXBF_TABLE results
@@ -210,3 +211,16 @@ typedef struct {
 	RT_COUNTER_TXBF         Entry[MAX_NUMBER_OF_TXBF];
 } RT_802_11_TXBF_TABLE;
 #endif // CONFIG_RT2860V2_AP_TXBF || CONFIG_RT2860V2_STA_TXBF //
+
+#define MAX_NUMBER_OF_ACL	64
+typedef struct _RT_802_11_ACL_ENTRY {
+	unsigned char Addr[6];
+	unsigned short Rsv;
+} RT_802_11_ACL_ENTRY, *PRT_802_11_ACL_ENTRY;
+
+typedef struct _RT_802_11_ACL {
+	unsigned long Policy;           /* 0-disable, 1-positive list, 2-negative list */
+	unsigned long Num;
+	RT_802_11_ACL_ENTRY Entry[MAX_NUMBER_OF_ACL];
+} RT_802_11_ACL, *PRT_802_11_ACL;
+

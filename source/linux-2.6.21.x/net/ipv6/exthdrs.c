@@ -7,7 +7,7 @@
  *	Andi Kleen		<ak@muc.de>
  *	Alexey Kuznetsov	<kuznet@ms2.inr.ac.ru>
  *
- *	$Id: exthdrs.c,v 1.1.1.1 2007-05-25 06:49:59 bruce Exp $
+ *	$Id: exthdrs.c,v 1.2 2011-02-24 09:53:00 yy Exp $
  *
  *	This program is free software; you can redistribute it and/or
  *      modify it under the terms of the GNU General Public License
@@ -394,6 +394,8 @@ static int ipv6_rthdr_rcv(struct sk_buff **skbp)
 
 	hdr = (struct ipv6_rt_hdr *) skb->h.raw;
 
+/*  Ralink, for IPv6 ready logo. Test item: spec #63, #64  (from 2.6.36) */
+#if 0
 	switch (hdr->type) {
 #ifdef CONFIG_IPV6_MIP6
 		break;
@@ -409,6 +411,7 @@ static int ipv6_rthdr_rcv(struct sk_buff **skbp)
 		icmpv6_param_prob(skb, ICMPV6_HDR_FIELD, (&hdr->type) - skb->nh.raw);
 		return -1;
 	}
+#endif
 
 	if (ipv6_addr_is_multicast(&skb->nh.ipv6h->daddr) ||
 	    skb->pkt_type != PACKET_HOST) {
@@ -448,6 +451,8 @@ looped_back:
 	}
 
 	switch (hdr->type) {
+/*  Ralink, for IPv6 ready logo. Test item: spec #65, #66  (from 2.6.36) */
+#if 0
 	case IPV6_SRCRT_TYPE_0:
 		if (hdr->hdrlen & 0x01) {
 			IP6_INC_STATS_BH(ip6_dst_idev(skb->dst),
@@ -456,6 +461,13 @@ looped_back:
 			return -1;
 		}
 		break;
+#endif
+        /*  Ralink, for IPv6 ready logo. Test item: spec #65, #66  (from 2.6.36) */
+        default:
+		IP6_INC_STATS_BH(ip6_dst_idev(skb->dst), IPSTATS_MIB_INHDRERRORS);
+		icmpv6_param_prob(skb, ICMPV6_HDR_FIELD, (&hdr->type) - skb->nh.raw);
+		return -1;
+
 #ifdef CONFIG_IPV6_MIP6
 	case IPV6_SRCRT_TYPE_2:
 		/* Silently discard invalid RTH type 2 */

@@ -1,6 +1,6 @@
 /*
  *	linux.c
- *	Release $Name: SDK_3_5_0_0_BRANCH $
+ *	Release $Name: SDK_4_0_0_0_BRANCH $
  *
  *	Linux compatibility layer
  *	Other UNIX like operating systems should also be able to use this

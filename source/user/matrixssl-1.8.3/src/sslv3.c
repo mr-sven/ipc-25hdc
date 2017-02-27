@@ -1,6 +1,6 @@
 /*
  *	sslv3.c
- *	Release $Name: SDK_3_5_0_0_BRANCH $
+ *	Release $Name: SDK_4_0_0_0_BRANCH $
  *
  *	SSLv3.0 specific code per http://wp.netscape.com/eng/ssl3.
  *	Primarily dealing with secret generation, message authentication codes

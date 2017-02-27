@@ -203,7 +203,7 @@
 #define HAVE_SETUTXENT 1
 
 /* Define to 1 if you have the <shadow.h> header file. */
-#define HAVE_SHADOW_H 1
+//#define HAVE_SHADOW_H 1
 
 /* Define to 1 if you have the `socket' function. */
 #define HAVE_SOCKET 1

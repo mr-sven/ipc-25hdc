@@ -594,12 +594,10 @@ static void OOB(webs_t wp, char_t *path, char_t *query)
 
         nvram_bufset(RT2860_NVRAM, "WscConfigured", "0");
 
-        STF(0, "AuthMode", "OPEN");
-        STF(0, "EncrypType", "NONE");
-        /*
-        STF(RT2860_NVRAM, "DefaultKeyID", "2");
+        STF(0, "AuthMode", "WPA2PSK");
+        STF(0, "EncrypType", "AES");
+        STF(0, "DefaultKeyID", "2");
         nvram_bufset(RT2860_NVRAM, "WPAPSK1", "12345678");
-        */
 
         STF(0, "IEEE8021X", "0");
 
@@ -611,8 +609,10 @@ static void OOB(webs_t wp, char_t *path, char_t *query)
 
         nvram_commit(RT2860_NVRAM);
 
-        doSystem("iwpriv ra0 set AuthMode=OPEN");
-        doSystem("iwpriv ra0 set EncrypType=NONE");
+        doSystem("iwpriv ra0 set SSID=%s", nvram_bufget(RT2860_NVRAM, "SSID1"));
+        doSystem("iwpriv ra0 set AuthMode=WPA2PSK");
+        doSystem("iwpriv ra0 set EncrypType=AES");
+        doSystem("iwpriv ra0 set WPAPSK=12345678");
         doSystem("iwpriv ra0 set SSID=%s", nvram_bufget(RT2860_NVRAM, "SSID1"));
 
         restart8021XDaemon(RT2860_NVRAM);
@@ -621,6 +621,26 @@ static void OOB(webs_t wp, char_t *path, char_t *query)
 
         websRedirect(wp, "wps/wps.asp");
 }
+
+#if defined (RT2860_WSCV2_SUPPORT)
+static void confACL()
+{
+	int i, socket_id = socket(AF_INET, SOCK_DGRAM, 0);
+	char temp[18];
+	PRT_802_11_ACL alc_list = malloc(sizeof(RT_802_11_ACL)); 
+
+	ApOidQueryInformation(OID_802_11_ACL_LIST, socket_id, "ra0", alc_list, sizeof(RT_802_11_ACL));
+	for (i=0; i < alc_list->Num; i++)
+	{
+		sprintf(temp, "%02X:%02X:%02X:%02X:%02X:%02X",
+				alc_list->Entry[i].Addr[0], alc_list->Entry[i].Addr[1], alc_list->Entry[i].Addr[2],
+				alc_list->Entry[i].Addr[3], alc_list->Entry[i].Addr[4], alc_list->Entry[i].Addr[5]);
+		STF(i, "AccessControlList0", temp);
+	}
+	close(socket_id);
+	free(alc_list);
+}
+#endif
 
 static void WPSAPTimerHandler(int signo)
 {
@@ -713,7 +733,8 @@ static void WPSAPTimerHandler(int signo)
 		LedSuccess();
 
 		getCurrentWscProfile("ra0", &wsc_value, sizeof(WSC_CONFIGURED_VALUE));
-		if (g_wsc_configured == 0 && wsc_value.WscConfigured == 2){	
+		if (strcmp(nvram_bufget(RT2860_NVRAM, "WCNTest"), "1") == 0 ||
+		    (g_wsc_configured == 0 && wsc_value.WscConfigured == 2)) {
 			WSC_PROFILE wsc_profile;
 
 			getWscProfile("ra0", &wsc_profile);
@@ -723,42 +744,42 @@ static void WPSAPTimerHandler(int signo)
 			nvram_bufset(RT2860_NVRAM, "SSID1", wsc_profile.Profile[0].SSID.Ssid);
 			nvram_bufset(RT2860_NVRAM, "WscSSID", wsc_profile.Profile[0].SSID.Ssid);
 
-			if (wsc_profile.Profile[0].AuthType == 0x0001){
+			if (wsc_profile.Profile[0].AuthType == 0x0001) {
 				STF(0, "AuthMode", "OPEN");
-			}else if (wsc_profile.Profile[0].AuthType == 0x0002){
+			} else if (wsc_profile.Profile[0].AuthType == 0x0002) {
 				STF(0, "AuthMode", "WPAPSK");
-			}else if (wsc_profile.Profile[0].AuthType == 0x0004){
+			} else if (wsc_profile.Profile[0].AuthType == 0x0004) {
 				STF(0, "AuthMode", "SHARED");
-			}else if (wsc_profile.Profile[0].AuthType == 0x0008){
+			} else if (wsc_profile.Profile[0].AuthType == 0x0008) {
 				STF(0, "AuthMode", "WPA");
-			}else if (wsc_profile.Profile[0].AuthType == 0x0010){
+			}else if (wsc_profile.Profile[0].AuthType == 0x0010) {
 				STF(0, "AuthMode", "WPA2");
-			}else if (wsc_profile.Profile[0].AuthType == 0x0020){
+			} else if (wsc_profile.Profile[0].AuthType == 0x0020) {
 				STF(0, "AuthMode", "WPA2PSK");
-			}else if (wsc_profile.Profile[0].AuthType == 0x0022){
+			} else if (wsc_profile.Profile[0].AuthType == 0x0022) {
 				STF(0, "AuthMode", "WPAPSKWPA2PSK");
-			}else{
+			} else {
 				printf("goahead: Warning: can't get invalid authmode\n.");
 				STF(0, "AuthMode", "OPEN");
 			}
-			if (wsc_profile.Profile[0].EncrType == 0x0001){
+			if (wsc_profile.Profile[0].EncrType == 0x0001) {
 				STF(0, "EncrypType", "NONE");
 				STF(0, "DefaultKeyID", "1");
-			}else if (wsc_profile.Profile[0].EncrType == 0x0002){
+			} else if (wsc_profile.Profile[0].EncrType == 0x0002) {
 				STF(0, "EncrypType", "WEP");
-				if (wsc_profile.Profile[0].KeyLength == 5 || wsc_profile.Profile[0].KeyLength == 13){
+				if (wsc_profile.Profile[0].KeyLength == 5 || wsc_profile.Profile[0].KeyLength == 13) {
 					// Key Entry Method == ASCII 
 					STF(0, "Key1Type", "1");
 					STF(0, "Key2Type", "1");
 					STF(0, "Key3Type", "1");
 					STF(0, "Key4Type", "1");
-				}else if (wsc_profile.Profile[0].KeyLength == 10 || wsc_profile.Profile[0].KeyLength == 26){
+				} else if (wsc_profile.Profile[0].KeyLength == 10 || wsc_profile.Profile[0].KeyLength == 26) {
 					// Key Entry Method == HEX 
 					STF(0, "Key1Type", "0");
 					STF(0, "Key2Type", "0");
 					STF(0, "Key3Type", "0");
 					STF(0, "Key4Type", "0");
-				}else{
+				} else {
 					// Key Entry Method == ASCII
 					STF(0, "Key1Type", "1");
 					STF(0, "Key2Type", "1");
@@ -766,55 +787,62 @@ static void WPSAPTimerHandler(int signo)
 					STF(0, "Key4Type", "1");
 				}
 
-				if (wsc_profile.Profile[0].KeyIndex == 1){
+				if (wsc_profile.Profile[0].KeyIndex == 1) {
 					STF(0, "Key1Str1", wsc_profile.Profile[0].Key);
 					STF(0, "DefaultKeyID", "1");
-				}else if (wsc_profile.Profile[0].KeyIndex == 2){
+				} else if (wsc_profile.Profile[0].KeyIndex == 2) {
 					STF(0, "Key2Str1", wsc_profile.Profile[0].Key);
 					STF(0, "DefaultKeyID", "2");
-				}else if (wsc_profile.Profile[0].KeyIndex == 3){
+				} else if (wsc_profile.Profile[0].KeyIndex == 3) {
 					STF(0, "Key3Str1", wsc_profile.Profile[0].Key);
 					STF(0, "DefaultKeyID", "3");
-				}else if (wsc_profile.Profile[0].KeyIndex == 4){
+				} else if (wsc_profile.Profile[0].KeyIndex == 4) {
 					STF(0, "Key4Str1", wsc_profile.Profile[0].Key);
 					STF(0, "DefaultKeyID", "4");
 				}
-			}else if (wsc_profile.Profile[0].EncrType == 0x0004){
+			} else if (wsc_profile.Profile[0].EncrType == 0x0004) {
 				STF(0, "EncrypType", "TKIP");
 				STF(0, "DefaultKeyID", "2");
 				char temp[65];
 				memset(temp, 0, 65);
 				memcpy(temp, wsc_profile.Profile[0].Key, wsc_profile.Profile[0].KeyLength);
 				nvram_bufset(RT2860_NVRAM, "WPAPSK1", temp);
-			}else if (wsc_profile.Profile[0].EncrType == 0x0008){
+			} else if (wsc_profile.Profile[0].EncrType == 0x0008) {
 				STF(0, "EncrypType", "AES");
 				STF(0, "DefaultKeyID", "2");
 				char temp[65];
 				memset(temp, 0, 65);
 				memcpy(temp, wsc_profile.Profile[0].Key, wsc_profile.Profile[0].KeyLength);
 				nvram_bufset(RT2860_NVRAM, "WPAPSK1", temp);
-			}else if (wsc_profile.Profile[0].EncrType == 0x000C){
+			} else if (wsc_profile.Profile[0].EncrType == 0x000C) {
 				STF(0, "EncrypType", "TKIPAES");
 				STF(0, "DefaultKeyID", "2");
 				char temp[65];
 				memset(temp, 0, 65);
 				memcpy(temp, wsc_profile.Profile[0].Key, wsc_profile.Profile[0].KeyLength);
 				nvram_bufset(RT2860_NVRAM, "WPAPSK1", temp);
-			}else{
+			} else {
 				printf("goahead: Warning: can't get invalid encryptype\n.");
 				STF(0, "EncrypType", "NONE");
 				STF(0, "DefaultKeyID", "1");
 			}
 
+#if defined (RT2860_WSCV2_SUPPORT)
+			if (wsc_profile.Profile[0].AuthType == 0x0002 &&
+			    wsc_profile.Profile[0].EncrType == 0x0004) {
+				STF(0, "AuthMode", "WPAPSKWPA2PSK");
+				STF(0, "EncrypType", "TKIPAES");
+			}
+#endif
 			STF(0, "IEEE8021X", "0");
 			nvram_commit(RT2860_NVRAM);
-
-			doSystem("ifconfig ra0 down");
-			doSystem("ralink_init make_wireless_config rt2860");
-			doSystem("ifconfig ra0 up");
-			restart8021XDaemon(RT2860_NVRAM);
-			WPSRestart();
 		}
+#if defined (RT2860_WSCV2_SUPPORT)
+		if (!strcmp(nvram_bufget(RT2860_NVRAM, "AccessPolicy0"), "1")) {
+			confACL();
+			nvram_commit(RT2860_NVRAM);
+		}
+#endif
 	}
 
 	return;
@@ -947,10 +975,10 @@ static char_t *RFBandTranslate(unsigned char rfband)
 	switch(rfband){
 	case 1:
 		gstrncpy(result, T("2.4G"), 16);
+		break;
 	case 2:
 		gstrncpy(result, T("5G"), 16);
-	case 3:
-		gstrncpy(result, T("2.4G/5G"), 16);
+		break;
 	}
 	return result;
 }
@@ -1669,7 +1697,8 @@ WSC_FAILED:
 			 */ 
 			if(wps_ap_flag){
 				printf("%s,%s,%s,%s,%s,%s,%d,%d,%s\n", tmpSSID, tmpBSSIDII, tmpRSSI, tmpChannel, tmpAuth, tmpEncry, version, wsc_state, extend);
-				snprintf(g_pAPListData, SITE_SURVEY_APS_MAX, "%s%s\\n%s\\n%s\\n%s\\n%s\\n%s\\n%d\\n%d\\n%s\\n\\n", g_pAPListData, tmpSSID, tmpBSSIDII, tmpRSSI, tmpChannel, tmpAuth, tmpEncry, version, wsc_state, extend);
+				// snprintf(g_pAPListData, SITE_SURVEY_APS_MAX, "%s%s\\n%s\\n%s\\n%s\\n%s\\n%s\\n%d\\n%d\\n%s\\n\\n", g_pAPListData, tmpSSID, tmpBSSIDII, tmpRSSI, tmpChannel, tmpAuth, tmpEncry, version, wsc_state, extend);
+				snprintf(g_pAPListData, SITE_SURVEY_APS_MAX, "%s%s\\n%s\\n%s\\n%s\\n%s\\n%s\\n%d\\n%s\\n\\n", g_pAPListData, tmpSSID, tmpBSSIDII, tmpRSSI, tmpChannel, tmpAuth, tmpEncry, wsc_state, extend);
 			}
 
 			pBssid = (PNDIS_WLAN_BSSID_EX)((char *)pBssid + pBssid->Length);
@@ -2056,8 +2085,8 @@ static void WPSSTAMode(webs_t wp, char_t *path, char_t *query)
 			memcpy(mac, getStaMacAddr(), 6);
 			snprintf(defaultSSID, 32, "STARegistrar%02X%02X%02X", mac[3], mac[4], mac[5]);
 			nvram_bufset(RT2860_NVRAM, "staRegSSID", defaultSSID);
-			nvram_bufset(RT2860_NVRAM, "staRegAuth", "WPAPSK");
-			nvram_bufset(RT2860_NVRAM, "staRegEncry", "TKIP");
+			nvram_bufset(RT2860_NVRAM, "staRegAuth", "WPA2PSK");
+			nvram_bufset(RT2860_NVRAM, "staRegEncry", "AES");
 			nvram_bufset(RT2860_NVRAM, "staRegKeyType", "1");
 			nvram_bufset(RT2860_NVRAM, "staRegKeyIndex", "1");
 			nvram_bufset(RT2860_NVRAM, "staRegKey", "12345678");
@@ -2391,6 +2420,7 @@ static char_t *addWPSSTAProfile2(WSC_CREDENTIAL *wsc_cre)
 	// AuthMode
 	//security policy (security_infra_mode or security_adhoc_mode)
 	// get Security from .dat
+	fprintf(stderr, "WPS 2.0: auth:%x\n", AuthType);
 	switch(AuthType){
 	case 0x1:
 		tmpProfileSetting.Authentication = Ndis802_11AuthModeOpen;
@@ -2412,8 +2442,9 @@ static char_t *addWPSSTAProfile2(WSC_CREDENTIAL *wsc_cre)
 		tmpProfileSetting.Authentication = Ndis802_11AuthModeWPA2;
 		break;
 	case 0x20:
+	case 0x22:
 		tmpProfileSetting.Authentication = Ndis802_11AuthModeWPA2PSK;		
-		if(EncrType != 0x4 && EncrType != 0x8)
+		if(EncrType != 0x4 && EncrType != 0x8 && EncrType != 0xC)
 			return NULL;
 		break;
 	default:
@@ -2423,6 +2454,7 @@ static char_t *addWPSSTAProfile2(WSC_CREDENTIAL *wsc_cre)
 
 	// Encrypt mode
 	//Encrypt
+	fprintf(stderr, "WPS 2.0: encry:%x\n", EncrType);
 	switch(EncrType){
 	case 0x1:	/* None */
 		tmpProfileSetting.Encryption = Ndis802_11WEPDisabled;
@@ -2433,6 +2465,7 @@ static char_t *addWPSSTAProfile2(WSC_CREDENTIAL *wsc_cre)
 		tmpProfileSetting.Encryption = Ndis802_11WEPEnabled;
 		break;
 	case 0x8:	/* AES */
+	case 0xC:	/* TKIP or AES */
 		tmpProfileSetting.Encryption = Ndis802_11Encryption3Enabled;
 		break;
 	case 0x4:	/* TKIP */
@@ -2475,7 +2508,7 @@ static char_t *addWPSSTAProfile2(WSC_CREDENTIAL *wsc_cre)
 				sprintf(hex_wep, "%c%c%c%c%c%c%c%c%c%c", Key[0], Key[1], Key[2], Key[3], Key[4], Key[5], Key[6], Key[7], Key[8], Key[9]);
 			else if (KeyLength == 26)
 				sprintf(hex_wep, "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c", 
-					Key[0], Key[1], Key[2], Key[3], Key[4], Key[5], Key[6], Key[7], Key[8], Key[9], Key[10], Key[11], Key[12], Key[13], Key[14], Key[15], Key[16], Key[17], Key[18], Key[19], Key[20], Key[21], Key[22], Key[23], Key[24], Key[25]);
+						Key[0], Key[1], Key[2], Key[3], Key[4], Key[5], Key[6], Key[7], Key[8], Key[9], Key[10], Key[11], Key[12], Key[13], Key[14], Key[15], Key[16], Key[17], Key[18], Key[19], Key[20], Key[21], Key[22], Key[23], Key[24], Key[25]);
 			switch(KeyIndex){
 			case 1:
 				SaveToFlashStr("staKey1", hex_wep);
@@ -2509,8 +2542,9 @@ static char_t *addWPSSTAProfile2(WSC_CREDENTIAL *wsc_cre)
 		// clear WPAPSK
 		SaveToFlashStr("staWpaPsk", "0");
 		break;
-    case 0x2:	/* WPAPSK */
-	case 0x20:	/* WPAPSK2 */
+	case 0x2:	/* WPAPSK */
+	case 0x20:	/* WPA2PSK */
+	case 0x22:	/* WPAPSK or WPA2PSK */
 		// set WPAPSK Key
 		strncpy(tmpProfileSetting.WpaPsk, Key, 64);
 		SaveToFlashStr("staWpaPsk", tmpProfileSetting.WpaPsk);
@@ -2524,13 +2558,13 @@ static char_t *addWPSSTAProfile2(WSC_CREDENTIAL *wsc_cre)
 		SaveToFlashInt("staKey3Type", 0);
 		SaveToFlashStr("staKey4", "0");
 		SaveToFlashInt("staKey4Type", 0);
-        break;
-    case 0x8:	/* WPA */
-    case 0x10:	/* WPA2 */
-    	printf("Warning,WPS WPA/WPA\n");
-        break;
-    default:
-        return NULL;
+		break;
+	case 0x8:	/* WPA */
+	case 0x10:	/* WPA2 */
+		printf("Warning,WPS WPA/WPA\n");
+		break;
+	default:
+		return NULL;
     }
 
 	// can't find "key length" in .dat and ioctl()...

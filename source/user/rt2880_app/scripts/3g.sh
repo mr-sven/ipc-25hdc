@@ -28,6 +28,8 @@ elif [ "$dev" = "HUAWEI-E169" ]; then
 elif [ "$dev" = "BandLuxe-C270" ]; then
 	sdparm --command=eject /dev/sr0
 	sdparm --command=eject /dev/sg0
+elif [ "$dev" = "MobilePeak-Titan" ]; then
+	usb_modeswitch -c /etc_ro/usb/usb_modeswitch_MobilePeak-Titan.conf
 elif [ "$dev" = "OPTION-ICON225" ]; then
 	usb_modeswitch -c /etc_ro/usb/usb_modeswitch_OPTION-ICON225.conf
 elif [ "$dev" = "DATANG-M5731" ]; then
@@ -43,13 +45,13 @@ if [ "$dev" != "OPTION-ICON225" ]; then
 	rmmod option
 	rmmod hso
 	sleep 1
-	insmod option
+	insmod -q option
 	sleep 1
 elif [ "$dev" = "OPTION-ICON225" ]; then
 	rmmod option
 	rmmod hso
 	sleep 1
-	insmod hso
+	insmod -q hso
 	sleep 1
 fi
 
@@ -59,6 +61,8 @@ if [ "$dev" = "MU-Q101" ]; then
 elif [ "$dev" = "HUAWEI-E169" ]; then
         modem_f=ttyUSB0
 elif [ "$dev" = "BandLuxe-C270" ]; then
+        modem_f=ttyUSB0
+elif [ "$dev" = "MobilePeak-Titan" ]; then
         modem_f=ttyUSB0
 elif [ "$dev" = "DATANG-M5731" ]; then
         modem_f=ttyUSB0

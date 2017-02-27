@@ -14,8 +14,6 @@ bool 'Build libevent'		CONFIG_LIB_LIBEVENT_FORCE
 bool 'Build libncurse'		CONFIG_LIB_NCURSE_FORCE
 bool 'Build libflex'		CONFIG_LIB_FLEX_FORCE
 bool 'Build libupnp1.3.1 (UPnP + IXML + ThreadUtil)'	CONFIG_LIB_LIBUPNP_FORCE
-bool 'Build libgdbm'		CONFIG_LIB_LIBGDBM_FORCE
-bool 'Build libid3tag'		CONFIG_LIB_LIBID3TAG_FORCE
 bool 'Build libdb'		CONFIG_LIB_LIBDB_FORCE
 bool 'Build pcre'		CONFIG_LIB_PCRE_FORCE
 bool 'Build vstr'		CONFIG_LIB_VSTR_FORCE
@@ -115,9 +113,13 @@ bool 'dhcp6'					CONFIG_USER_DHCP6
 dep_bool '  dhcp6 server'			CONFIG_USER_DHCP6_SERVER $CONFIG_USER_DHCP6
 dep_bool '  dhcp6 client'			CONFIG_USER_DHCP6_CLIENT $CONFIG_USER_DHCP6
 bool 'dropbear (SSH server)'			CONFIG_USER_DROPBEAR
+if [ "$CONFIG_USER_DROPBEAR" = "y" ]; then
+	define_bool CONFIG_LIB_UTIL_FORCE y
+fi
 bool 'dnsmasq (DNS forwarder, DHCP server)'	CONFIG_USER_DNSMASQ
 bool 'disktype(detect format of a disk)'	CONFIG_USER_DISKTYPE
 bool 'echo server'				CONFIG_USER_ECHO_SERVER
+bool 'ebtables'					CONFIG_USER_EBTABLES
 bool 'storage(enable chmod, fdisk in busybox)'	CONFIG_USER_STORAGE
 #dep_bool '  stupid ftpd'			CONFIG_USER_STUPID_FTPD $CONFIG_USER_STORAGE
 dep_bool '  proftpd (FTP Server)'               CONFIG_USER_PROFTPD $CONFIG_USER_STORAGE
@@ -138,22 +140,12 @@ fi
 if [ "$CONFIG_USER_PROFTPD" = "n" -a "$CONFIG_USER_SAMBA" = "n" ]; then
 	define_bool CONFIG_USER_MKDOSFS n
 fi
-bool '  mt-daapd (iTune Server)'		CONFIG_USER_MTDAAPD
-if [ "$CONFIG_USER_MTDAAPD" = "y" ]; then
-	define_bool CONFIG_LIB_LIBGDBM_FORCE y
-	define_bool CONFIG_LIB_LIBID3TAG_FORCE y
-	define_bool CONFIG_LIB_ZLIB_FORCE y
-	define_bool CONFIG_LIB_LIBPTHREAD_FORCE y
-	define_bool CONFIG_USER_DNS_RESPONDER y
-fi
-if [ "$CONFIG_USER_MTDAAPD" = "n" ]; then
-	define_bool CONFIG_LIB_LIBGDBM_FORCE n
-	define_bool CONFIG_LIB_LIBID3TAG_FORCE n
-fi
-dep_bool '    dns responder'			CONFIG_USER_DNS_RESPONDER $CONFIG_USER_MTDAAPD
 bool 'go-ahead webserver'			CONFIG_USER_GOAHEAD_HTTPD
 dep_bool '  enable IPv6 support'		CONFIG_USER_GOAHEAD_IPV6 $CONFIG_USER_GOAHEAD_HTTPD
 dep_bool '  enable SSL support'			CONFIG_USER_GOAHEAD_SSL $CONFIG_USER_GOAHEAD_HTTPD
+if [ "$CONFIG_USER_GOAHEAD_SSL" = "y" ]; then
+	define_bool CONFIG_USER_MATRIXSSL y
+fi
 dep_bool '  enable hostname support'		CONFIG_USER_GOAHEAD_HOSTNAME $CONFIG_USER_GOAHEAD_HTTPD
 dep_bool '  enable GreenAP support (enable crond in busybox)'		CONFIG_USER_GOAHEAD_GreenAP $CONFIG_USER_GOAHEAD_HTTPD
 dep_bool '  enable Wizard support'		CONFIG_USER_WIZARD $CONFIG_USER_GOAHEAD_HTTPD
@@ -168,9 +160,13 @@ if [ "$CONFIG_USER_GOAHEAD_LANG_EN" = "n" -a "$CONFIG_USER_GOAHEAD_LANG_ZHTW" = 
 fi
 
 
+bool 'ecmh (IPv6 multicast forwarding/MLD daemon)'	CONFIG_USER_ECMH
 bool 'igmp proxy (RFC4605)'			CONFIG_USER_IGMP_PROXY
 bool 'inadyn (DDNS Client)'     		CONFIG_USER_INADYN
 bool 'iptables'					CONFIG_USER_IPTABLES_IPTABLES
+if [ "$CONFIG_USER_IPTABLES_IPTABLES" = "y" ]; then
+	define_bool CONFIG_LIB_LIBM_FORCE y
+fi
 bool 'ip6tables'				CONFIG_USER_IPTABLES_IP6TABLES
 bool 'iproute2'					CONFIG_USER_IPROUTE2
 dep_bool '  ss'		  CONFIG_USER_IPROUTE2_SS	$CONFIG_USER_IPROUTE2
@@ -204,7 +200,6 @@ if [ "$CONFIG_USER_PARPROUTED" = "y" ]; then
 	define_bool CONFIG_USER_IPROUTE2 y
 	define_bool CONFIG_USER_IPROUTE2_IP y
 fi
-bool 'portmap'					CONFIG_USER_PORTMAP
 bool 'pppd'					CONFIG_USER_PPPD
 dep_bool '  pppoe client'                       CONFIG_USER_PPPD_WITH_PPPOE $CONFIG_USER_PPPD
 dep_bool '  l2tp client'                        CONFIG_USER_PPPD_WITH_L2TP $CONFIG_USER_PPPD
@@ -280,9 +275,13 @@ bool 'bonnie++'			CONFIG_USER_BONNIE
 bool 'ethtool'			CONFIG_USER_ETHTOOL
 bool 'dhrystone'		CONFIG_DHRYSTONE
 bool 'dhcpfwd'			CONFIG_DHCPFWD
-bool 'gdbreplay'		CONFIG_USER_GDB_GDBREPLAY
-bool 'gdbserver'		CONFIG_USER_GDB_GDBSERVER
+bool 'gdbreplay'		CONFIG_USER_GDBREPLAY
+bool 'gdbserver'		CONFIG_USER_GDBSERVER
 bool 'ixia Endpoint'		CONFIG_USER_IXIA_ENDPOINT
+bool 'iperf'			CONFIG_USER_IPERF
+if [ "$CONFIG_USER_IPERF" = "y" ]; then
+	define_bool CONFIG_LIB_LIBM_FORCE y
+fi
 bool 'lmbench'			CONFIG_USER_LMBENCH3
 bool 'mtd write'		CONFIG_USER_MTD_WRITE
 bool 'mpstat'			CONFIG_USER_MPSTAT
@@ -347,11 +346,10 @@ bool 'Software QoS'		CONFIG_RALINKAPP_SWQOS
 if [ "$CONFIG_RALINKAPP_SWQOS" = "y" ]; then
 	define_bool CONFIG_USER_IPROUTE2 y
 	define_bool CONFIG_USER_IPROUTE2_TC y
-	define_bool CONFIG_LIB_RESOLV_FORCE y
 fi
 bool 'Super DMZ'		CONFIG_RALINKAPP_SUPERDMZ
 
-if [ "$CONFIG_DEFAULTS_RALINK_RT3052" = "y" -o "$CONFIG_DEFAULTS_RALINK_RT3352" = "y" -o "$CONFIG_DEFAULTS_RALINK_RT5350" = "y" ]; then
+if [ "$CONFIG_DEFAULTS_RALINK_RT3052" = "y" -o "$CONFIG_DEFAULTS_RALINK_RT3352" = "y" -o "$CONFIG_DEFAULTS_RALINK_RT5350" = "y" -o "$CONFIG_DEFAULTS_RALINK_RT6855" = "y" -o "$CONFIG_DEFAULTS_RALINK_RT6855A" = "y" -o "$CONFIG_DEFAULTS_RALINK_RT6352" = "y" -o "$CONFIG_DEFAULTS_RALINK_RT71100" = "y" ]; then
 bool 'Embedded Switch Command'		CONFIG_RALINKAPP_SWITCH
 fi
 
@@ -360,9 +358,10 @@ bool 'I2S Command'		    CONFIG_RALINKAPP_I2S
 bool 'PCM Command'		    CONFIG_RALINKAPP_PCM
 fi
 bool 'Video Flow Classification Command'        CONFIG_RALINKAPP_CLS
-bool 'WAPI daemon'		    CONFIG_RALINKAPP_WAPI
+#bool 'WAPI daemon'		    CONFIG_RALINKAPP_WAPI
 bool 'Configuration Scripts'	CONFIG_RALINKAPP_SCRIPTS
 fi
+
 endmenu
 
 ##############################################################################

@@ -33,11 +33,11 @@ var ht_disallow_tkip = '<% getCfgZero(1, "HT_DisallowTKIP"); %>';
 var ht_2040_coexit = '<% getCfgZero(1, "HT_BSSCoexistence"); %>';
 var ht_f_40mhz = '<% getCfgZero(1, "HT_40MHZ_INTOLERANT"); %>';
 var apcli_include = '<% getWlanApcliBuilt(); %>';
-var draft3b = '<% get11nDraft3Built(); %>';
+var draft3b = '<% getRax11nDraft3Built(); %>';
 var mesh_include = '<% getMeshBuilt(); %>';
 var tx_stream_idx = '<% getCfgZero(1, "HT_TxStream"); %>';
 var rx_stream_idx = '<% getCfgZero(1, "HT_RxStream"); %>';
-var is3t3r = '<% is3t3r(); %>';
+var txrxStream = '<% getRaxHTStream(); %>';
 var max_bssid_num = '<% getMaxBssidNum(); %>';
 
 ChLst_24G = new Array(14);
@@ -581,8 +581,8 @@ function initValue()
 		document.wireless_basic.n_mcs.disabled = false;
 	}
 
-	var rfic = '<% getCfgGeneral(1, "RFICType"); %>';
-	if ((rfic == "2") || (rfic == "4") || (rfic == "a") || (rfic == "d"))
+	var Aband = "<% getRaxABand(); %>";
+	if (Aband == "1")
 	{
 		document.wireless_basic.wirelessmode.options[5] = new Option("11a only", "2");
                 document.wireless_basic.wirelessmode.options[6] = new Option("11a/n mixed mode", "8");
@@ -707,9 +707,9 @@ function initValue()
 	ChIdx = 1*ChIdx;
 
 	if ((PhyMode == 0) || (PhyMode == 4) || (PhyMode == 6) || (PhyMode == 7) || (PhyMode == 9))
-	{
+		{
 		if ((CntyCd == 'US' || CntyCd == 'TW') && (ChIdx < 1 || ChIdx > 11))
-	{
+			{
 			document.wireless_basic.sz11gChannel.options.selectedIndex = 0;
 			}
 		else if ((CntyCd == 'FR' || CntyCd == 'IE' || CntyCd == 'HK') && (ChIdx < 1 || ChIdx > 13))
@@ -761,7 +761,7 @@ function initValue()
 			document.wireless_basic.sz11aChannel.options.selectedIndex = 0;
 		}
 		else if (CntyCd == 'JP' && (ChIdx < 36 || ChIdx > 48))
-			{
+		{
 			document.wireless_basic.sz11aChannel.options.selectedIndex = 0;
 			}
 		else if (CntyCd == 'US' && (ChIdx < 36 || (ChIdx > 64 && ChIdx < 100) || (ChIdx > 140 && ChIdx < 149) || ChIdx > 165))
@@ -907,13 +907,13 @@ function initValue()
 		document.wireless_basic.n_gi[2].checked = true;
 	}
 
-	if (1*is3t3r == 1) {
+	if (1*txrxStream == 3) {
 		for (i = 16; i < 24; i++) {
 			document.wireless_basic.n_mcs.options[i] = new Option(i, i);
 		}
 	}
 	var mcs_length = document.wireless_basic.n_mcs.options.length;
-	if (1*is3t3r == 1) {
+	if (txrxStream == "3") {
 		document.wireless_basic.n_mcs.options[mcs_length] = new Option("32", "32");
 		mcs_length++;
 		document.wireless_basic.n_mcs.options[mcs_length] = new Option("Auto", "33");
@@ -1007,35 +1007,26 @@ function initValue()
 	else if (1*mesh_include == 1 || 1*apcli_include == 1)
 		document.wireless_basic.mssid_7.disabled = true;
 
-	var txpath = '<% getCfgGeneral(1, "TXPath"); %>';
-	var rxpath = '<% getCfgGeneral(1, "RXPath"); %>';
-	if (txpath == "1")
+	if (txrxStream == "2")
+	{
+		document.getElementById("div_HtTx2Stream").style.visibility = "visible";
+		document.getElementById("div_HtTx2Stream").style.display = StylDispOn();
+		document.getElementById("div_HtRx2Stream").style.visibility = "visible";
+		document.getElementById("div_HtRx2Stream").style.display = StylDispOn();
+	}
+	else if (txrxStream == "3")
+	{
+		document.wireless_basic.rx_stream.options[2] = new Option("3", "3");
+		document.wireless_basic.tx_stream.options[2] = new Option("3", "3");
+	}
+	else
 	{
 		document.getElementById("div_HtTx2Stream").style.visibility = "hidden";
 		document.getElementById("div_HtTx2Stream").style.display = "none";
 		tx_stream_idx = 1;
-	}
-	else
-	{
-		document.getElementById("div_HtTx2Stream").style.visibility = "visible";
-		document.getElementById("div_HtTx2Stream").style.display = StylDispOn();
-	}
-	if (rxpath == "1")
-	{
 		document.getElementById("div_HtRx2Stream").style.visibility = "hidden";
 		document.getElementById("div_HtRx2Stream").style.display = "none";
 		rx_stream_idx = 1;
-	}
-	else
-	{
-		document.getElementById("div_HtRx2Stream").style.visibility = "visible";
-		document.getElementById("div_HtRx2Stream").style.display = StylDispOn();
-	}
-	if (1*is3t3r == 1) {
-		if (rxpath == "3")
-			document.wireless_basic.rx_stream.options[2] = new Option("3", "3");
-		if (txpath == "3")
-			document.wireless_basic.tx_stream.options[2] = new Option("3", "3");
 	}
 	document.wireless_basic.rx_stream.options.selectedIndex = rx_stream_idx - 1;
 	document.wireless_basic.tx_stream.options.selectedIndex = tx_stream_idx - 1;
@@ -1279,6 +1270,10 @@ function CheckValue()
 		return false;
 	}
 
+	var wpsenable = "<% getCfgZero(1, "WscModeOption"); %>";
+	if (wpsenable != "0" && document.wireless_basic.hssid[0].checked == true)
+		alert("WPS feature is going to turn off because of disabled broadcasting of SSID");
+
 	submit_ssid_num = 1;
 
 	for (i = 1; i < max_bssid_num; i++)
@@ -1340,9 +1335,9 @@ function WiFiStatusChange(rs)
   <tr> 
     <td class="title" colspan="2" id="basicWirelessNet">Wireless Network</td>
   </tr>
-  <tr> 
+  <tr>
     <td class="head" id="aboutDriverVersion">Driver Version</td>
-    <td><% getAPDriverVer(); %></td>
+    <td><% getAPDriverVer("ra0"); %></td>
   </tr>
   <tr> 
     <td class="head" id="basicRadioButton">Radio On/Off</td>

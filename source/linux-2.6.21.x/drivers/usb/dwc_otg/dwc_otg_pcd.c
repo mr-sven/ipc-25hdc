@@ -1,7 +1,7 @@
 /* ==========================================================================
  * $File: //dwh/usb_iip/dev/software/otg/linux/drivers/dwc_otg_pcd.c $
- * $Revision: 1.5 $
- * $Date: 2008-11-27 09:21:25 $
+ * $Revision: 1.6 $
+ * $Date: 2010-12-01 03:26:14 $
  * $Change: 1115682 $
  *
  * Synopsys HS OTG Linux Software Driver and documentation (hereinafter,
@@ -2208,8 +2208,11 @@ int dwc_otg_pcd_init(struct lm_device *lmdev)
 	otg_dev->pcd = pcd;
 	s_pcd = pcd;
 	pcd->gadget.name = pcd_name;
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,35)
+	strcpy(dev_name(&pcd->gadget.dev), "gadget");
+#else
 	strcpy(pcd->gadget.dev.bus_id, "gadget");
-	
+#endif	
 	pcd->otg_dev = lm_get_drvdata(lmdev);
 	
 	pcd->gadget.dev.parent = &lmdev->dev;
@@ -2282,8 +2285,13 @@ int dwc_otg_pcd_init(struct lm_device *lmdev)
 	 * Setup interupt handler
 	 */
 	DWC_DEBUGPL(DBG_ANY, "registering handler for irq%d\n", lmdev->irq);
+#if defined(IRQF_SHARED)
+	retval = request_irq(lmdev->irq, dwc_otg_pcd_irq,
+				IRQF_SHARED, pcd->gadget.name, pcd);
+#else
 	retval = request_irq(lmdev->irq, dwc_otg_pcd_irq,
 				SA_SHIRQ, pcd->gadget.name, pcd);
+#endif
 	if (retval != 0) {
 		DWC_ERROR("request of irq%d failed\n", lmdev->irq);
 		device_unregister(&pcd->gadget.dev);

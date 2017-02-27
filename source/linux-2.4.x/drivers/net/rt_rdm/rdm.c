@@ -56,7 +56,7 @@ int rdm_release(struct inode *inode, struct file *filp)
 
 
 int rdm_ioctl (struct inode *inode, struct file *filp,
-                     unsigned int cmd, unsigned long arg)
+                     unsigned int cmd, unsigned long *arg)
 {
 	unsigned int rtvalue, baseaddr, offset;
 	unsigned int addr=0,count=0;

@@ -24,6 +24,8 @@ static void wscEventHandler(char *data, int len)
 	pos = data;
 	end = data + len;
 
+	//wsc_hexdump("wscEventHandler", pos, len);
+
 	while (pos + IW_EV_LCP_LEN <= end)
 	{
 		/* Event data may be unaligned, so make a local, aligned copy
@@ -47,9 +49,10 @@ static void wscEventHandler(char *data, int len)
 		{
 			memcpy(&iwe_buf, pos, sizeof(struct iw_event));
 			}	
+			//wsc_hexdump("After Stripped", custom, len - IW_EV_POINT_LEN);
 
 			if (custom + iwe->u.data.length > end){
-				DBGPRINTF(RT_DBG_INFO, "custom(0x%x) + iwe->u.data.length(0x%x) > end(0x%x)!\n", custom, iwe->u.data.length, end);
+				DBGPRINTF(RT_DBG_ERROR, "custom(0x%x) + iwe->u.data.length(0x%x >end!\n", custom, iwe->u.data.length);
 				return;
 			}
 #if 0
@@ -59,8 +62,8 @@ static void wscEventHandler(char *data, int len)
 				
 			memcpy(buf, custom, iwe->u.data.length);
 			buf[iwe->u.data.length] = '\0';
+			DBGPRINTF(RT_DBG_INFO, "iwe->u.data.flags=0x%x!\n", iwe->u.data.flags);
 #endif
-			//DBGPRINTF(RT_DBG_INFO, "iwe->u.data.flags=0x%x!\n", iwe->u.data.flags);
 			switch(iwe->u.data.flags)
 			{
 				case RT_ASSOC_EVENT_FLAG:
@@ -73,7 +76,7 @@ static void wscEventHandler(char *data, int len)
 				default:
 					if(strncmp(custom, "RAWSCMSG", 8) == 0)
 					{	
-						DBGPRINTF(RT_DBG_INFO, "Recevive a RAWSCMSG segment\n");
+						DBGPRINTF(RT_DBG_LOUD, "Recevive a RAWSCMSG segment\n");
 						WscRTMPMsgHandler(custom, iwe->u.data.length);
 					}
 					break;
@@ -92,7 +95,7 @@ static void wscNLEventRTMNewlinkHandle(struct nlmsghdr *nlmsgHdr, int len)
 	int attrlen, nlmsg_len, rta_len;
 	struct rtattr * attr;
 
-    DBGPRINTF(RT_DBG_INFO, "%s", __FUNCTION__);
+	DBGPRINTF(RT_DBG_LOUD, "%s", __FUNCTION__);
 
 	if (len < sizeof(struct ifinfomsg))
 		return;
@@ -103,7 +106,7 @@ static void wscNLEventRTMNewlinkHandle(struct nlmsghdr *nlmsgHdr, int len)
 	nlmsg_len = NLMSG_ALIGN(sizeof(struct ifinfomsg));
        
 	attrlen = nlmsgHdr->nlmsg_len - nlmsg_len;
-//	DBGPRINTF("attrlen=%d\n",attrlen);
+	DBGPRINTF(RT_DBG_LOUD, "attrlen=%d\n",attrlen);
 	if (attrlen < 0)
 		return;
 
@@ -151,7 +154,7 @@ void wscNLSockRecv(int sock)
 		plen = len - sizeof(*nlmsgHdr);
 		if (len > left || plen < 0)
 		{
-			DBGPRINTF(RT_DBG_INFO, "Malformed netlink message: len=%d left=%d plen=%d", len, left, plen);
+			DBGPRINTF(RT_DBG_LOUD, "Malformed netlink message: len=%d left=%d plen=%d", len, left, plen);
 			break;
 		}
 
@@ -211,8 +214,9 @@ void *wscDevNLHandle(void *args)
 		/* Don¡¦t rely on the value of Wsc now! */
 		if (retVal == -1)
 			perror("select()");
-    	else if (retVal) {
-			DBGPRINTF(RT_DBG_INFO, "(%s):netlink socket data is available now.\n", __FUNCTION__);
+		else if (retVal)
+		{
+			DBGPRINTF(RT_DBG_LOUD, "(%s):netlink socket data is available now.\n", __FUNCTION__);
 			if(FD_ISSET(netlink_sock, &rfds)){
 				wscNLSockRecv(netlink_sock);
 			}

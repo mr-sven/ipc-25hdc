@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $Id: config-vlan.sh,v 1.34 2010-07-09 07:37:33 steven Exp $
+# $Id: config-vlan.sh,v 1.43.2.1 2012-03-01 08:51:06 kurtis Exp $
 #
 # usage: config-vlan.sh <switch_type> <vlan_type>
 #   switch_type: 0=IC+, 1=vtss
@@ -25,6 +25,12 @@ usage()
 	echo "  $0 2 12345 - config Ralink ESW with VLAN 1~5 at port 0~4"
 	echo "  $0 2 GW - config Ralink ESW with WAN at Giga port"
 	echo "  $0 2 G01234 - config Ralink ESW with VLAN 6 at Giga port, and VLAN 1~5 at port 0~4"
+	echo "  $0 3 0 - restore Ralink RT6855/RT6352 ESW to no VLAN partition"
+	echo "  $0 3 LLLLW - config Ralink RT6855/RT6352 ESW with VLAN and WAN at port 4"
+	echo "  $0 3 WLLLL - config Ralink RT6855/RT6352 ESW with VLAN and WAN at port 0"
+	echo "  $0 3 12345 - config Ralink RT6855/RT6352 ESW with VLAN 1~5 at port 0~4"
+	echo "  $0 3 GW - config Ralink RT6855/RT6352 ESW with WAN at Giga port"
+	echo "  $0 4 0 - restore Ralink RT71100 GSW to no VLAN partition"
 	exit 0
 }
 
@@ -131,6 +137,126 @@ config175D()
 	fi
 }
 
+config6855Esw()
+{
+	#LAN/WAN ports as security mode
+	switch reg w 2004 ff0003 #port0
+	switch reg w 2104 ff0003 #port1
+	switch reg w 2204 ff0003 #port2
+	switch reg w 2304 ff0003 #port3
+	switch reg w 2404 ff0003 #port4
+	switch reg w 2504 ff0003 #port5
+	#LAN/WAN ports as transparent port
+	switch reg w 2010 810000c0 #port0
+	switch reg w 2110 810000c0 #port1
+	switch reg w 2210 810000c0 #port2
+	switch reg w 2310 810000c0 #port3	
+	switch reg w 2410 810000c0 #port4
+	switch reg w 2510 810000c0 #port5
+	#set CPU/P7 port as user port
+	switch reg w 2610 81000000 #port6
+	switch reg w 2710 81000000 #port7
+
+	switch reg w 2604 20ff0003 #port6, Egress VLAN Tag Attribution=tagged
+	switch reg w 2704 20ff0003 #port7, Egress VLAN Tag Attribution=tagged
+	if [ "$CONFIG_RAETH_SPECIAL_TAG" == "y" ]; then
+	    echo "Special Tag Enabled"
+		switch reg w 2610 81000020 #port6
+		#VLAN member port
+		switch vlan set 0 1 1000001
+		switch vlan set 1 2 0100001
+		switch vlan set 2 3 0010001
+		switch vlan set 3 4 0001001
+		switch vlan set 4 5 0000101
+		switch vlan set 5 6 0000011
+		switch vlan set 6 7 0000011
+	else
+	    echo "Special Tag Disabled"
+		switch reg w 2610 81000000 #port6
+	fi
+
+	if [ "$1" = "LLLLW" ]; then
+		if [ "$CONFIG_RAETH_SPECIAL_TAG" == "y" ]; then
+		#set PVID
+		switch reg w 2014 10007 #port0
+		switch reg w 2114 10007 #port1
+		switch reg w 2214 10007 #port2
+		switch reg w 2314 10007 #port3
+		switch reg w 2414 10008 #port4
+		switch reg w 2514 10007 #port5
+		#VLAN member port
+		switch vlan set 6 7 11110111
+		switch vlan set 7 8 00001011
+		else
+		#set PVID
+		switch reg w 2014 10001 #port0
+		switch reg w 2114 10001 #port1
+		switch reg w 2214 10001 #port2
+		switch reg w 2314 10001 #port3
+		switch reg w 2414 10002 #port4
+		switch reg w 2514 10001 #port5
+		#VLAN member port
+		switch vlan set 0 1 11110111
+		switch vlan set 1 2 00001011
+		fi
+	elif [ "$1" = "WLLLL" ]; then
+		if [ "$CONFIG_RAETH_SPECIAL_TAG" == "y" ]; then
+		#set PVID
+		switch reg w 2014 10008 #port0
+		switch reg w 2114 10007 #port1
+		switch reg w 2214 10007 #port2
+		switch reg w 2314 10007 #port3
+		switch reg w 2414 10007 #port4
+		switch reg w 2514 10007 #port5
+		#VLAN member port
+		switch vlan set 6 7 01111111
+		switch vlan set 7 8 10000011
+		else
+		#set PVID
+		switch reg w 2014 10002 #port0
+		switch reg w 2114 10001 #port1
+		switch reg w 2214 10001 #port2
+		switch reg w 2314 10001 #port3
+		switch reg w 2414 10001 #port4
+		switch reg w 2514 10001 #port5
+		#VLAN member port
+		switch vlan set 0 1 01111111
+		switch vlan set 1 2 10000011
+		fi
+	elif [ "$1" = "12345" ]; then
+		echo "12345"
+		#set PVID
+		switch reg w 2014 10001 #port0
+		switch reg w 2114 10002 #port1
+		switch reg w 2214 10003 #port2
+		switch reg w 2314 10004 #port3
+		switch reg w 2414 10005 #port4
+		switch reg w 2514 10006 #port5
+		#VLAN member port
+		switch vlan set 0 1 10000011
+		switch vlan set 1 2 01000011
+		switch vlan set 2 3 00100011
+		switch vlan set 3 4 00010011
+		switch vlan set 4 5 00001011
+		switch vlan set 5 6 00000111
+	elif [ "$1" = "GW" ]; then
+		echo "GW"
+		#set PVID
+		switch reg w 2014 10001 #port0
+		switch reg w 2114 10001 #port1
+		switch reg w 2214 10001 #port2
+		switch reg w 2314 10001 #port3
+		switch reg w 2414 10001 #port4
+		switch reg w 2514 10002 #port5
+		#VLAN member port
+		switch vlan set 0 1 11111011
+		switch vlan set 1 2 00000111
+	fi
+
+	#clear mac table if vlan configuration changed
+	switch clear
+}
+
 configEsw()
 {
 	switch reg w 14 405555
@@ -178,8 +304,8 @@ fi
 		switch reg w 40 2001
 		switch reg w 44 4003
 		switch reg w 48 1005
-		switch reg w 70 7e7e7e41
-		switch reg w 74 ffffff7e
+		switch reg w 70 48444241
+		switch reg w 74 ffffff50
 	elif [ "$1" = "GW" ]; then
 		switch reg w 40 1001
 		switch reg w 44 1001
@@ -197,6 +323,64 @@ fi
 	switch clear
 }
 
+restore71100Gsw()
+{
+	#TODO: new 71100 will be 3ports giga switch
+
+	echo "restore RT71100 GSW to dump switch mode"
+	#port matrix mode
+	switch reg w 2004 ff0000 #port0
+	switch reg w 2104 ff0000 #port1
+	switch reg w 2204 ff0000 #port2
+
+	#LAN/WAN ports as transparent mode
+	switch reg w 2010 810000c0 #port0
+	switch reg w 2110 810000c0 #port1
+	switch reg w 2210 810000c0 #port2
+
+	#=======================================
+	#for FPGA stage only since GSW is 3 ports
+	switch reg w 2304 ff0000 #port3
+	switch reg w 2404 ff0000 #port4
+	switch reg w 2504 ff0000 #port5
+	switch reg w 2604 ff0000 #port6
+
+	switch reg w 2310 810000c0 #port3	
+	switch reg w 2410 810000c0 #port4
+	switch reg w 2510 810000c0 #port5
+	switch reg w 2610 810000c0 #port6
+	#=======================================
+
+	#clear mac table if vlan configuration changed
+	switch clear
+}
+
+restore6855Esw()
+{
+	echo "restore RT6855 ESW to dump switch mode"
+	#port matrix mode
+	switch reg w 2004 ff0000 #port0
+	switch reg w 2104 ff0000 #port1
+	switch reg w 2204 ff0000 #port2
+	switch reg w 2304 ff0000 #port3
+	switch reg w 2404 ff0000 #port4
+	switch reg w 2504 ff0000 #port5
+	switch reg w 2604 ff0000 #port6
+	switch reg w 2704 ff0000 #port7
+
+	#LAN/WAN ports as transparent mode
+	switch reg w 2010 810000c0 #port0
+	switch reg w 2110 810000c0 #port1
+	switch reg w 2210 810000c0 #port2
+	switch reg w 2310 810000c0 #port3	
+	switch reg w 2410 810000c0 #port4
+	switch reg w 2510 810000c0 #port5
+	switch reg w 2610 810000c0 #port6
+	switch reg w 2710 810000c0 #port7
+	
+	#clear mac table if vlan configuration changed
+	switch clear
+}
 restoreEsw()
 {
 	switch reg w 14 5555
@@ -388,10 +572,32 @@ elif [ "$1" = "2" ]; then
 		configEsw 12345
 	elif [ "$2" = "GW" ]; then
 		configEsw GW
-	elif [ "$2" = "G01234" ]; then
-		configEsw G01234
 	else
 		echo "unknown vlan type $2"
+		echo ""
+		usage $0
+	fi
+elif [ "$1" = "3" ]; then
+	if [ "$2" = "0" ]; then
+		restore6855Esw
+	elif [ "$2" = "LLLLW" ]; then
+		config6855Esw LLLLW
+	elif [ "$2" = "WLLLL" ]; then
+		config6855Esw WLLLL
+	elif [ "$2" = "12345" ]; then
+		config6855Esw 12345
+	elif [ "$2" = "GW" ]; then
+		config6855Esw GW
+	else
+		echo "unknown vlan type $2"
+		echo ""
+		usage $0
+	fi
+elif [ "$1" = "4" ]; then
+	if [ "$2" = "0" ]; then
+		restore71100Gsw
+	else
+		echo "unknown type $2"
 		echo ""
 		usage $0
 	fi

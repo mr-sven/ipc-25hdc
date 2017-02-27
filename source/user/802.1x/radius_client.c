@@ -1,19 +1,3 @@
-/*
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation. See README and COPYING for
- * more details.
-
-	Module Name:
-	radius_client.c
-
-	Revision History:
-	Who 		When		  What
-	--------	----------	  ----------------------------------------------
-	Jan, Lee	Dec --2003	  modified
-
-*/
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -25,7 +9,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-#include "rt2860apd.h"
+#include "rtdot1x.h"
 #include "radius.h"
 #include "radius_client.h"
 #include "eloop.h"

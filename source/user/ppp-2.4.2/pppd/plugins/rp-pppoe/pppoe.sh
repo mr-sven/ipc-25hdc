@@ -31,6 +31,9 @@ elif [ $PPPOE_OPMODE == "OnDemand" ]; then
 fi
 echo "ipcp-accept-remote" >> $PPPOE_FILE 
 echo "ipcp-accept-local" >> $PPPOE_FILE 
+#echo "ipv6 ," >> $PPPOE_FILE
+#echo "ipv6cp-accept-local" >> $PPPOE_FILE 
+#echo "ipv6cp-use-persistent" >> $PPPOE_FILE 
 echo "lcp-echo-failure 10" >> $PPPOE_FILE
 echo "lcp-echo-interval 30" >> $PPPOE_FILE
 echo "ktune" >> $PPPOE_FILE

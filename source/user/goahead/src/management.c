@@ -25,7 +25,7 @@
 
 void WPSRestart(void);
 void formDefineWPS(void);
-#if defined (CONFIG_RTDEV_MII) || defined (CONFIG_RTDEV_USB) || defined (CONFIG_RTDEV_PCI)
+#if defined (RTDEV_SUPPORT)
 #ifndef CONFIG_UNIQUE_WPS
 void RaixWPSRestart();
 #endif
@@ -267,7 +267,7 @@ static void WatchDogRestart(void)
 	doSystem("killall -9 watchdog 1>/dev/null 2>&1");
 	doSystem("rmmod ralink_wdt.o");
 	if (strcmp(nvram_get(RT2860_NVRAM, "WatchDogEnable"), "1") == 0) {
-		doSystem("insmod ralink_wdt.o");
+		doSystem("insmod -q ralink_wdt.o");
 		doSystem("wdg.sh");
 		doSystem("watchdog");
 	}
@@ -294,14 +294,11 @@ static void setSysAdm(webs_t wp, char_t *path, char_t *query)
 		error(E_L, E_LOG, T("setSysAdm: password empty, leave it unchanged"));
 		return;
 	}
-	nvram_bufset(RT2860_NVRAM, "Login", admuser);
-	nvram_bufset(RT2860_NVRAM, "Password", admpass);
 #if (defined CONFIG_RALINK_WATCHDOG || defined CONFIG_RALINK_WATCHDOG_MODULE) && defined CONFIG_USER_WATCHDOG
 	char_t *watchdogcap;
 	watchdogcap = websGetVar(wp, T("admwatchdog"), T(""));
 	nvram_bufset(RT2860_NVRAM, "WatchDogEnable", watchdogcap);
 #endif
-	nvram_commit(RT2860_NVRAM);
 
 	/* modify /etc/passwd to new user name and passwd */
 	doSystem("sed -e 's/^%s:/%s:/' /etc/passwd > /etc/newpw", old_user, admuser);
@@ -318,6 +315,9 @@ static void setSysAdm(webs_t wp, char_t *path, char_t *query)
 		umDeleteUser(admuser);
 	umAddUser(admuser, admpass, T("adm"), FALSE, FALSE);
 #endif
+	nvram_bufset(RT2860_NVRAM, "Login", admuser);
+	nvram_bufset(RT2860_NVRAM, "Password", admpass);
+	nvram_commit(RT2860_NVRAM);
 #if (defined CONFIG_RALINK_WATCHDOG || defined CONFIG_RALINK_WATCHDOG_MODULE) && defined CONFIG_USER_WATCHDOG
 	WatchDogRestart();
 #endif
@@ -720,11 +720,11 @@ int getIfStatisticASP(int eid, webs_t wp, int argc, char_t **argv)
 		return -1;
 	}
 
-	if(ejArgs(argc, argv, T("%s %s"), &interface, &type) != 2){
-		fclose(fp);
-		websWrite(wp, T("Wrong argument.\n"));
-		return -1;
-	}
+    if(ejArgs(argc, argv, T("%s %s"), &interface, &type) != 2){
+	    fclose(fp);
+	    websWrite(wp, T("Wrong argument.\n"));
+	    return -1;
+    }
 
 	while(fgets(buf, 1024, fp)){
 		char *ifname;
@@ -1064,12 +1064,15 @@ static void LoadDefaultSettings(webs_t wp, char_t *path, char_t *query)
 #else
         system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_novlan");
 #endif
-#if defined (CONFIG_RTDEV_MII) || defined (CONFIG_RTDEV_USB) || defined (CONFIG_RTDEV_PCI)
+#if defined (RTDEV_SUPPORT)
 	system("ralink_init clear rtdev");
         system("ralink_init renew rtdev /etc_ro/Wireless/iNIC/RT2860AP.dat");
 #elif defined (CONFIG_RT2561_AP) || defined (CONFIG_RT2561_AP_MODULE)
 	system("ralink_init clear rtdev");
         system("ralink_init renew rtdev /etc_ro/Wireless/RT61AP/RT2561_default");
+#elif defined (CONFIG_RTDEV_PLC)
+	system("ralink_init clear rtdev");
+        system("ralink_init renew rtdev /etc_ro/PLC/plc_default.dat");
 #endif
 	system("reboot");
 }
@@ -1162,7 +1165,7 @@ void management_init(void)
 	doSystem("ddns.sh");
 	WPSRestart();
 	sleep(3);
-#if defined (CONFIG_RTDEV_MII) || defined (CONFIG_RTDEV_USB) || defined (CONFIG_RTDEV_PCI)
+#if defined (RTDEV_SUPPORT)
 #ifndef CONFIG_UNIQUE_WPS
 	RaixWPSRestart();
 #endif
@@ -1257,7 +1260,7 @@ void formDefineManagement(void)
 	websAspDefine(T("FirmwareUpgradePostASP"), FirmwareUpgradePostASP);
 
 	formDefineWPS();
-#if defined (CONFIG_RTDEV_MII) || defined (CONFIG_RTDEV_USB) || defined (CONFIG_RTDEV_PCI)
+#if defined (RTDEV_SUPPORT)
 #ifndef CONFIG_UNIQUE_WPS
 	formDefineRaixWPS();
 #endif

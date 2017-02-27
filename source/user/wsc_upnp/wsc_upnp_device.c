@@ -41,8 +41,8 @@
 #include "wsc_upnp.h"
 #include "sample_util.h"
 #include "ThreadPool.h"
-#include <service_table.h>
-#include <upnpapi.h>
+#include "service_table.h"
+#include "upnpapi.h"
 #include "ssdplib.h"
 
 #define UUID_STR_LEN            36	
@@ -715,12 +715,14 @@ WscDevPutWLANResponse(
 {
 	char *inStr = NULL;
 	unsigned char *decodeStr = NULL;
-	int decodeLen, retVal = UPNP_E_INTERNAL_ERROR;
-	
+	int decodeLen, retVal = UPNP_E_INTERNAL_ERROR, macStrLen = 0;
+	char *macStr = NULL;
 	char *pWscU2KMsg = NULL;
 	RTMP_WSC_U2KMSG_HDR *msgHdr = NULL;
 	int wscU2KMsgLen;
 
+	DBGPRINTF(RT_DBG_INFO,"%s()=>ReceiveMsg from ip(0x%x)\n", __FUNCTION__, ipAddr);
+	
 	(*out) = NULL;
 	(*errorString) = NULL;
 
@@ -728,24 +730,55 @@ WscDevPutWLANResponse(
 	if (inStr == NULL)
 	{
 		(*errorString) = "Invalid PutWLANResponse msg";
+		DBGPRINTF(RT_DBG_INFO, "<=%s(), No NewMessage field!\n", __FUNCTION__);
 		return UPNP_E_INVALID_PARAM;
 	}
 		 	
 	decodeLen = ILibBase64Decode((unsigned char *)inStr, strlen(inStr), &decodeStr);
 	if (decodeLen == 0 || decodeStr == NULL)
 		goto done;
+	DBGPRINTF(RT_DBG_INFO,"%s():decodeLen=%d, strlen(decodeStr)=%d!\n", __FUNCTION__, decodeLen, strlen((char *)decodeStr));
+	
+	/* for WPS2, we need to get the dstMac and pass to driver */
+	macStr = SampleUtil_GetFirstDocumentItem(in, "NewWLANEventMAC");
+	if (macStr != NULL)
+	{
+		macStrLen = strlen(macStr);
+		if (macStrLen == 0)
+			goto done;
+		
+		DBGPRINTF(RT_DBG_INFO,"NewWLANEventMAC string is(%d):%s!\n", macStrLen, macStr);
+	}
+	else
+	{
+		DBGPRINTF(RT_DBG_INFO,"%s(): No NewWLANEventMAC field or empty element!\n", __FUNCTION__);
+	}
 	
 	/* Prepare the msg buffers */
 	wscU2KMsgLen = wscU2KMsgCreate(&pWscU2KMsg, (char *)decodeStr, decodeLen, EAP_FRAME_TYPE_WSC);
 	if (wscU2KMsgLen == 0)
 		goto done;
 
+	DBGPRINTF(RT_DBG_INFO,"%s():Prepare wscU2KMsgLen=%d, pWscU2KMsg=0x%x!\n", 
+				__FUNCTION__, wscU2KMsgLen, pWscU2KMsg);
+	
 	// Fill the sessionID, Addr1, and Adde2 to the U2KMsg buffer header.
 	msgHdr = (RTMP_WSC_U2KMSG_HDR *)pWscU2KMsg;
 	msgHdr->envID = 0;
 	memcpy(msgHdr->Addr1, HostMacAddr, MAC_ADDR_LEN);
 	memcpy(msgHdr->Addr2, &ipAddr, sizeof(unsigned int));
-	
+	if ((macStr != NULL) && (macStrLen == 17))
+	{
+		int snum;
+		snum = sscanf(macStr, "%02x:%02x:%02x:%02x:%02x:%02x", 
+				&msgHdr->Addr3[0], &msgHdr->Addr3[1],
+				&msgHdr->Addr3[2], &msgHdr->Addr3[3],
+				&msgHdr->Addr3[4], &msgHdr->Addr3[5]);
+		DBGPRINTF(RT_DBG_INFO,"NewWLANEventMAC(snum=%d) is %02x:%02x:%02x:%02x:%02x:%02x!\n", 
+				snum, msgHdr->Addr3[0], msgHdr->Addr3[1],
+				msgHdr->Addr3[2], msgHdr->Addr3[3],
+				msgHdr->Addr3[4], msgHdr->Addr3[5]);
+	}
 	DBGPRINTF(RT_DBG_INFO, "(%s):Ready to send pWscU2KMsg(len=%d) to kernel by ioctl(%d)!\n", __FUNCTION__, 
 				wscU2KMsgLen, ioctl_sock);
 	wsc_hexdump("U2KMsg", pWscU2KMsg, wscU2KMsgLen);
@@ -765,8 +798,12 @@ done:
 		free(inStr);
 	if (decodeStr)
 		free(decodeStr);
+	if (macStr)
+		free(macStr);
 	if (pWscU2KMsg)
 		free(pWscU2KMsg);
+	
+	DBGPRINTF(RT_DBG_INFO,"<=%s(retVal=%d)\n", __FUNCTION__, retVal);
 	
 	if (retVal == UPNP_E_SUCCESS)
 		return UPNP_E_SUCCESS;
@@ -1036,10 +1073,11 @@ WscDevGetDeviceInfo(
 		rtmpHdr = (RTMP_WSC_MSG_HDR *)(msgEnvelope->pMsgPtr);
 		DBGPRINTF(RT_DBG_INFO, "(%s):Ready to parse the K2U msg(TotalLen=%d, headerLen=%d)!\n", __FUNCTION__, 
 						msgEnvelope->msgLen, sizeof(RTMP_WSC_MSG_HDR));
-		DBGPRINTF(RT_DBG_INFO, "\tMsgType=%d!\n", rtmpHdr->msgType);
-		DBGPRINTF(RT_DBG_INFO, "\tMsgSubType=%d!\n", rtmpHdr->msgSubType);
-		DBGPRINTF(RT_DBG_INFO, "\tipAddress=0x%x!\n", rtmpHdr->ipAddr);
-		DBGPRINTF(RT_DBG_INFO, "\tMsgLen=%d!\n", rtmpHdr->msgLen);
+		DBGPRINTF(RT_DBG_INFO, "\tMsgType=%d!\n" 
+								"\tMsgSubType=%d!\n"
+								"\tipAddress=0x%x!\n"
+								"\tMsgLen=%d!\n",
+								rtmpHdr->msgType, rtmpHdr->msgSubType, rtmpHdr->ipAddr, rtmpHdr->msgLen);
 		
 		if(rtmpHdr->msgType == WSC_OPCODE_UPNP_CTRL || rtmpHdr->msgType == WSC_OPCODE_UPNP_MGMT)
 		{
@@ -1118,13 +1156,15 @@ WscDevHandleActionReq(IN struct Upnp_Action_Request *ca_event)
 	}
 
 {// For debug
-	DBGPRINTF(RT_DBG_INFO, "Get a new Action Request:\n");
-	DBGPRINTF(RT_DBG_INFO, "ca_event->ActionName=%s!\n", ca_event->ActionName);
-	DBGPRINTF(RT_DBG_INFO, "ca_event->CtrlIPtIPAddr=%s!\n", inet_ntoa(ca_event->CtrlPtIPAddr));
-	DBGPRINTF(RT_DBG_INFO, "ca_event->Socket=%d!\n", ca_event->Socket);
-	DBGPRINTF(RT_DBG_INFO, "ca_event->ServiceID=%s!\n", ca_event->ServiceID);
-	DBGPRINTF(RT_DBG_INFO, "ca_envet->DevUDN=%s!\n", ca_event->DevUDN);
-	DBGPRINTF(RT_DBG_INFO, "----\n");
+	DBGPRINTF(RT_DBG_INFO, "Get a new Action Request:\n"
+							"ca_event->ActionName=%s!\n"
+							"ca_event->CtrlIPtIPAddr=%s!\n"
+							"ca_event->Socket=%d!\n", 
+							"ca_event->ServiceID=%s!\n"
+							"ca_envet->DevUDN=%s!\n"
+							"----\n", 
+							ca_event->ActionName, inet_ntoa(ca_event->CtrlPtIPAddr), 
+							ca_event->Socket, ca_event->ServiceID, ca_event->DevUDN);
 	
 }
 	/* 
@@ -1566,7 +1606,7 @@ int WscEventDataMsgRecv(
 	unsigned char includeMAC = 0;
 	char curMacStr[18];
 	
-	if ((WscUPnPOpMode & UPNP_OPMODE_DEV) == 0)
+	if ((WscUPnPOpMode & WSC_UPNP_OPMODE_DEV) == 0)
 		return -1;
 		
 	pHdr = (RTMP_WSC_MSG_HDR *)pBuf;
@@ -1670,7 +1710,7 @@ static int WscEventMgmt_RegSelect(
 	char *pWscMsg = NULL;
 	int registrarID = 0;
 		
-	if ((WscUPnPOpMode & UPNP_OPMODE_DEV) == 0)
+	if ((WscUPnPOpMode & WSC_UPNP_OPMODE_DEV) == 0)
 		return -1;
 	
 	DBGPRINTF(RT_DBG_INFO, "(%s):Ready to parse the K2U msg(len=%d)!\n", __FUNCTION__, bufLen);
@@ -1734,7 +1774,7 @@ static int WscEventMgmt_ConfigReq(
 	Status = *(pWscMsg);
 	DBGPRINTF(RT_DBG_INFO, "(%s): Status =%d!\n", __FUNCTION__, Status);
 
-	if ((WscUPnPOpMode & UPNP_OPMODE_DEV) && (strlen(triggerMac) == 0))
+	if ((WscUPnPOpMode & WSC_UPNP_OPMODE_DEV) && (strlen(triggerMac) == 0))
 	{
 	strcpy(wscLocalDevice.services.StateVarVal[WSC_EVENT_APSTATUS], "0");
 	strcpy(wscLocalDevice.services.StateVarVal[WSC_EVENT_STASTATUS], "0");
@@ -1781,7 +1821,7 @@ static int WscEventMgmt_ConfigReq(
 	}
 	}
 
-	if ((WscUPnPOpMode & UPNP_OPMODE_CP) && (strlen(triggerMac) > 0))
+	if ((WscUPnPOpMode & WSC_UPNP_OPMODE_CP) && (strlen(triggerMac) > 0))
 	{
 		
 	}
@@ -1797,7 +1837,8 @@ static int WscEventMgmt_ConfigReq(
 		*If the length if SSID string is small than 32 bytes, fill 0x0 for remaining bytes.
 	2. Station MAC address(6 bytes):
 	3. element ID(OID)(1 byte):
-			val=0xDD
+			val=0xDD for eID
+			val=other values, high byte of length fields.
 	4. Length of "WscProbeReqData" in the probeReq packet(1 byte):
 	5. "WscProbeReqData" info in ProbeReq:
 								
@@ -1814,9 +1855,9 @@ static int WscEventMgmt_ProbreReq(
 	char srcMacStr[18];
 	int encodeLen = 0, UPnPMsgLen = 0;
 	int retVal;
-	unsigned char wscLen;
+	unsigned short wscLen;
 		
-	if ((WscUPnPOpMode & UPNP_OPMODE_DEV) == 0)
+	if ((WscUPnPOpMode & WSC_UPNP_OPMODE_DEV) == 0)
 		return -1;
 	
 	DBGPRINTF(RT_DBG_INFO, "(%s):Ready to parse the K2U msg(len=%d)!\n", __FUNCTION__, bufLen);
@@ -1831,14 +1872,18 @@ static int WscEventMgmt_ProbreReq(
 		the MAC format is "xx:xx:xx:xx:xx:xx", case-independent, 17 char.
 	*/
 	memset(srcMacStr, 0 , sizeof(srcMacStr));
-	snprintf(srcMacStr, 17, "%02x:%02x:%02x:%02x:%02x:%02x", pWscMsg[0], pWscMsg[1], pWscMsg[2],pWscMsg[3],pWscMsg[4],pWscMsg[5]);
+	snprintf(srcMacStr, 18, "%02x:%02x:%02x:%02x:%02x:%02x", pWscMsg[0], pWscMsg[1], pWscMsg[2],pWscMsg[3],pWscMsg[4],pWscMsg[5]);
 	DBGPRINTF(RT_DBG_INFO, "ProbeReq->Mac=%s!\n", srcMacStr);
 
-	//Skip the SrcMAC field & eID field
-	pWscMsg += (6 + 1);
+	//Skip the SrcMAC field
+	pWscMsg += 6;
 
 	//Get the WscProbeData Length
-	wscLen = *(pWscMsg);
+	if (*pWscMsg == 0xdd)
+		wscLen = (unsigned char)(*(pWscMsg + 1));
+	else
+		wscLen = ((*(pWscMsg))<<8) + (*(pWscMsg + 1));
+
 	DBGPRINTF(RT_DBG_INFO, "(%s): pWscHdr Len=%d!\n", __FUNCTION__, wscLen);
 		
 	UPnPMsgLen = wscLen + 18;
@@ -1851,7 +1896,7 @@ static int WscEventMgmt_ProbreReq(
 		memcpy(&pUPnPMsg[1], srcMacStr, 17);
 
 		//jump to the WscProbeReqData and copy to pUPnPMsg buffer
-		pWscMsg++;	
+		pWscMsg += 2;
 		memcpy(&pUPnPMsg[18], pWscMsg, wscLen);
 		wsc_hexdump("UPnP WLANEVENT Msg", (char *)pUPnPMsg, UPnPMsgLen);
 				
@@ -1952,11 +1997,19 @@ WscDevHandleSubscriptionReq(IN struct Upnp_Subscription_Request *sr_event)
 		dumpDevCPNodeList();
 
 		/* Send the WSC event to request */
+#if 0
 		UpnpAcceptSubscription(wscDevHandle, sr_event->UDN, sr_event->ServiceId,
 								(const char **)wscStateVarName,
 								(const char **)wscLocalDevice.services.StateVarVal,
 								WSC_STATE_VAR_MAXVARS, sr_event->Sid);
+#else
+		/* Shiang, here we send default msg out to prevent for cache for latest event */
+		UpnpAcceptSubscription(wscDevHandle, sr_event->UDN, sr_event->ServiceId,
+								(const char **)wscStateVarName,
+								(const char **)wscStateVarDefVal,
+								WSC_STATE_VAR_MAXVARS, sr_event->Sid);
 
+#endif
 	}
 
 	pthread_mutex_unlock(&WscDevMutex);

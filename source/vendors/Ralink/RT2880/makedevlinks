@@ -76,6 +76,7 @@ mkdev	dev/hwnat0  c	220	0   $cons
 mkdev	dev/acl0    c	230	0   $cons
 mkdev	dev/ac0	    c	240	0   $cons
 mkdev	dev/mtr0    c	250	0   $cons
+mkdev   dev/nvram   c   251     0   $cons
 mkdev	dev/gpio    c	252	0   $cons
 
 

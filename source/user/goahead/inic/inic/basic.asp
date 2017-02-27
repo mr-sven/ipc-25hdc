@@ -30,11 +30,15 @@ var ht_extcha = '<% getCfg2Zero(1, "HT_EXTCHA"); %>';
 var ht_amsdu = '<% getCfg2Zero(1, "HT_AMSDU"); %>';
 var ht_autoba = '<% getCfg2Zero(1, "HT_AutoBA"); %>';
 var ht_badecline = '<% getCfg2Zero(1, "HT_BADecline"); %>';
+var draft3b = '<% getRaix11nDraft3Built(); %>';
+var ht_disallow_tkip = '<% getCfg2Zero(1, "HT_DisallowTKIP"); %>';
+var ht_2040_coexit = '<% getCfg2Zero(1, "HT_BSSCoexistence"); %>';
 var ht_f_40mhz = '<% getCfg2Zero(1, "HT_40MHZ_INTOLERANT"); %>';
 //var wifi_optimum = '<!--#include ssi=getWlanWiFiTest()-->';
 var apcli_include = '0';
 var tx_stream_idx = '<% getCfg2Zero(1, "HT_TxStream"); %>';
 var rx_stream_idx = '<% getCfg2Zero(1, "HT_RxStream"); %>';
+var txrxStream = '<% getRaixHTStream(); %>';
 
 ChannelList_24G = new Array(14);
 ChannelList_24G[0] = "2412MHz (Channel 1)";
@@ -326,6 +330,10 @@ function initTranslation()
 
 	e = document.getElementById("basicWirelessNet");
 	e.innerHTML = _("basic wireless network");
+	e = document.getElementById("aboutDriverVersion");
+	e.innerHTML = _("about driver version");
+	e = document.getElementById("basicRadioButton");
+	e.innerHTML = _("basic radio button");
 	e = document.getElementById("basicNetMode");
 	e.innerHTML = _("basic network mode");
 	e = document.getElementById("basicSSID");
@@ -393,6 +401,12 @@ function initTranslation()
 	e.innerHTML = _("wireless enable");
     	e = document.getElementById("basicHTExtChannel");
 	e.innerHTML = _("basic ht extension channel");
+	e = document.getElementById("basicHTSTBC");
+	e.innerHTML = _("basic ht stbc");
+	e = document.getElementById("basicHTSTBCDisable");
+	e.innerHTML = _("wireless disable");
+	e = document.getElementById("basicHTSTBCEnable");
+	e.innerHTML = _("wireless enable");
     	e = document.getElementById("basicHTAMSDU");
 	e.innerHTML = _("basic ht amsdu");
     	e = document.getElementById("basicHTAMSDUDisable");
@@ -431,6 +445,7 @@ function initValue()
 	var broadcastssidArray;
 	var channel_11a_index;
 	var current_channel_length;
+	var radio_off = '<% getCfg2Zero(1, "RadioOff"); %>';
 
 	initTranslation();
 	if (CntyCd == '')
@@ -453,6 +468,8 @@ function initValue()
 	document.wireless_basic.n_mcs.disabled = true;
 	//document.getElementById("div_11n_plugfest").style.display = "none";
 	//document.wireless_basic.f_40mhz.disabled = true;
+	document.getElementById("div_2040_coexit").style.display = "none";
+	document.wireless_basic.n_2040_coexit.disabled = true;
 
 	PhyMode = 1*PhyMode;
 
@@ -470,7 +487,7 @@ function initValue()
 		//document.getElementById("div_11n_plugfest").style.display = "block";
 		//document.wireless_basic.f_40mhz.disabled = false;
 	}
-	var Aband = "<% getSupportABand(); %>";
+	var Aband = "<% getRaixABand(); %>";
 	if (Aband == "1")
 	{
 		document.wireless_basic.wirelessmode.options[4] = new Option("11a only", "2");
@@ -687,6 +704,15 @@ function initValue()
 
 	insertExtChannelOption();
 
+	if (1*ht_stbc == 0)
+	{
+		document.wireless_basic.n_stbc[0].checked = true;
+	}
+	else
+	{
+		document.wireless_basic.n_stbc[1].checked = true;
+	}
+
 	if (1*ht_mode == 0)
 	{
 		document.wireless_basic.n_mode[0].checked = true;
@@ -714,12 +740,25 @@ function initValue()
 		document.wireless_basic.n_gi[2].checked = true;
 	}
 
-	if (1*ht_mcs <= 15)
-		document.wireless_basic.n_mcs.options.selectedIndex = ht_mcs;
-	else if (1*ht_mcs == 32)
-		document.wireless_basic.n_mcs.options.selectedIndex = 16;
-	else if (1*ht_mcs == 33)
-		document.wireless_basic.n_mcs.options.selectedIndex = 17;
+	if (1*txrxStream == 3) {
+		for (i = 16; i < 24; i++) {
+			document.wireless_basic.n_mcs.options[i] = new Option(i, i);
+		}
+	}
+	var mcs_length = document.wireless_basic.n_mcs.options.length;
+	if (txrxStream == "3") {
+		document.wireless_basic.n_mcs.options[mcs_length] = new Option("32", "32");
+		mcs_length++;
+		document.wireless_basic.n_mcs.options[mcs_length] = new Option("Auto", "33");
+		mcs_length++;
+	}
+	var ht_mcs_nm = 1*ht_mcs.split(";", 1);
+        if (ht_mcs_nm <= 23)
+                document.wireless_basic.n_mcs.options.selectedIndex = ht_mcs_nm;
+        else if (ht_mcs_nm == 32)
+		document.wireless_basic.n_mcs.options.selectedIndex = mcs_length-2;
+        else if (ht_mcs_nm == 33)
+		document.wireless_basic.n_mcs.options.selectedIndex = mcs_length-1;
 
 	if (1*ht_rdg == 0)
 		document.wireless_basic.n_rdg[0].checked = true;
@@ -777,6 +816,20 @@ function initValue()
 	else
 		document.wireless_basic.n_badecline[1].checked = true;
 
+	if (1*ht_disallow_tkip == 1)
+		document.wireless_basic.n_disallow_tkip[1].checked = true;
+	else
+		document.wireless_basic.n_disallow_tkip[0].checked = true;
+
+	if (1*draft3b == 1)
+	{
+		document.getElementById("div_2040_coexit").style.display = style_display_on();
+		document.wireless_basic.n_2040_coexit.disabled = false;
+		if (1*ht_2040_coexit == 0)
+			document.wireless_basic.n_2040_coexit[0].checked = true;
+		else
+			document.wireless_basic.n_2040_coexit[1].checked = true;
+	}
 	//if (1*ht_f_40mhz == 0)
 		//document.wireless_basic.f_40mhz[0].checked = true;
 	//else
@@ -794,8 +847,34 @@ function initValue()
 		document.wireless_basic.mssid_7.disabled = true;
 	}
 
+	if (txrxStream == "2")
+	{
+		document.getElementById("div_HtTx2Stream").style.visibility = "visible";
+		document.getElementById("div_HtTx2Stream").style.display = style_display_on();
+		document.getElementById("div_HtRx2Stream").style.visibility = "visible";
+		document.getElementById("div_HtRx2Stream").style.display = style_display_on();
+	}
+	else if (txrxStream == "3")
+	{
+		document.wireless_basic.rx_stream.options[2] = new Option("3", "3");
+		document.wireless_basic.tx_stream.options[2] = new Option("3", "3");
+	}
+	else
+	{
+		document.getElementById("div_HtTx2Stream").style.visibility = "hidden";
+		document.getElementById("div_HtTx2Stream").style.display = "none";
+		tx_stream_idx = 1;
+		document.getElementById("div_HtRx2Stream").style.visibility = "hidden";
+		document.getElementById("div_HtRx2Stream").style.display = "none";
+		rx_stream_idx = 1;
+	}
 	document.wireless_basic.rx_stream.options.selectedIndex = rx_stream_idx - 1;
 	document.wireless_basic.tx_stream.options.selectedIndex = tx_stream_idx - 1;
+
+	if (1*radio_off == 1)
+		document.wireless_basic.radioButton.value = "RADIO ON";
+	else
+		document.wireless_basic.radioButton.value = "RADIO OFF";
 }
 
 function wirelessModeChange()
@@ -1008,6 +1087,10 @@ function CheckValue()
 		return false;
 	}
 
+	var wpsenable = "<% getCfg2Zero(1, "WscModeOption"); %>";
+	if (wpsenable != "0" && document.wireless_basic.broadcastssid[1].checked == true)
+		alert("WPS feature is going to turn off because of disabled broadcasting of SSID");
+
 	submit_ssid_num = 1;
 
 	for (i = 1; i < 8; i++)
@@ -1028,6 +1111,19 @@ function CheckValue()
 
 	return true;
 }
+
+function RadioStatusChange(rs)
+{
+	if (rs == 1) {
+		document.wireless_basic.radioButton.value = "RADIO OFF";
+		document.wireless_basic.radiohiddenButton.value = 0;
+	}
+	else {
+		document.wireless_basic.radioButton.value = "RADIO ON";
+		document.wireless_basic.radiohiddenButton.value = 1;
+	}
+}
+
 </script>
 </head>
 
@@ -1043,6 +1139,18 @@ function CheckValue()
 <table width="540" border="1" cellspacing="1" cellpadding="3" bordercolor="#9BABBD">
   <tr> 
     <td class="title" colspan="2" id="basicWirelessNet">Wireless Network</td>
+  </tr>
+  <tr>
+    <td class="head" id="aboutDriverVersion">Driver Version</td>
+    <td><% getAPDriverVer("rai0"); %></td>
+  </tr>
+  <tr> 
+    <td class="head" id="basicRadioButton">Radio On/Off</td>
+    <td>
+      <input type="button" name="radioButton" style="{width:120px;}" value="RADIO ON"
+      onClick="if (this.value.indexOf('OFF') >= 0) RadioStatusChange(1); else RadioStatusChange(0); document.wireless_basic.submit();"> &nbsp; &nbsp;
+      <input type=hidden name=radiohiddenButton value="2">
+    </td>
   </tr>
   <tr> 
     <td class="head" id="basicNetMode">Network Mode</td>
@@ -1217,6 +1325,13 @@ function CheckValue()
     </td>
   </tr>
   <tr>
+    <td class="head" id="basicHTSTBC">STBC</td>
+    <td>
+      <input type=radio name=n_stbc value="0" checked><font id="basicHTSTBCDisable">Disable&nbsp;</font>
+      <input type=radio name=n_stbc value="1"><font id="basicHTSTBCEnable">Enable</font>
+    </td>
+  </tr>
+  <tr>
     <td class="head" id="basicHTAMSDU">Aggregation MSDU(A-MSDU)</td>
     <td>
       <input type=radio name=n_amsdu value="0" checked><font id="basicHTAMSDUDisable">Disable&nbsp;</font>
@@ -1235,6 +1350,20 @@ function CheckValue()
     <td>
       <input type=radio name=n_badecline value="0" checked><font id="basicHTDelBADisable">Disable&nbsp;</font>
       <input type=radio name=n_badecline value="1"><font id="basicHTDelBAEnable">Enable</font>
+    </td>
+  </tr>
+  <tr>
+    <td class="head" id="basicHTAllowTKIP">HT Disallow TKIP</td>
+    <td>
+      <input type=radio name=n_disallow_tkip value="0" checked><font id="basicHTAllowTKIPDisable">Disable&nbsp;</font>
+      <input type=radio name=n_disallow_tkip value="1"><font id="basicHTAllowTKIPEnable">Enable</font>
+    </td>
+  </tr>
+  <tr id="div_2040_coexit">
+    <td class="head" id="basic2040CoExit">20/40 Coexistence</td>
+    <td>
+      <input type=radio name=n_2040_coexit value="0" checked><font id="basic2040CoExitDisable">Disable&nbsp;</font>
+      <input type=radio name=n_2040_coexit value="1"><font id="basic2040CoExitEnable">Enable</font>
     </td>
   </tr>
 </table>
@@ -1265,7 +1394,7 @@ function CheckValue()
     <td>
       <select name="tx_stream" size="1">
 	<option value = 1>1</option>
-	<option value = 2>2</option>
+	<option value = 2 id="div_HtTx2Stream">2</option>
       </select>
     </td>
   </tr>
@@ -1274,7 +1403,7 @@ function CheckValue()
     <td>
       <select name="rx_stream" size="1">
 	<option value = 1>1</option>
-	<option value = 2>2</option>
+	<option value = 2 id="div_HtRx2Stream">2</option>
       </select>
     </td>
   </tr>

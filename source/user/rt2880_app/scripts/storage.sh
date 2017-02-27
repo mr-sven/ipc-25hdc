@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: storage.sh,v 1.36 2010-07-23 09:12:58 chhung Exp $
+# $Id: storage.sh,v 1.37 2011-11-25 03:52:09 yy Exp $
 #
 # usage: storage.sh
 #
@@ -62,8 +62,8 @@ setSmb()
 {
 	smbnetbios=`nvram_get 2860 SmbNetBIOS`
 	smbwg=`nvram_get 2860 HostName`
-	echo "samba.sh "$smbnetbios" "$smbwg""
-	samba.sh "$smbnetbios" "$smbwg" 
+	echo "samba.sh "$smbnetbios" "$smbwg" "$PART1""
+	samba.sh "$smbnetbios" "$smbwg" "$PART1"
 	admID=`nvram_get 2860 Login`
 	admPW=`nvram_get 2860 Password`
 	echo "smbpasswd -a "$admID" "$admPW""

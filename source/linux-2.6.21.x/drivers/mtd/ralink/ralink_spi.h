@@ -26,9 +26,18 @@
 #define RT2880_SPICTL_REG		(RT2880_SPI_REG_BASE+0x14)
 #define RT2880_SPIDATA_REG		(RT2880_SPI_REG_BASE+0x20)
 
+#define RT2880_SPIUSER_REG		(RT2880_SPI_REG_BASE+0x2C)
+#define RT2880_SPIADDR_REG		(RT2880_SPI_REG_BASE+0x24)
+#define RT2880_SPIMODE_REG		(RT2880_SPI_REG_BASE+0x3c)
+#define RT2880_SPIBS_REG		(RT2880_SPI_REG_BASE+0x28)
+#define RT2880_SPITXFIFO_REG	(RT2880_SPI_REG_BASE+0x30)
+#define RT2880_SPIRXFIFO_REG	(RT2880_SPI_REG_BASE+0x34)
+#define RT2880_SPIFIFOSTAT_REG	(RT2880_SPI_REG_BASE+0x38)
+
 
 #define RT2880_SPI0_CTL_REG		RT2880_SPICTL_REG
 #define RT2880_SPI1_CTL_REG		(RT2880_SPI_REG_BASE+0x54)
+#define RT2880_SPI_DMA			(RT2880_SPI_REG_BASE+ 0x80)
 #define RT2880_SPI_ARB_REG		(RT2880_SPI_REG_BASE+0xf0)
 
 /* SPICFG register bit field */
@@ -48,12 +57,48 @@
 
 #define SPICFG_SPICLKPOL		(1<<6)		/* spi clk*/
 
+#define SPICFG_ADDRMODE			(1 << 12)
+#define SPICFG_RXENVDIS			(1<<11)
+#define SPICFG_RXCAP			(1<<10)
+#define SPICFG_SPIENMODE		(1<<9)
+
 /* SPICTL register bit field */
 #define SPICTL_HIZSDO				(1<<3)
 #define SPICTL_STARTWR				(1<<2)
 #define SPICTL_STARTRD				(1<<1)
 #define SPICTL_SPIENA_LOW			(0<<0)		/* #cs low active */
 #define SPICTL_SPIENA_HIGH			(1<<0)
+
+/* SPI COMMAND MODE */
+#define SPICTL_START				(1<<4)
+#define SPIFIFO_TX_FULL				(1 << 17)
+#define SPIFIFO_RX_EMPTY			(1 << 18)
+#define SPIINT_SPIDONE				(1<<0)
+#define SPIINT_ILLSPI				(1<<1)
+#define SPIINT_RX_EMPTY_RD			(1<<2)
+#define SPIINT_TX_FULL_WR			(1<<3)
+#define SPIINT_DMA_EMPTY_RD			(1<<4)
+#define SPIINT_DMA_FULL_WR			(1<<5)
+/* SPI USER MODE */
+#define SPIUSR_SINGLE				0x1
+#define SPIUSR_DUAL					0x2
+#define SPIUSR_QUAD					0x4
+#define SPIUSR_NO_DATA				0x0
+#define SPIUSR_READ_DATA			0x1
+#define SPIUSR_WRITE_DATA			0x2
+#define SPIUSR_NO_DUMMY				0x0
+#define SPIUSR_ONE_DUMMY			0x1
+#define SPIUSR_TWO_DUMMY			0x2
+#define SPIUSR_THREE_DUMMY			0x3
+#define SPIUSR_NO_MODE				0x0
+#define SPIUSR_ONE_MODE				0x1
+#define SPIUSR_NO_ADDR				0x0
+#define SPIUSR_ONE_BYTE_ADDR		0x1
+#define SPIUSR_TWO_BYTE_ADDR		0x2
+#define SPIUSR_THREE_BYTE_ADDR		0x3
+#define SPIUSR_FOUR_BYTE_ADDR		0x4
+#define SPIUSR_NO_INSTRU			0x0
+#define SPIUSR_ONE_INSTRU			0x1
 
 /* SPIARB register bit field */
 #define SPIARB_ARB_EN			(1<<31)

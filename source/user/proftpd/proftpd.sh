@@ -147,3 +147,9 @@ elif [ "$1" == "anonymous" ]; then
 else
 	Usage
 fi
+
+iptables -t raw -D PREROUTING -p tcp --dport 20  -j NOTRACK
+iptables -t raw -A PREROUTING -p tcp --dport 20  -j NOTRACK
+iptables -t raw -D OUTPUT -p tcp --sport 20  -j NOTRACK
+iptables -t raw -A OUTPUT -p tcp --sport 20  -j NOTRACK
+

@@ -1746,7 +1746,7 @@
 /* #undef WITH_QUOTAS */
 
 /* Whether to include sendfile() support */
-/* #undef WITH_SENDFILE */
+#define WITH_SENDFILE	1
 
 /* Whether to build smbmount */
 /* #undef WITH_SMBMOUNT */

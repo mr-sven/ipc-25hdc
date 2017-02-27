@@ -120,10 +120,10 @@ function initTranslation()
 
 function initValue()
 {
-	var is3t3r = '<% is3t3r(); %>';
+	var txrxStream = '<% getRaxHTStream(); %>';
 	var ht_mcs = '<% getCfgZero(1, "HT_MCS"); %>';
 
-	if (1*is3t3r == 1) {
+	if (1*txrxStream == 3) {
 		for (i = 16; i < 24; i++) {
 			document.sta_advance.n_mcs.options[i] = new Option(i, i);
 		}

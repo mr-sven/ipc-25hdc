@@ -4,7 +4,7 @@
  *	Authors:	Alan Cox <iiitac@pyr.swan.ac.uk>
  *			Florian La Roche <rzsfl@rz.uni-sb.de>
  *
- *	Version:	$Id: skbuff.c,v 1.2 2009-06-11 05:57:31 yy Exp $
+ *	Version:	$Id: skbuff.c,v 1.6.2.1 2012-02-13 09:53:24 kurtis Exp $
  *
  *	Fixes:
  *		Alan Cox	:	Fixed the worst of the load
@@ -56,6 +56,10 @@
 #include <linux/rtnetlink.h>
 #include <linux/init.h>
 
+#if defined(CONFIG_RAETH_SKB_RECYCLE_2K)
+#include <linux/proc_fs.h>
+#endif
+
 #include <net/protocol.h>
 #include <net/dst.h>
 #include <net/sock.h>
@@ -66,6 +70,10 @@
 #include <asm/system.h>
 
 #include "kmap_skb.h"
+#if defined (CONFIG_RA_HW_NAT)  || defined (CONFIG_RA_HW_NAT_MODULE)
+#include "../net/nat/hw_nat/ra_nat.h"
+#include "../net/nat/hw_nat/frame_engine.h"
+#endif
 
 static struct kmem_cache *skbuff_head_cache __read_mostly;
 static struct kmem_cache *skbuff_fclone_cache __read_mostly;
@@ -338,6 +346,14 @@ void __kfree_skb(struct sk_buff *skb)
 #endif
 #endif
 
+#if defined(CONFIG_RAETH_SKB_RECYCLE_2K)
+	if (skb->skb_recycling_callback) {
+		if ((*skb->skb_recycling_callback)(skb))
+			return;
+	} 
+	skb->skb_recycling_callback = NULL;
+#endif
+
 	kfree_skbmem(skb);
 }
 
@@ -421,6 +437,10 @@ struct sk_buff *skb_clone(struct sk_buff *skb, gfp_t gfp_mask)
 #endif
 	C(protocol);
 	n->destructor = NULL;
+#if defined(CONFIG_RAETH_SKB_RECYCLE_2K)
+	n->skb_recycling_callback = NULL;
+	skb->skb_recycling_callback = NULL;
+#endif
 	C(mark);
 #ifdef CONFIG_NETFILTER
 	C(nfct);
@@ -486,6 +506,9 @@ static void copy_skb_header(struct sk_buff *new, const struct sk_buff *old)
 	new->pkt_type	= old->pkt_type;
 	new->tstamp	= old->tstamp;
 	new->destructor = NULL;
+#if defined(CONFIG_RAETH_SKB_RECYCLE_2K)
+	new->skb_recycling_callback = NULL;
+#endif
 	new->mark	= old->mark;
 #ifdef CONFIG_NETFILTER
 	new->nfct	= old->nfct;
@@ -662,6 +685,10 @@ int pskb_expand_head(struct sk_buff *skb, int nhead, int ntail,
 
 	if (skb_shinfo(skb)->frag_list)
 		skb_clone_fraglist(skb);
+
+#if defined(CONFIG_RAETH_SKB_RECYCLE_2K)
+	skb->skb_recycling_callback = NULL;
+#endif
 
 	skb_release_data(skb);
 
@@ -1998,8 +2025,346 @@ err:
 
 EXPORT_SYMBOL_GPL(skb_segment);
 
+#if defined(CONFIG_RAETH_SKB_RECYCLE_2K)
+
+#define SKBMGR_RX_BUF_LEN 			SKB_WITH_OVERHEAD(2048)
+#define SKBMGR_DEF_HOT_LIST_LEN			512
+
+int skbmgr_hot_list_len = SKBMGR_DEF_HOT_LIST_LEN;
+int skbmgr_max_list_len = 0;
+
+union {
+	struct sk_buff_head     list;
+	char                    pad[SMP_CACHE_BYTES];
+} skbmgr_pool[NR_CPUS];
+
+union {
+	struct sk_buff_head     list;
+	char                    pad[SMP_CACHE_BYTES];
+} skbmgr_4k_pool[NR_CPUS];
+
+struct sk_buff *skbmgr_alloc_skb2k(void)
+{
+	struct sk_buff_head *list = &skbmgr_pool[smp_processor_id()].list;
+	struct sk_buff *skb;
+
+	if (skb_queue_len(list)) {
+		unsigned long flags;
+		unsigned int size;
+		struct skb_shared_info *shinfo;
+		u8 *data;
+
+ 		local_irq_save(flags);
+		skb = __skb_dequeue(list);
+		local_irq_restore(flags);
+
+		if (unlikely(skb == NULL))
+			goto try_normal;
+
+		size = skb->truesize - sizeof(struct sk_buff);
+		data = skb->head;
+
+		/*
+		 * See comment in sk_buff definition, just before the 'tail' member
+		 */
+		memset(skb, 0, offsetof(struct sk_buff, tail));
+		skb->truesize = size + sizeof(struct sk_buff);
+		atomic_set(&skb->users, 1);
+		skb->head = data;
+		skb->data = data;
+		skb_reset_tail_pointer(skb);
+		skb->end = skb->tail + size;
+		/* make sure we initialize shinfo sequentially */
+		shinfo = skb_shinfo(skb);
+		atomic_set(&shinfo->dataref, 1);
+		shinfo->nr_frags  = 0;
+		shinfo->gso_size = 0;
+		shinfo->gso_segs = 0;
+		shinfo->gso_type = 0;
+		shinfo->ip6_frag_id = 0;
+		shinfo->frag_list = NULL;
+
+		skb->skb_recycling_callback = skbmgr_recycling_callback;
+
+		return skb;
+	}
+
+try_normal:
+	skb = alloc_skb(SKBMGR_RX_BUF_LEN, GFP_ATOMIC|__GFP_NOWARN);
+	if (likely(skb)) 
+		skb->skb_recycling_callback = skbmgr_recycling_callback;
+	return skb;
+}
+
+EXPORT_SYMBOL(skbmgr_alloc_skb2k);
+
+#define SKBMGR_4K_RX_BUF_LEN 			SKB_WITH_OVERHEAD(4096)
+#define SKBMGR_4K_DEF_HOT_LIST_LEN              128
+int skbmgr_4k_hot_list_len = SKBMGR_4K_DEF_HOT_LIST_LEN;
+int skbmgr_4k_max_list_len = 0;
+
+struct sk_buff *skbmgr_alloc_skb4k(void)
+{
+	struct sk_buff_head *list = &skbmgr_4k_pool[smp_processor_id()].list;
+	struct sk_buff *skb;
+
+	if (skb_queue_len(list)) {
+		unsigned long flags;
+		unsigned int size;
+		struct skb_shared_info *shinfo;
+		u8 *data;
+
+ 		local_irq_save(flags);
+		skb = __skb_dequeue(list);
+		local_irq_restore(flags);
+
+		if (unlikely(skb == NULL))
+			goto try_normal;
+
+		size = skb->truesize - sizeof(struct sk_buff);
+		data = skb->head;
+
+		/*
+		 * See comment in sk_buff definition, just before the 'tail' member
+		 */
+		memset(skb, 0, offsetof(struct sk_buff, tail));
+		skb->truesize = size + sizeof(struct sk_buff);
+		atomic_set(&skb->users, 1);
+		skb->head = data;
+		skb->data = data;
+		skb_reset_tail_pointer(skb);
+		skb->end = skb->tail + size;
+		/* make sure we initialize shinfo sequentially */
+		shinfo = skb_shinfo(skb);
+		atomic_set(&shinfo->dataref, 1);
+		shinfo->nr_frags  = 0;
+		shinfo->gso_size = 0;
+		shinfo->gso_segs = 0;
+		shinfo->gso_type = 0;
+		shinfo->ip6_frag_id = 0;
+		shinfo->frag_list = NULL;
+
+		skb->skb_recycling_callback = skbmgr_4k_recycling_callback;
+
+		return skb;
+	}
+
+try_normal:
+	skb = alloc_skb(SKBMGR_4K_RX_BUF_LEN, GFP_ATOMIC|__GFP_NOWARN);
+	if (likely(skb)) 
+		skb->skb_recycling_callback = skbmgr_4k_recycling_callback;
+	return skb;
+}
+
+EXPORT_SYMBOL(skbmgr_alloc_skb4k);
+
+int skbmgr_recycling_callback(struct sk_buff *skb)
+{
+	struct sk_buff_head *list = &skbmgr_pool[smp_processor_id()].list;
+
+	if (skb_queue_len(list) < skbmgr_hot_list_len) {
+		unsigned long flags;
+
+		if ((skb->truesize - sizeof(struct sk_buff) != SKBMGR_RX_BUF_LEN) ||
+			(skb_shinfo(skb)->nr_frags) ||
+			(skb_shinfo(skb)->frag_list)) {
+			return 0;
+		}
+
+		if (skb_queue_len(list) > skbmgr_max_list_len)
+			skbmgr_max_list_len = skb_queue_len(list) + 1;
+
+		local_irq_save(flags);
+		__skb_queue_head(list, skb);
+		local_irq_restore(flags);
+
+		return 1;
+	}
+
+	return 0;
+}
+
+EXPORT_SYMBOL(skbmgr_recycling_callback);
+
+int skbmgr_4k_recycling_callback(struct sk_buff *skb)
+{
+	struct sk_buff_head *list = &skbmgr_4k_pool[smp_processor_id()].list;
+
+	if (skb_queue_len(list) < skbmgr_4k_hot_list_len) {
+		unsigned long flags;
+
+		if ((skb->truesize - sizeof(struct sk_buff) != SKBMGR_RX_BUF_LEN) ||
+			(skb_shinfo(skb)->nr_frags) ||
+			(skb_shinfo(skb)->frag_list)) {
+			return 0;
+		}
+
+		if (skb_queue_len(list) > skbmgr_4k_max_list_len)
+			skbmgr_4k_max_list_len = skb_queue_len(list) + 1;
+
+		local_irq_save(flags);
+		__skb_queue_head(list, skb);
+		local_irq_restore(flags);
+
+		return 1;
+	}
+
+	return 0;
+}
+
+EXPORT_SYMBOL(skbmgr_4k_recycling_callback);
+
+void skbmgr_free_all_skbs(void)
+{
+	struct sk_buff_head *list;
+	struct sk_buff *skb;
+	int i;
+
+	for (i=0; i<NR_CPUS; i++) {
+		list = &skbmgr_pool[i].list;
+		while ((skb = skb_dequeue(list)) != NULL) {
+			skb->skb_recycling_callback = NULL;
+			kfree_skbmem(skb);
+		}
+	}
+
+	for (i=0; i<NR_CPUS; i++) {
+		list = &skbmgr_4k_pool[i].list;
+		while ((skb = skb_dequeue(list)) != NULL) {
+			skb->skb_recycling_callback = NULL;
+			kfree_skbmem(skb);
+		}
+	}
+}
+
+#ifdef CONFIG_PROC_FS
+
+static int hot_list_len_read(char *page, char **start, off_t offset,
+			    int count, int *eof, void *data)
+{
+	char *out = page;
+	int len;
+
+	out += sprintf(out, "skbmgr_hot_list_len %d skbmgr_4k_hot_list_len %d\n", skbmgr_hot_list_len,skbmgr_4k_hot_list_len);
+
+
+	len = out - page;
+	len -= offset;
+	if (len < count) {
+		*eof = 1;
+		if (len <= 0)
+			return 0;
+	} else
+		len = count;
+
+	*start = page + offset;
+	return len;
+}
+
+static int hot_list_len_write(struct file *file, const char __user * buffer,
+			     unsigned long count, void *data)
+{
+	char buf[64];
+	int val;
+
+	if (count > 64)
+		return -EINVAL;
+
+	if (copy_from_user(buf, buffer, count))
+		return -EFAULT;
+
+	val = simple_strtoul(buf, NULL, 10);
+
+	skbmgr_hot_list_len = val;
+	if (skbmgr_hot_list_len == 0) {
+		skbmgr_free_all_skbs();
+		skbmgr_max_list_len = 0;
+	}
+
+	return count;
+}
+
+static int skbmgr_info_read(char *page, char **start, off_t offset,
+			    int count, int *eof, void *data)
+{
+	char *out = page;
+	int len;
+	struct sk_buff_head *list;
+	int i;
+
+	out += sprintf(out, "skbmgr_max_list_len = %d\n", skbmgr_max_list_len);
+	out += sprintf(out, "skbmgr_4k_max_list_len = %d\n", skbmgr_4k_max_list_len);
+
+	for (i=0; i<NR_CPUS; i++) {
+		list = &skbmgr_pool[i].list;
+		out += sprintf(out, "skbmgr_queue_len CPU%d = %d\n", i, skb_queue_len(list));
+	}
+
+	for (i=0; i<NR_CPUS; i++) {
+		list = &skbmgr_4k_pool[i].list;
+		out += sprintf(out, "skbmgr_4k_queue_len CPU%d = %d\n", i, skb_queue_len(list));
+	}
+
+	len = out - page;
+	len -= offset;
+	if (len < count) {
+		*eof = 1;
+		if (len <= 0)
+			return 0;
+	} else
+		len = count;
+
+	*start = page + offset;
+	return len;
+}
+
+static int register_proc_skbmgr(void)
+{
+	struct proc_dir_entry *p;
+
+	p = create_proc_entry("skbmgr_hot_list_len", 0644, proc_net);
+	if (!p) 
+		return 0;
+
+	p->owner = THIS_MODULE;
+	p->read_proc = hot_list_len_read;
+	p->write_proc = hot_list_len_write;
+
+	p = create_proc_read_entry("skbmgr_info", 0, proc_net, skbmgr_info_read, NULL);
+	if (!p) 
+		return 0;
+
+	return 1;
+}
+
+static void unregister_proc_skbmgr(void)
+{
+	remove_proc_entry("skbmgr_hot_list_len", proc_net);
+	remove_proc_entry("skbmgr_info", proc_net);
+}
+
+#endif
+
+#endif
+
 void __init skb_init(void)
 {
+#if defined(CONFIG_RAETH_SKB_RECYCLE_2K)
+	int i;
+
+	for (i=0; i<NR_CPUS; i++) {
+		skb_queue_head_init(&skbmgr_pool[i].list);
+	}
+
+	for (i=0; i<NR_CPUS; i++) {
+		skb_queue_head_init(&skbmgr_4k_pool[i].list);
+	}
+
+#ifdef CONFIG_PROC_FS
+	register_proc_skbmgr();
+#endif
+#endif
+
 	skbuff_head_cache = kmem_cache_create("skbuff_head_cache",
 					      sizeof(struct sk_buff),
 					      0,

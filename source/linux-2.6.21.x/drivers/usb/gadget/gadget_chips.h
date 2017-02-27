@@ -18,6 +18,11 @@
 #define gadget_is_dwc_otg(g)	0
 #endif
 
+#ifdef CONFIG_USB_GADGET_RT
+#define gadget_is_rt(g)		!strcmp("rt_udc", (g)->name)
+#else
+#define gadget_is_rt(g)		0
+#endif
  
 #ifdef CONFIG_USB_GADGET_NET2280
 #define	gadget_is_net2280(g)	!strcmp("net2280", (g)->name)
@@ -195,10 +200,11 @@ static inline int usb_gadget_controller_number(struct usb_gadget *gadget)
 		return 0x18;
 
 //by kaiker ,for RT3052 USB OTG device mode
-
 	else if (gadget_is_dwc_otg(gadget))
 		return 0x19;
-
+//for RT3883 USB device controller
+	else if (gadget_is_rt(gadget))
+ 		return 0x20;
 	
 	return -ENOENT;
 }

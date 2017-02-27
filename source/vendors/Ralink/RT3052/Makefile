@@ -55,10 +55,17 @@ endif
 	$(ROMFSINST) /etc_ro/Wireless/RT2860AP/RT2860_default_vlan
 
 	$(ROMFSINST) -e CONFIG_RT3572_AP /etc_ro/Wireless/iNIC/RT2860AP.dat
-	$(ROMFSINST) -e CONFIG_RT3572_AP /etc_ro/Wireless/iNIC/RT3572_USB_2T2R_LNA_without_ALC_V1_4.bin
-
 	$(ROMFSINST) -e CONFIG_RT5572_AP /etc_ro/Wireless/iNIC/RT2860AP.dat
+	$(ROMFSINST) -e CONFIG_RT3680_iNIC_AP iNIC_ap.dat /etc_ro/Wireless/iNIC/RT2860AP.dat
+#	$(ROMFSINST) -e CONFIG_RT3572_AP /etc_ro/Wireless/iNIC/RT3572_USB_2T2R_LNA_ALC_V1_4.bin
+	$(ROMFSINST) -e CONFIG_RT3572_AP /etc_ro/Wireless/iNIC/RT3572_USB_2T2R_LNA_without_ALC_V1_4.bin
+	$(ROMFSINST) -e CONFIG_RT5572_AP /etc_ro/Wireless/iNIC/RT5572_USB_2T2R_V1_3.BIN
 
+	$(ROMFSINST) -e CONFIG_RT3680_iNIC_AP /etc_ro/Wireless/iNIC/RT3680_iNIC.bin
+
+	$(ROMFSINST) -e CONFIG_RTUSB_AP /etc_ro/Wireless/RT2860APCard.dat
+	$(ROMFSINST) -e CONFIG_RTUSB_AP /etc_ro/Wireless/iNIC/RT3572_USB_2T2R_LNA_without_ALC_V1_4.bin
+	$(ROMFSINST) -e CONFIG_RTUSB_AP /etc_ro/Wireless/iNIC/RT5572_USB_2T2R_V1_3.BIN
 
 romfs.post:: 
 	[ -d $(IMAGEDIR) ] || mkdir -p $(IMAGEDIR)
@@ -70,7 +77,13 @@ ifeq	($(LINUXDIR),linux-2.4.x)
 else
 	#linux2.6.x support squashfs with lzma
 ifeq	($(CONFIG_BLK_DEV_INITRD),)
+
+ifeq	($(LINUXDIR),linux-2.6.21.x)
 	$(CONFIG_CROSS_COMPILER_PATH)/mksquashfs_lzma-3.2 $(ROMFSDIR) $(RAMDISK)
+endif
+ifeq	($(LINUXDIR),linux-2.6.36.x)
+	$(CONFIG_CROSS_COMPILER_PATH)/mksquashfs_lzma-4.2 $(ROMFSDIR) $(RAMDISK)
+endif
 endif
 endif
 

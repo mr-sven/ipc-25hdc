@@ -45,9 +45,7 @@ void usage(char *cmd)
 	printf(" %s add [mac] [portmap] [vlan idx] [age] - add an entry to switch table\n", cmd);
 #ifdef CONFIG_RALINK_RT3352
 	printf(" %s ingress-rate on [port] [Mbps]        - set ingress rate limit on port 0~5 \n", cmd);
-	printf(" %s egress-rate on [port] [Mbps]         - set egress rate limit on port 0~5 \n", cmd);
 	printf(" %s ingress-rate off [port]              - del ingress rate limit on port 0~5 \n", cmd);
-	printf(" %s egress-rate off [port]               - del egress rate limit on port 0~5 \n", cmd);
 	printf(" %s filt [mac]                           - add an SA filtering entry (with portmap 1111111) to switch table\n", cmd);
 	printf(" %s filt [mac] [portmap]                 - add an SA filtering entry to switch table\n", cmd);
 	printf(" %s filt [mac] [portmap] [vlan idx]      - add an SA filtering entry to switch table\n", cmd);
@@ -69,6 +67,8 @@ void usage(char *cmd)
 	printf(" %s reg r [offset]                       - register read from offset\n", cmd);
 	printf(" %s reg w [offset] [value]               - register write value to offset\n", cmd);
 #endif
+	printf(" %s phy [phy_addr]			 - dump phy register of specific port\n", cmd);
+	printf(" %s phy					 - dump all phy registers\n", cmd);
 	switch_fini();
 	exit(0);
 }
@@ -109,9 +109,24 @@ int reg_write(int offset, int value)
 	return 0;
 }
 
+int phy_dump(int phy_addr)
+{
+	struct ifreq ifr;
+	esw_reg reg;
+
+	reg.val = phy_addr;
+	strncpy(ifr.ifr_name, "eth2", 5);
+	ifr.ifr_data = &reg;
+	if (-1 == ioctl(esw_fd, RAETH_ESW_PHY_DUMP, &ifr)) {
+		perror("ioctl");
+		close(esw_fd);
+		exit(0);
+	}
+	return 0;
+
+}
 
 #if defined (CONFIG_RALINK_RT3352) || defined (CONFIG_RALINK_RT5350)
-
 int ingress_rate_set(int on_off, int port, int bw)
 {
 	struct ifreq ifr;
@@ -129,7 +144,9 @@ int ingress_rate_set(int on_off, int port, int bw)
 	}
 	return 0;
 }
+#endif
 
+#if defined (CONFIG_RALINK_RT5350)
 int egress_rate_set(int on_off, int port, int bw)
 {
 	struct ifreq ifr;
@@ -148,6 +165,7 @@ int egress_rate_set(int on_off, int port, int bw)
 	return 0;
 }
 #endif
+
 #if RT_TABLE_MANIPULATE
 void table_dump(void)
 {
@@ -492,6 +510,9 @@ int main(int argc, char *argv[])
 			table_clear();
 			printf("done.\n");
 		}
+		else if (!strncmp(argv[1], "phy", 4)) {
+			phy_dump(32); //dump all phy register
+		}
 		else
 			usage(argv[0]);
 	}
@@ -510,6 +531,14 @@ int main(int argc, char *argv[])
 			vlan_set(argc, argv);
 		else
 			usage(argv[0]);
+	}
+	else if (!strncmp(argv[1], "phy", 4)) {
+		if (argc == 3) {
+			int phy_addr = strtoul(argv[2], NULL, 10);
+			phy_dump(phy_addr);
+		}else {
+			phy_dump(32); //dump all phy register
+		}
 	}
 #endif
 	else if (!strncmp(argv[1], "reg", 4)) {
@@ -537,34 +566,36 @@ int main(int argc, char *argv[])
 		int port=0, bw=0;
 
 		if (argv[2][1] == 'n') {
-			port = strtoul(argv[3], NULL, 16);
-			bw = strtoul(argv[4], NULL, 16);
+			port = strtoul(argv[3], NULL, 0);
+			bw = strtoul(argv[4], NULL, 0);
 			ingress_rate_set(1, port, bw);
 			printf("switch port=%d, bw=%d\n", port, bw);
 		}
 		else if (argv[2][1] == 'f') {
 			if (argc != 4)
 				usage(argv[0]);
-			port = strtoul(argv[3], NULL, 16);
+			port = strtoul(argv[3], NULL, 0);
 			ingress_rate_set(0, port, bw);
 			printf("switch port=%d ingress rate limit off\n", port);
 		}
 		else
 			usage(argv[0]);
 	}
+#endif
+#if defined (CONFIG_RALINK_RT5350)
 	else if (!strncmp(argv[1], "egress-rate", 6)) {
 		int port=0, bw=0;
 		
 		if (argv[2][1] == 'n') {
-			port = strtoul(argv[3], NULL, 16);
-			bw = strtoul(argv[4], NULL, 16);
+			port = strtoul(argv[3], NULL, 0);
+			bw = strtoul(argv[4], NULL, 0);
 			egress_rate_set(1, port, bw);
 			printf("switch port=%d, bw=%d\n", port, bw);
 		}
 		else if (argv[2][1] == 'f') {
 			if (argc != 4)
 				usage(argv[0]);
-			port = strtoul(argv[3], NULL, 16);
+			port = strtoul(argv[3], NULL, 0);
 			egress_rate_set(0, port, bw);
 			printf("switch port=%d egress rate limit off\n", port);
 		}

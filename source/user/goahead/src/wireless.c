@@ -4,7 +4,7 @@
  *
  *	Copyright (c) Ralink Technology Corporation All Rights Reserved.
  *
- *	$Id: wireless.c,v 1.187.2.11 2011-03-22 06:40:25 chhung Exp $
+ *	$Id: wireless.c,v 1.214.2.3 2012-03-30 12:31:46 chhung Exp $
  */
 
 #include	<stdlib.h>
@@ -29,7 +29,7 @@
 
 #include	"linux/autoconf.h"  //kernel config
 
-#ifdef AP_WAPI_SUPPORT
+#if defined (RT2860_WAPI_SUPPORT) || defined (RTDEV_WAPI_SUPPORT)
 #include	<dirent.h>
 #endif
 
@@ -45,13 +45,13 @@ extern int g_wsc_configured;
 extern int g_Raix_wsc_configured;
 #endif
 
-static int  getWAPIBuilt(int eid, webs_t wp, int argc, char_t **argv);
+static int  getRaxWAPIBuilt(int eid, webs_t wp, int argc, char_t **argv);
 static int  getDLSBuilt(int eid, webs_t wp, int argc, char_t **argv);
 static int  getDFSBuilt(int eid, webs_t wp, int argc, char_t **argv);
 static int  getCarrierBuilt(int eid, webs_t wp, int argc, char_t **argv);
 static int  getWlanM2UBuilt(int eid, webs_t wp, int argc, char_t **argv);
 static int  getWlanApcliBuilt(int eid, webs_t wp, int argc, char_t **argv);
-static int  get11nDraft3Built(int eid, webs_t wp, int argc, char_t **argv);
+static int  getRax11nDraft3Built(int eid, webs_t wp, int argc, char_t **argv);
 static int  getMaxBssidNum(int eid, webs_t wp, int argc, char_t **argv);
 static int	getMeshBuilt(int eid, webs_t wp, int argc, char_t **argv);
 static int	getRVTBuilt(int eid, webs_t wp, int argc, char_t **argv);
@@ -71,20 +71,22 @@ static int  getWlanCurrentMac(int eid, webs_t wp, int argc, char_t **argv);
 static int  getWlanStaInfo(int eid, webs_t wp, int argc, char_t **argv);
 static int	getWAPIASCertList(int eid, webs_t wp, int argc, char_t **argv);
 static int	getWAPIUserCertList(int eid, webs_t wp, int argc, char_t **argv);
-static int getAPDriverVer(int eid, webs_t wp, int argc, char_t **argv);
+static int	getAPDriverVer(int eid, webs_t wp, int argc, char_t **argv);
+static int	getRaxABand(int eid, webs_t wp, int argc, char_t **argv);
 
 static void wirelessBasic(webs_t wp, char_t *path, char_t *query);
 static void wirelessAdvanced(webs_t wp, char_t *path, char_t *query);
-#ifdef CONFIG_RT2860V2_AP_WDS
+#if	defined (RT2860_WDS_SUPPORT)
 static void wirelessWds(webs_t wp, char_t *path, char_t *query);
 #endif
-#ifdef CONFIG_RT2860V2_AP_APCLI
+#if	defined (RT2860_WDS_SUPPORT)
 static void wirelessApcli(webs_t wp, char_t *path, char_t *query);
+static int  ApcliScan(int eid, webs_t wp, int argc, char_t **argv);
 #endif
 static void wirelessWmm(webs_t wp, char_t *path, char_t *query);
 static void wirelessGetSecurity(webs_t wp, char_t *path, char_t *query);
 static void APSecurity(webs_t wp, char_t *path, char_t *query);
-static int  is3t3r(int eid, webs_t wp, int argc, char_t **argv);
+static int getRaxHTStream(int eid, webs_t wp, int argc, char_t **argv);
 static int  isWPSConfiguredASP(int eid, webs_t wp, int argc, char_t **argv);
 int deleteNthValueMulti(int index[], int count, char *value, char delimit);		/* for Access Policy list deletion*/
 static void APDeleteAccessPolicyList(webs_t wp, char_t *path, char_t *query);
@@ -106,7 +108,7 @@ static int	getApTxBFStats(int eid, webs_t wp, int argc, char_t **argv);
 static void wirelessRvt(webs_t wp, char_t *path, char_t *query);
 
 void formDefineWireless(void) {
-	websAspDefine(T("getWAPIBuilt"), getWAPIBuilt);
+	websAspDefine(T("getRaxWAPIBuilt"), getRaxWAPIBuilt);
 	websAspDefine(T("getDLSBuilt"), getDLSBuilt);
 	websAspDefine(T("getDFSBuilt"), getDFSBuilt);
 	websAspDefine(T("getCarrierBuilt"), getCarrierBuilt);
@@ -123,7 +125,7 @@ void formDefineWireless(void) {
 	websAspDefine(T("getVideoTurbineBuilt"), getVideoTurbineBuilt);
 
 	websAspDefine(T("getWlanApcliBuilt"), getWlanApcliBuilt);
-	websAspDefine(T("get11nDraft3Built"), get11nDraft3Built);
+	websAspDefine(T("getRax11nDraft3Built"), getRax11nDraft3Built);
 	websAspDefine(T("getMaxBssidNum"), getMaxBssidNum);
 	websAspDefine(T("getWlan11aChannels"), getWlan11aChannels);
 	websAspDefine(T("getWlan11bChannels"), getWlan11bChannels);
@@ -131,7 +133,7 @@ void formDefineWireless(void) {
 	websAspDefine(T("getWlanChannel"), getWlanChannel);
 	websAspDefine(T("getWlanCurrentMac"), getWlanCurrentMac);
 	websAspDefine(T("getWlanStaInfo"), getWlanStaInfo);
-	websAspDefine(T("is3t3r"), is3t3r);
+	websAspDefine(T("getRaxHTStream"), getRaxHTStream);
 	websAspDefine(T("isWPSConfiguredASP"), isWPSConfiguredASP);
 	websAspDefine(T("isAntennaDiversityBuilt"), isAntennaDiversityBuilt);
 #ifdef CONFIG_RT2860V2_RT3XXX_ANTENNA_DIVERSITY
@@ -140,11 +142,12 @@ void formDefineWireless(void) {
 #endif
 	websFormDefine(T("wirelessBasic"), wirelessBasic);
 	websFormDefine(T("wirelessAdvanced"), wirelessAdvanced);
-#ifdef CONFIG_RT2860V2_AP_WDS
+#if	defined (RT2860_WDS_SUPPORT)
 	websFormDefine(T("wirelessWds"), wirelessWds);
 #endif
-#ifdef CONFIG_RT2860V2_AP_APCLI
+#if	defined (RT2860_APCLI_SUPPORT)
 	websFormDefine(T("wirelessApcli"), wirelessApcli);
+	websAspDefine(T("ApcliScan"), ApcliScan);
 #endif
 	websFormDefine(T("wirelessWmm"), wirelessWmm);
 	websFormDefine(T("wirelessGetSecurity"), wirelessGetSecurity);
@@ -158,6 +161,7 @@ void formDefineWireless(void) {
 	websAspDefine(T("getWAPIASCertList"), getWAPIASCertList);
 	websAspDefine(T("getWAPIUserCertList"), getWAPIUserCertList);
 	websAspDefine(T("getAPDriverVer"), getAPDriverVer);
+	websAspDefine(T("getRaxABand"), getRaxABand);
 	websAspDefine(T("getApStats"), getApStats);
 	websFormDefine(T("resetApCounters"), resetApCounters);
 	websAspDefine(T("getApSNR"), getApSNR);
@@ -478,16 +482,16 @@ static int getWlan11gChannels(int eid, webs_t wp, int argc, char_t **argv)
 
 static int getWlanApcliBuilt(int eid, webs_t wp, int argc, char_t **argv)
 {
-#ifdef CONFIG_RT2860V2_AP_APCLI
+#if	defined (RT2860_APCLI_SUPPORT)
 	return websWrite(wp, T("1"));
 #else
 	return websWrite(wp, T("0"));
 #endif
 }
 
-static int get11nDraft3Built(int eid, webs_t wp, int argc, char_t **argv)
+static int getRax11nDraft3Built(int eid, webs_t wp, int argc, char_t **argv)
 {
-#ifdef CONFIG_RT2860V2_80211N_DRAFT3
+#if defined (RT2860_11NDRAFT3_SUPPORT)
 	return websWrite(wp, T("1"));
 #else
 	return websWrite(wp, T("0"));
@@ -496,7 +500,7 @@ static int get11nDraft3Built(int eid, webs_t wp, int argc, char_t **argv)
 
 static int getMaxBssidNum(int eid, webs_t wp, int argc, char_t **argv)
 {
-#if (defined (CONFIG_RALINK_RT3352) || defined (CONFIG_RALINK_RT5350) || defined (CONFIG_RALINK_RT3883)) && defined (CONFIG_16MBSSID_MODE)
+#if defined (CONFIG_16MBSSID_MODE)
 	return websWrite(wp, T("16"));
 #else
 	return websWrite(wp, T("8"));
@@ -535,7 +539,7 @@ static int getWlanCurrentMac(int eid, webs_t wp, int argc, char_t **argv)
 }
 
 typedef struct _RT_802_11_MAC_ENTRY {
-#ifdef CONFIG_RT2860V2_AP_V24_DATA_STRUCTURE
+#if 1 //def CONFIG_RT2860V2_AP_V24_DATA_STRUCTURE
 	unsigned char			ApIdx;
 #endif
 	unsigned char           Addr[6];
@@ -548,15 +552,20 @@ typedef struct _RT_802_11_MAC_ENTRY {
 	unsigned int            ConnectedTime;
 	MACHTTRANSMIT_SETTING	TxRate;
 	unsigned int			LastRxRate;
-	int						StreamSnr[3];
-	int						SoundingRespSnr[3];
+#if 1
+	int					StreamSnr[3];
+	int					SoundingRespSnr[3];
+#else
+	short					StreamSnr[3];
+	short					SoundingRespSnr[3];
+#endif
 #if 0
 	short					TxPER;
 	short					reserved;
 #endif
 } RT_802_11_MAC_ENTRY;
 
-#ifdef CONFIG_RT2860V2_AP_WAPI
+#if	defined (RT2860_WAPI_SUPPORT) || defined (RTDEV_WAPI_SUPPORT)
 #define MAX_NUMBER_OF_MAC               96
 #else
 #define MAX_NUMBER_OF_MAC               32 // if MAX_MBSSID_NUM is 8, this value can't be larger than 211
@@ -586,7 +595,7 @@ static int getWlanStaInfo(int eid, webs_t wp, int argc, char_t **argv)
 		return -1;
 	}
 
-#ifdef CONFIG_RT2860V2_AP_V24_DATA_STRUCTURE
+#if 1 //def CONFIG_RT2860V2_AP_V24_DATA_STRUCTURE
 	if (ioctl(s, RTPRIV_IOCTL_GET_MAC_TABLE_STRUCT, &iwr) < 0) {
 		websError(wp, 500, "ioctl -> RTPRIV_IOCTL_GET_MAC_TABLE_STRUCT failed!");
 #else
@@ -685,9 +694,9 @@ static int getWlanStaInfo(int eid, webs_t wp, int argc, char_t **argv)
 	return 0;
 }
 
-static int getWAPIBuilt(int eid, webs_t wp, int argc, char_t **argv)
+static int getRaxWAPIBuilt(int eid, webs_t wp, int argc, char_t **argv)
 {
-#ifdef AP_WAPI_SUPPORT
+#if defined (RT2860_WAPI_SUPPORT)
 	return websWrite(wp, T("1"));
 #else
 	return websWrite(wp, T("0"));
@@ -696,7 +705,7 @@ static int getWAPIBuilt(int eid, webs_t wp, int argc, char_t **argv)
 
 static int getDLSBuilt(int eid, webs_t wp, int argc, char_t **argv)
 {
-#ifdef CONFIG_RT2860V2_AP_DLS
+#if defined (RT2860_DLS_SUPPORT)
 	return websWrite(wp, T("1"));
 #else
 	return websWrite(wp, T("0"));
@@ -705,7 +714,7 @@ static int getDLSBuilt(int eid, webs_t wp, int argc, char_t **argv)
 
 static int getDFSBuilt(int eid, webs_t wp, int argc, char_t **argv)
 {
-#ifdef CONFIG_RT2860V2_AP_DFS
+#if defined (RT2860_DFS_SUPPORT)
 	return websWrite(wp, T("1"));
 #else
 	return websWrite(wp, T("0"));
@@ -714,7 +723,7 @@ static int getDFSBuilt(int eid, webs_t wp, int argc, char_t **argv)
 
 static int getCarrierBuilt(int eid, webs_t wp, int argc, char_t **argv)
 {
-#ifdef CONFIG_RT2860V2_AP_CARRIER
+#if defined (RT2860_CARRIER_SUPPORT)
 	return websWrite(wp, T("1"));
 #else
 	return websWrite(wp, T("0"));
@@ -723,7 +732,7 @@ static int getCarrierBuilt(int eid, webs_t wp, int argc, char_t **argv)
 
 static int getWlanM2UBuilt(int eid, webs_t wp, int argc, char_t **argv)
 {
-#ifdef CONFIG_RT2860V2_AP_IGMP_SNOOP
+#if defined (RT2860_IGMPSNOOP_SUPPORT)
 	return websWrite(wp, T("1"));
 #else
 	return websWrite(wp, T("0"));
@@ -891,7 +900,7 @@ static void wirelessBasic(webs_t wp, char_t *path, char_t *query)
 	char_t	*wirelessmode;
 	char_t	*mssid_0, *mssid_1, *mssid_2, *mssid_3, *mssid_4, *mssid_5, *mssid_6,
 			*mssid_7, *bssid_num, *hssid, *isolated_ssid, *mbssidapisolated;
-#if (defined (CONFIG_RALINK_RT3352) || defined (CONFIG_RALINK_RT5350) || defined (CONFIG_RALINK_RT3883)) && defined (CONFIG_16MBSSID_MODE)
+#if defined (CONFIG_16MBSSID_MODE)
 	char_t  *mssid_8, *mssid_9, *mssid_10, *mssid_11, *mssid_12, *mssid_13, *mssid_14,*mssid_15;
 #endif
 	char_t	*sz11aChannel, *sz11bChannel, *sz11gChannel, *abg_rate;
@@ -899,7 +908,7 @@ static void wirelessBasic(webs_t wp, char_t *path, char_t *query)
 	char_t  *n_amsdu, *n_autoba, *n_badecline, *n_disallow_tkip, *n_2040_coexit;
 	char_t	*tx_stream, *rx_stream;
 	char_t	*radio;
-#if (defined (CONFIG_RALINK_RT3352) || defined (CONFIG_RALINK_RT5350) || defined (CONFIG_RALINK_RT3883)) && defined (CONFIG_16MBSSID_MODE)
+#if defined (CONFIG_16MBSSID_MODE)
 	char	hidden_ssid[32], noforwarding[32];
 #else
 	char	hidden_ssid[16], noforwarding[16];
@@ -922,7 +931,7 @@ static void wirelessBasic(webs_t wp, char_t *path, char_t *query)
 
 	radio = websGetVar(wp, T("wifihiddenButton"), T("2"));
 	if (!strncmp(radio, "0", 2)) {
-#ifdef CONFIG_RT2860V2_AP_MBSS
+#if defined (RT2860_MBSS_SUPPORT)
 		int bssid_num = atoi(nvram_bufget(RT2860_NVRAM, "BssidNum"));
 		do {
 			bssid_num--;
@@ -945,8 +954,8 @@ static void wirelessBasic(webs_t wp, char_t *path, char_t *query)
 		return;
 	}
 	else if (!strncmp(radio, "1", 2)) {
-		doSystem("insmod rt2860v2_ap");
-#ifdef CONFIG_RT2860V2_AP_MBSS
+		doSystem("insmod -q rt2860v2_ap");
+#if defined (RT2860_MBSS_SUPPORT)
 		int idx = 0;
 		int bssid_num = atoi(nvram_bufget(RT2860_NVRAM, "BssidNum"));
 		do {
@@ -971,7 +980,7 @@ static void wirelessBasic(webs_t wp, char_t *path, char_t *query)
 	mssid_5 = websGetVar(wp, T("mssid_5"), T("")); 
 	mssid_6 = websGetVar(wp, T("mssid_6"), T("")); 
 	mssid_7 = websGetVar(wp, T("mssid_7"), T("")); 
-#if (defined (CONFIG_RALINK_RT3352) || defined (CONFIG_RALINK_RT5350) || defined (CONFIG_RALINK_RT3883)) && defined (CONFIG_16MBSSID_MODE)
+#if defined (CONFIG_16MBSSID_MODE)
 	mssid_8 = websGetVar(wp, T("mssid_8"), T(""));
 	mssid_9 = websGetVar(wp, T("mssid_9"), T(""));
 	mssid_10 = websGetVar(wp, T("mssid_10"), T(""));
@@ -1025,19 +1034,25 @@ static void wirelessBasic(webs_t wp, char_t *path, char_t *query)
 		nvram_commit(RT2860_NVRAM);
 		websError(wp, 403, T("'SSID' should not be empty!"));
 		return;
+	} else {
+		i++;
+		nvram_bufset(RT2860_NVRAM, racat("SSID", i), mssid_0);
+		if (strchr(hssid, '0') != NULL)
+			sprintf(hidden_ssid, "%s", "1");
+		else
+			sprintf(hidden_ssid, "%s", "0");
+		if (strchr(isolated_ssid, '0') != NULL)
+			sprintf(noforwarding, "%s", "1");
+		else
+			sprintf(noforwarding, "%s", "0");
 	}
-	nvram_bufset(RT2860_NVRAM, "SSID1", mssid_0);
-	if (strchr(hssid, '0') != NULL)
-		sprintf(hidden_ssid, "%s", "1");
-	else
-		sprintf(hidden_ssid, "%s", "0");
-	if (strchr(isolated_ssid, '0') != NULL)
-		sprintf(noforwarding, "%s", "1");
-	else
-		sprintf(noforwarding, "%s", "0");
 
 //#WPS
-	{
+	if (!strcmp(hidden_ssid, "1")) {
+		nvram_bufset(RT2860_NVRAM, "WscModeOption", "0");
+		doSystem("kill -9 `cat /var/run/wscd.pid.ra0`");
+		doSystem("route delete 239.255.255.250 1>/dev/null 2>&1");
+	} else {
 		const char *wordlist= nvram_bufget(RT2860_NVRAM, "WscModeOption");
 		if(wordlist){
 			if (strcmp(wordlist, "0"))
@@ -1050,8 +1065,8 @@ static void wirelessBasic(webs_t wp, char_t *path, char_t *query)
 //#WPS
 	default_shown_mbssid[RT2860_NVRAM] = 0;
 
-	i = 2;
 	if (0 != strlen(mssid_1)) {
+		i++;
 		nvram_bufset(RT2860_NVRAM, racat("SSID", i), mssid_1);
 		if (strchr(hssid, '1') != NULL)
 			sprintf(hidden_ssid, "%s%s", hidden_ssid, ";1");
@@ -1061,9 +1076,9 @@ static void wirelessBasic(webs_t wp, char_t *path, char_t *query)
 			sprintf(noforwarding, "%s%s", noforwarding, ";1");
 		else
 			sprintf(noforwarding, "%s%s", noforwarding, ";0");
-		i++;
 	}
 	if (0 != strlen(mssid_2)) {
+		i++;
 		nvram_bufset(RT2860_NVRAM, racat("SSID", i), mssid_2);
 		if (strchr(hssid, '2') != NULL)
 			sprintf(hidden_ssid, "%s%s", hidden_ssid, ";1");
@@ -1073,9 +1088,9 @@ static void wirelessBasic(webs_t wp, char_t *path, char_t *query)
 			sprintf(noforwarding, "%s%s", noforwarding, ";1");
 		else
 			sprintf(noforwarding, "%s%s", noforwarding, ";0");
-		i++;
 	}
 	if (0 != strlen(mssid_3)) {
+		i++;
 		nvram_bufset(RT2860_NVRAM, racat("SSID", i), mssid_3);
 		if (strchr(hssid, '3') != NULL)
 			sprintf(hidden_ssid, "%s%s", hidden_ssid, ";1");
@@ -1085,9 +1100,9 @@ static void wirelessBasic(webs_t wp, char_t *path, char_t *query)
 			sprintf(noforwarding, "%s%s", noforwarding, ";1");
 		else
 			sprintf(noforwarding, "%s%s", noforwarding, ";0");
-		i++;
 	}
 	if (0 != strlen(mssid_4)) {
+		i++;
 		nvram_bufset(RT2860_NVRAM, racat("SSID", i), mssid_4);
 		if (strchr(hssid, '4') != NULL)
 			sprintf(hidden_ssid, "%s%s", hidden_ssid, ";1");
@@ -1097,9 +1112,9 @@ static void wirelessBasic(webs_t wp, char_t *path, char_t *query)
 			sprintf(noforwarding, "%s%s", noforwarding, ";1");
 		else
 			sprintf(noforwarding, "%s%s", noforwarding, ";0");
-		i++;
 	}
 	if (0 != strlen(mssid_5)) {
+		i++;
 		nvram_bufset(RT2860_NVRAM, racat("SSID", i), mssid_5);
 		if (strchr(hssid, '5') != NULL)
 			sprintf(hidden_ssid, "%s%s", hidden_ssid, ";1");
@@ -1109,9 +1124,9 @@ static void wirelessBasic(webs_t wp, char_t *path, char_t *query)
 			sprintf(noforwarding, "%s%s", noforwarding, ";1");
 		else
 			sprintf(noforwarding, "%s%s", noforwarding, ";0");
-		i++;
 	}
 	if (0 != strlen(mssid_6)) {
+		i++;
 		nvram_bufset(RT2860_NVRAM, racat("SSID", i), mssid_6);
 		if (strchr(hssid, '6') != NULL)
 			sprintf(hidden_ssid, "%s%s", hidden_ssid, ";1");
@@ -1121,9 +1136,9 @@ static void wirelessBasic(webs_t wp, char_t *path, char_t *query)
 			sprintf(noforwarding, "%s%s", noforwarding, ";1");
 		else
 			sprintf(noforwarding, "%s%s", noforwarding, ";0");
-		i++;
 	}
 	if (0 != strlen(mssid_7)) {
+		i++;
 		nvram_bufset(RT2860_NVRAM, racat("SSID", i), mssid_7);
 		if (strchr(hssid, '7') != NULL)
 			sprintf(hidden_ssid, "%s%s", hidden_ssid, ";1");
@@ -1133,10 +1148,9 @@ static void wirelessBasic(webs_t wp, char_t *path, char_t *query)
 			sprintf(noforwarding, "%s%s", noforwarding, ";1");
 		else
 			sprintf(noforwarding, "%s%s", noforwarding, ";0");
-		i++;
 	}
 
-#if (defined (CONFIG_RALINK_RT3352) || defined (CONFIG_RALINK_RT5350) || defined (CONFIG_RALINK_RT3883)) && defined (CONFIG_16MBSSID_MODE)
+#if defined (CONFIG_16MBSSID_MODE)
 	if (0 != strlen(mssid_8)) {
 		nvram_bufset(RT2860_NVRAM, racat("SSID", i), mssid_8);
 		if (strchr(hssid, '8') != NULL)
@@ -1236,7 +1250,7 @@ static void wirelessBasic(webs_t wp, char_t *path, char_t *query)
 #endif
 
 	nvram_bufset(RT2860_NVRAM, "BssidNum", bssid_num);
-#if (defined (CONFIG_RALINK_RT3352) || defined (CONFIG_RALINK_RT5350) || defined (CONFIG_RALINK_RT3883)) && defined (CONFIG_16MBSSID_MODE)
+#if defined (CONFIG_16MBSSID_MODE)
 	if (new_bssid_num < 1 || new_bssid_num > 16) {
 #else
 	if (new_bssid_num < 1 || new_bssid_num > 8) {
@@ -1405,7 +1419,7 @@ static void wirelessBasic(webs_t wp, char_t *path, char_t *query)
 			mssid_1, mssid_2, mssid_3);
 	websWrite(wp, T("mssid_4: %s, mssid_5: %s, mssid_6: %s, mssid_7: %s<br>\n"),
 			mssid_4, mssid_5, mssid_6, mssid_7);
-#if (defined (CONFIG_RALINK_RT3352) || defined (CONFIG_RALINK_RT5350) || defined (CONFIG_RALINK_RT3883)) && defined (CONFIG_16MBSSID_MODE)
+#if defined (CONFIG_16MBSSID_MODE)
 	websWrite(wp, T("mssid_8: %s, mssid_9: %s, mssid_10: %s, mssid_11: %s<br>\n"),
 			mssid_8, mssid_9, mssid_10), mssid_11;
 	websWrite(wp, T("mssid_12: %s, mssid_13: %s, mssid_14: %s, mssid_15: %s<br>\n"),
@@ -1621,7 +1635,7 @@ static void wirelessAdvanced(webs_t wp, char_t *path, char_t *query)
 	nvram_commit(RT2860_NVRAM);
 	initInternet();
 
-#ifdef CONFIG_RT2860V2_AP_IGMP_SNOOP
+#if defined (RT2860_IGMPSNOOP_SUPPORT)
 	if (!strncmp(m2u_enable, "1", 2))
 		doSystem("iwpriv ra0 set IgmpSnEnable=1");
 	else
@@ -1657,14 +1671,14 @@ static void wirelessAdvanced(webs_t wp, char_t *path, char_t *query)
 	websWrite(wp, T("apsd_capable: %s<br>\n"), apsd_capable);
 	websWrite(wp, T("dls_capable: %s<br>\n"), dls_capable);
 	websWrite(wp, T("countrycode: %s<br>\n"), countrycode);
-#ifdef CONFIG_RT2860V2_AP_IGMP_SNOOP
+#if defined (RT2860_IGMPSNOOP_SUPPORT)
 	websWrite(wp, T("m2u_enable: %s<br>\n"), m2u_enable);
 #endif
 	websFooter(wp);
 	websDone(wp, 200);
 }
 
-#ifdef CONFIG_RT2860V2_AP_WDS
+#if	defined (RT2860_WDS_SUPPORT)
 /* goform/wirelessWds */
 static void wirelessWds(webs_t wp, char_t *path, char_t *query)
 {
@@ -1712,7 +1726,7 @@ static void wirelessWds(webs_t wp, char_t *path, char_t *query)
 }
 #endif
 
-#ifdef CONFIG_RT2860V2_AP_APCLI
+#if	defined (RT2860_APCLI_SUPPORT)
 /* goform/wirelessApcli */
 static void wirelessApcli(webs_t wp, char_t *path, char_t *query)
 {
@@ -1774,6 +1788,64 @@ static void wirelessApcli(webs_t wp, char_t *path, char_t *query)
 	}
 	websFooter(wp);
 	websDone(wp, 200);
+}
+
+static int  ApcliScan(int eid, webs_t wp, int argc, char_t **argv)
+{
+	FILE *fp;
+	char buf[4096], *ptr;
+	char channel[4], ssid[186], bssid[20], security[23];
+	char signal[9], mode[7], ext_ch[7], net_type[3];
+	int i, space_start;
+
+	doSystem("iwpriv ra0 set SiteSurvey=1");
+	if(!(fp = popen("iwpriv ra0 get_site_survey", "r"))) {
+		fprintf(stderr, "%s: execute get_site_survey failed !\n", __func__);
+		websError(wp, 500, "%s: execute get_site_survey failed !\n", __func__);
+		return -1;
+	}
+
+	memset(buf, 0, sizeof(buf));
+	fgets(buf, sizeof(buf), fp);
+	fgets(buf, sizeof(buf), fp);
+	while (fgets(buf, sizeof(buf), fp)) {
+		if (strlen(buf) < 4)
+			break;
+#if 0
+		for (i=0; buf[i] != '\n'; i++) {
+			if (i%10 == 0)
+				fprintf(stderr, "\n%3d:", i);
+
+			//fprintf(stderr, "%2c ", buf[i]);
+			fprintf(stderr, "%2x ", buf[i]);
+		}
+#endif
+		ptr = buf;
+		sscanf(ptr, "%s ", channel);
+		ptr += 37;
+		sscanf(ptr, "%s %s %s %s %s %s", bssid, security, signal, mode, ext_ch, net_type);
+		ptr = buf+4;
+		space_start = 0;
+		i = 0;
+		while (i < 33) {
+			if (ptr[i] == 0x20 && space_start == 0)
+					space_start = i;
+			else
+				space_start = 0;
+			i++;
+		}
+		ptr[space_start] = '\0';
+		strcpy(ssid, buf+4);
+		ConverterStringToDisplay(ssid);
+
+		websWrite(wp, "<tr>\n");
+		websWrite(wp, "<td>%s</td><td>%s</td>\n", channel, ssid);
+		websWrite(wp, "<td>%s</td><td>%s</td>\n", bssid, security);
+		websWrite(wp, "<td>%s</td><td>%s</td>\n", signal, mode);
+		websWrite(wp, "<td>%s</td><td>%s</td>\n", ext_ch, net_type);
+		websWrite(wp, "</tr>\n");
+	}
+	pclose(fp);
 }
 #endif
 
@@ -1840,7 +1912,7 @@ static void wirelessWmm(webs_t wp, char_t *path, char_t *query)
 	websDone(wp, 200);
 }
 
-#ifdef AP_WAPI_SUPPORT
+#if defined (RT2860_WAPI_SUPPORT) || defined (RTDEV_WAPI_SUPPORT)
 void restartWAPIDaemon(int nvram)
 {
 	const char *auth_mode = nvram_bufget(nvram, "AuthMode");
@@ -1848,7 +1920,10 @@ void restartWAPIDaemon(int nvram)
 	doSystem("killall wapid 1>/dev/null 2>&1");
 	if (NULL !=strstr(auth_mode, "WAIPSK") || NULL !=strstr(auth_mode, "WAICERT"))
 	{
-		doSystem("wapid");
+		if(nvram == RT2860_NVRAM)
+			doSystem("wapid");
+		else if(nvram == RTDEV_NVRAM)
+			doSystem("wapid -i rai0");
 	}
 }
 #endif
@@ -1915,7 +1990,7 @@ void getSecurity(int nvram, webs_t wp, char_t *path, char_t *query)
 	char_t *PreAuth, *AuthMode, *EncrypType, *DefaultKeyID, *Key1Type, *Key2Type,
 		   *Key3Type, *Key4Type, *RekeyMethod, *RekeyInterval, *PMKCachePeriod, *IEEE8021X;
 	char_t *RADIUS_Server, *RADIUS_Port, *session_timeout_interval;
-#ifdef AP_WAPI_SUPPORT
+#if defined (RT2860_WAPI_SUPPORT) || defined (RTDEV_WAPI_SUPPORT)
 	// char_t *Wapiifname;
 	char_t *WapiPskType, *WapiAsIpAddr, *WapiAsPort, *WapiAsCertPath, *WapiUserCertPath;
 #endif
@@ -1983,7 +2058,7 @@ void getSecurity(int nvram, webs_t wp, char_t *path, char_t *query)
 			gstrncat(result, "\r", 4096);
 			gstrncat(result, nvram_bufget(nvram, racat("AccessControlList", i)), 4096);
 			gstrncat(result, "\r", 4096);
-#ifdef AP_WAPI_SUPPORT
+#if defined (RT2860_WAPI_SUPPORT) || defined (RTDEV_WAPI_SUPPORT)
 			LFF(result, nvram, WapiPskType, i);
 			gstrncat(result, nvram_bufget(nvram, racat("WapiPsk", i+1)), 4096);
 			gstrncat(result, "\r", 4096);
@@ -2028,7 +2103,7 @@ void getSecurity(int nvram, webs_t wp, char_t *path, char_t *query)
 		   gstrncat(result, nvram_bufget(nvram, racat("AccessControlList", i)), 4096);
 		   gstrncat(result, "\r", 4096);
 		*/
-#ifdef AP_WAPI_SUPPORT
+#if defined (RT2860_WAPI_SUPPORT) || defined (RTDEV_WAPI_SUPPORT)
 			char_t *WapiPsk;
 			LFF(result, nvram, WapiPskType, i);
 			LFF(result, nvram, WapiPsk, i);
@@ -2301,6 +2376,9 @@ void Security(int nvram, webs_t wp, char_t *path, char_t *query)
 		confWEP(nvram, wp, mbssid);
 		STFs(nvram, mbssid, "AuthMode", security_mode);
 		STFs(nvram, mbssid, "EncrypType", "WEP");
+		nvram_bufset(nvram, "WscModeOption", "0");
+		doSystem("kill -9 `cat /var/run/wscd.pid.ra0`");
+		doSystem("route delete 239.255.255.250 1>/dev/null 2>&1");
 	} else if (!strcmp(security_mode, "SHARED")) {		// Shared-WEP Mode
 		char *security_shared_mode;
 		confWEP(nvram, wp, mbssid);
@@ -2309,10 +2387,16 @@ void Security(int nvram, webs_t wp, char_t *path, char_t *query)
 
 		STFs(nvram, mbssid, "AuthMode", security_mode);
 		STFs(nvram, mbssid, "EncrypType", "WEP");
+		nvram_bufset(nvram, "WscModeOption", "0");
+		doSystem("kill -9 `cat /var/run/wscd.pid.ra0`");
+		doSystem("route delete 239.255.255.250 1>/dev/null 2>&1");
 	} else if (!strcmp(security_mode, "WEPAUTO")) {		// WEP Auto Mode
 		confWEP(nvram, wp, mbssid);
 		STFs(nvram, mbssid, "AuthMode", security_mode);
 		STFs(nvram, mbssid, "EncrypType", "WEP");
+		nvram_bufset(nvram, "WscModeOption", "0");
+		doSystem("kill -9 `cat /var/run/wscd.pid.ra0`");
+		doSystem("route delete 239.255.255.250 1>/dev/null 2>&1");
 	} else if (!strcmp(security_mode, "WPA")) {			// WPA Enterprise Mode
 		conf8021x(nvram, wp, mbssid);
 		confWPAGeneral(nvram, wp, mbssid);
@@ -2387,7 +2471,7 @@ void Security(int nvram, webs_t wp, char_t *path, char_t *query)
 		else
 			STFs(nvram, mbssid, "EncrypType", "WEP");
 	}
-#ifdef AP_WAPI_SUPPORT
+#if defined (RT2860_WAPI_SUPPORT) || defined (RTDEV_WAPI_SUPPORT)
 	else if (!strcmp(security_mode, "WAICERT")) {			// WAPI-CERT Mode
 		// char_t *Wapiifname, *WapiAsPort;
 		char_t *WapiAsIpAddr, *WapiAsCertPath, *WapiUserCertPath;
@@ -2673,12 +2757,14 @@ static int ShowMeshState(int eid, webs_t wp, int argc, char_t **argv)
 }
 #endif
 
-static int is3t3r(int eid, webs_t wp, int argc, char_t **argv)
+static int getRaxHTStream(int eid, webs_t wp, int argc, char_t **argv)
 {
-#if defined (CONFIG_RALINK_RT2883) || defined (CONFIG_RALINK_RT3883)
-		websWrite(wp, T("1"));
+#if defined (RT2860_3T3R_SUPPORT)
+		websWrite(wp, T("3"));
+#elif defined (RT2860_1T1R_SUPPORT)
+		websWrite(wp, T("1"));	
 #else
-		websWrite(wp, T("0"));	
+		websWrite(wp, T("2"));	
 #endif
 	return 0;
 }
@@ -2810,13 +2896,13 @@ int ApOidQueryInformation(unsigned long OidQueryCode, int socket_id, char *Devic
 static int getAPDriverVer(int eid, webs_t wp, int argc, char_t **argv)
 {
 	//RT_VERSION_INFO DriverVersionInfo;
-	unsigned char DriverVersionInfo[8];
+	unsigned char DriverVersionInfo[16];
 	int s;
 
 	s = socket(AF_INET, SOCK_DGRAM, 0);
 
 	//Driver
-	if (ApOidQueryInformation(RT_OID_VERSION_INFO, s, "ra0", &DriverVersionInfo, sizeof(DriverVersionInfo)) >= 0) {
+	if (ApOidQueryInformation(RT_OID_VERSION_INFO, s, *argv, &DriverVersionInfo, sizeof(DriverVersionInfo)) >= 0) {
 		websWrite(wp, "%s", DriverVersionInfo);
 	}
 	else
@@ -3031,7 +3117,7 @@ static void wirelessRvt(webs_t wp, char_t *path, char_t *query)
 	if (!strncmp(classifier, "0", 2))
 		doSystem("rmmod cls");
 	else
-		doSystem("insmod cls");
+		doSystem("insmod -q cls");
 	initInternet();
 
 	//debug print
@@ -3076,7 +3162,7 @@ static int getTxBfBuilt(int eid, webs_t wp, int argc, char_t **argv)
 
 static int getWDSBuilt(int eid, webs_t wp, int argc, char_t **argv)
 {
-#ifdef CONFIG_RT2860V2_AP_WDS
+#if	defined (RT2860_WDS_SUPPORT)
 	return websWrite(wp, T("1"));
 #else
 	return websWrite(wp, T("0"));
@@ -3085,7 +3171,7 @@ static int getWDSBuilt(int eid, webs_t wp, int argc, char_t **argv)
 
 static int getWSCBuilt(int eid, webs_t wp, int argc, char_t **argv)
 {
-#if defined CONFIG_RT2860V2_AP_WSC || defined CONFIG_RT2860V2_STA_WSC
+#if defined (RT2860_WSC_SUPPORT) || defined (CONFIG_RT2860V2_STA_WSC)
 	return websWrite(wp, T("1"));
 #else
 	return websWrite(wp, T("0"));
@@ -3103,7 +3189,7 @@ static int getUniWPSBuilt(int eid, webs_t wp, int argc, char_t **argv)
 
 static int getMBSSIDBuilt(int eid, webs_t wp, int argc, char_t **argv)
 {
-#ifdef CONFIG_RT2860V2_AP_MBSS
+#if defined (RT2860_MBSS_SUPPORT)
 	return websWrite(wp, T("1"));
 #else
 	return websWrite(wp, T("0"));
@@ -3127,3 +3213,13 @@ static int getAutoProvisionBuilt(int eid, webs_t wp, int argc, char_t **argv)
 	return websWrite(wp, T("0"));
 #endif
 }
+
+static int getRaxABand(int eid, webs_t wp, int argc, char_t **argv)
+{
+#if defined (RT2860_ABAND_SUPPORT)
+	return websWrite(wp, T("1"));
+#else
+	return websWrite(wp, T("0"));
+#endif
+}
+

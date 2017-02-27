@@ -55,7 +55,7 @@ struct squashfs_sb_info {
 	long long		*fragment_index;
 	unsigned int		*fragment_index_2;
 	char			*read_page;
-	//struct mutex		read_data_mutex;
+	struct mutex		read_data_mutex;
 	struct mutex		read_page_mutex;
 	struct mutex		block_cache_mutex;
 	struct mutex		fragment_mutex;
@@ -63,6 +63,7 @@ struct squashfs_sb_info {
 	wait_queue_head_t	waitq;
 	wait_queue_head_t	fragment_wait_queue;
 	struct meta_index	*meta_index;
+	z_stream		stream;
 	long long		*inode_lookup_table;
 	int			(*read_inode)(struct inode *i,  squashfs_inode_t \
 				inode);

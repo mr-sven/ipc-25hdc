@@ -197,11 +197,12 @@ static void RaixOOB(webs_t wp, char_t *path, char_t *query)
 
         nvram_bufset(RTDEV_NVRAM, "WscConfigured", "0");
 
-        STF(0, "AuthMode", "OPEN");
-        STF(0, "EncrypType", "NONE");
+        STF(0, "AuthMode", "WPA2PSK");
+        STF(0, "EncrypType", "AES");
+        STF(0, "DefaultKeyID", "2");
+        nvram_bufset(RTDEV_NVRAM, "WPAPSK1", "12345678");
 
         STF(0, "IEEE8021X", "0");
-
         /*
          *   IMPORTANT !!!!!
          *   5VT doesn't need it cause it will reboot after OOB reset, but RT2880 does.
@@ -210,8 +211,10 @@ static void RaixOOB(webs_t wp, char_t *path, char_t *query)
 
         nvram_commit(RTDEV_NVRAM);
 
-        doSystem("iwpriv rai0 set AuthMode=OPEN");
-        doSystem("iwpriv rai0 set EncrypType=NONE");
+        doSystem("iwpriv rai0 set SSID=%s", nvram_bufget(RTDEV_NVRAM, "SSID1"));
+        doSystem("iwpriv rai0 set AuthMode=WPA2PSK");
+        doSystem("iwpriv rai0 set EncrypType=AES");
+        doSystem("iwpriv rai0 set WPAPSK=12345678");
         doSystem("iwpriv rai0 set SSID=%s", nvram_bufget(RTDEV_NVRAM, "SSID1"));
 
         restart8021XDaemon(RTDEV_NVRAM);
@@ -220,6 +223,26 @@ static void RaixOOB(webs_t wp, char_t *path, char_t *query)
 
         websRedirect(wp, "wps/wps_inic.asp");
 }
+
+#if defined (RTDEV_WSCV2_SUPPORT)
+static void confACL()
+{
+	int i, socket_id = socket(AF_INET, SOCK_DGRAM, 0);
+	char temp[18];
+	PRT_802_11_ACL alc_list = malloc(sizeof(RT_802_11_ACL)); 
+
+	ApOidQueryInformation(OID_802_11_ACL_LIST, socket_id, "rai0", alc_list, sizeof(RT_802_11_ACL));
+	for (i=0; i < alc_list->Num; i++)
+	{
+		sprintf(temp, "%02X:%02X:%02X:%02X:%02X:%02X",
+				alc_list->Entry[i].Addr[0], alc_list->Entry[i].Addr[1], alc_list->Entry[i].Addr[2],
+				alc_list->Entry[i].Addr[3], alc_list->Entry[i].Addr[4], alc_list->Entry[i].Addr[5]);
+		STF(i, "AccessControlList0", temp);
+	}
+	close(socket_id);
+	free(alc_list);
+}
+#endif
 
 static void WPSAPTimerHandler(int signo)
 {
@@ -387,15 +410,35 @@ static void WPSAPTimerHandler(int signo)
 				STF(0, "DefaultKeyID", "1");
 			}
 
+			if (wsc_profile.Profile[0].AuthType == 0x0002 &&
+			    wsc_profile.Profile[0].EncrType == 0x0004) {
+				STF(0, "AuthMode", "WPAPSKWPA2PSK");
+				STF(0, "EncrypType", "TKIPAES");
+			}
+
+			if (!strcmp(nvram_bufget(RTDEV_NVRAM, "AccessPolicy0"), "1")) {
+				const char *ap_list = nvram_bufget(RTDEV_NVRAM, "AccessControlList0");
+				STF(0, "AccessControlList0", "00:11:22:33:44:55");
+			}
+
+#if defined (RTDEV_WSCV2_SUPPORT)
+			if (wsc_profile.Profile[0].AuthType == 0x0002 &&
+			    wsc_profile.Profile[0].EncrType == 0x0004) {
+				STF(0, "AuthMode", "WPAPSKWPA2PSK");
+				STF(0, "EncrypType", "TKIPAES");
+			}
+#endif
 			STF(0, "IEEE8021X", "0");
 			nvram_commit(RTDEV_NVRAM);
-
-			doSystem("ifconfig rai0 down");
-			doSystem("ralink_init make_wireless_config rtdev");
-			doSystem("ifconfig rai0 up");
-			restart8021XDaemon(RTDEV_NVRAM);
-			RaixWPSRestart();
+																		
 		}
+#if defined (RTDEV_WSCV2_SUPPORT)
+		if (!strcmp(nvram_bufget(RTDEV_NVRAM, "AccessPolicy0"), "1")) {
+			confACL();
+			nvram_commit(RTDEV_NVRAM);
+		}
+#endif
+
 	}
 
 	return;

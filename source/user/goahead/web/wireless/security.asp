@@ -47,7 +47,7 @@ var WapiAsIpAddr = new Array();
 var WapiAsPort = new Array();
 var WapiAsCertPath = new Array();
 var WapiUserCertPath = new Array();
-var wapib = "<% getWAPIBuilt(); %>";
+var wapib = "<% getRaxWAPIBuilt(); %>";
 var wpsenable  = '<% getCfgZero(1, "WscModeOption"); %>';
 var ht_disallow_tkip = "<% getCfgZero(1, "HT_DisallowTKIP"); %>";
 
@@ -337,11 +337,20 @@ function checkData()
 //	var ssid = document.security_form.Ssid.value;
 	
 	securitymode = document.security_form.security_mode.value;
-	if (securitymode == "OPEN" || securitymode == "SHARED" ||securitymode == "WEPAUTO")
+	if (securitymode == "Disable")
+	{
+		if (wpsenable != "0") 
+			alert('This setting is no security!');
+	}
+	else if (securitymode == "OPEN" || securitymode == "SHARED" ||securitymode == "WEPAUTO")
 	{
 		if(! check_Wep(securitymode) )
 			return false;
-	}else if (securitymode == "WPAPSK" || securitymode == "WPA2PSK" || securitymode == "WPAPSKWPA2PSK" /* || security_mode == 5 */){
+		if (wpsenable != "0") 
+			alert("This setting is going to turn off WPS feature!");
+	} 
+	else if (securitymode == "WPAPSK" || securitymode == "WPA2PSK" || securitymode == "WPAPSKWPA2PSK" /* || security_mode == 5 */) 
+	{
 		var keyvalue = document.security_form.passphrase.value;
 
 		if (keyvalue.length == 0){
@@ -374,7 +383,6 @@ function checkData()
 		if(check_wpa() == false)
 			return false;
 	}
-	//802.1x
 	else if (securitymode == "IEEE8021X") // 802.1x
 	{
 		if( document.security_form.ieee8021x_wep[0].checked == false &&
@@ -384,13 +392,15 @@ function checkData()
 		}
 		if(check_radius() == false)
 			return false;
-	}else if (securitymode == "WPA" || securitymode == "WPA1WPA2") //     WPA or WPA1WP2 mixed mode
+	}
+	else if (securitymode == "WPA" || securitymode == "WPA1WPA2") //     WPA or WPA1WP2 mixed mode
 	{
 		if(check_wpa() == false)
 			return false;
 		if(check_radius() == false)
 			return false;
-	}else if (securitymode == "WPA2") //         WPA2
+	}
+	else if (securitymode == "WPA2") //         WPA2
 	{
 		if(check_wpa() == false)
 			return false;
@@ -449,7 +459,7 @@ function checkData()
 	for(i=0; i<MBSSID_MAX; i++){
 
 
-		if (document.getElementById("newap_text_" + i).value != ""){
+		if( document.getElementById("newap_text_" + i).value != ""){
 			if(!checkMac(document.getElementById("newap_text_" + i).value)){
 				alert("The mac address in Access Policy form is invalid.\n");
 				return false;

@@ -384,7 +384,7 @@ void primary_loop(int usd, int num_probes, int interval, int goodness)
 		FD_SET(usd,&fds);
 		i=select(usd+1,&fds,NULL,NULL,&to);  /* Wait on read or error */
 		if ((i!=1)||(!FD_ISSET(usd,&fds))) {
-			system("nvram_set 2860 NTPValid 0");
+		  //system("nvram_set 2860 NTPValid 0");
 			if (i==EINTR) continue;
 			if (i<0) perror("select");
 			if (to.tv_sec == 0) {
@@ -406,7 +406,7 @@ void primary_loop(int usd, int num_probes, int interval, int goodness)
 			get_packet_timestamp(usd, &udp_arrival_ntp);
 			check_source(pack_len, &sa_xmit, sa_xmit_len);
 			error = rfc1305print(incoming_word, &udp_arrival_ntp);
-			system("nvram_set 2860 NTPValid 1");
+			//system("nvram_set 2860 NTPValid 1");
 			/* udp_handle(usd,incoming,pack_len,&sa_xmit,sa_xmit_len); */
 		} else {
 			printf("Ooops.  pack_len=%d\n",pack_len);

@@ -3,8 +3,8 @@
  *
  * Derived from Linux version by Richard Tobin.
  *
- * $Id: bsd.c,v 1.1 2008-11-26 08:18:25 michael Exp $
- * $Name: SDK_3_5_0_0_BRANCH $
+ * $Id: bsd.c,v 1.1.12.1 2012-03-06 13:01:45 kurtis Exp $
+ * $Name: SDK_4_0_0_0_BRANCH $
  *
  * This library is covered by the LGPL, read LICENSE for details.
  */

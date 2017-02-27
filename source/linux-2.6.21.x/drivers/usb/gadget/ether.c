@@ -338,7 +338,7 @@ static inline int rndis_active(struct eth_dev *dev)
 #ifdef CONFIG_USB_GADGET_DUALSPEED
 #define	DEVSPEED	USB_SPEED_HIGH
 
-static unsigned qmult = 5;
+static unsigned qmult = 100;
 module_param (qmult, uint, S_IRUGO|S_IWUSR);
 
 

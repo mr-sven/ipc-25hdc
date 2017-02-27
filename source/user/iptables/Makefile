@@ -116,7 +116,7 @@ default: print-extensions all
 
 romfs:
 	$(ROMFSINST) /bin/iptables
-#	$(ROMFSINST) -d /etc_ro/l7-protocols
+	$(ROMFSINST) -d /etc_ro/l7-protocols
 ifeq ($(DO_IPV6), 1)
 	$(ROMFSINST) /bin/ip6tables
 endif

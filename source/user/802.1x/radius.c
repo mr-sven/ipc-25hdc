@@ -1,19 +1,3 @@
-/*
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation. See README and COPYING for
- * more details.
-
-	Module Name:
-	radius.c
-
-	Revision History:
-	Who         When          What
-	--------    ----------    ----------------------------------------------
-	Jan, Lee    Dec --2003    modified
-
-*/
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -29,7 +13,7 @@
 #include "common.h"
 #include "radius.h"
 #include "md5.h"
-#include "rt2860apd.h"
+#include "rtdot1x.h"
 
 struct radius_msg *Radius_msg_new(u8 code, u8 identifier)
 {

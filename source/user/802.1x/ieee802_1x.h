@@ -79,6 +79,12 @@ enum { EAP_TYPE_IDENTITY = 1,
        EAP_TYPE_PEAP = 25 /* draft-josefsson-pppext-eap-tls-eap-06.txt */,
 };
 
+typedef	enum	_Dot1xInternalCmd
+{
+	DOT1X_DISCONNECT_ENTRY, 			
+	DOT1X_RELOAD_CONFIG,
+}	DOT1X_INTERNAL_CMD;
+
 // Key mapping keys require a BSSID
 typedef struct _NDIS_802_11_KEY
 {

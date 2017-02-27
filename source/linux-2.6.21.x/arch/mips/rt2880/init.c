@@ -124,6 +124,30 @@ static inline void str2eaddr(unsigned char *ea, unsigned char *str)
 	}
 }
 
+static void prom_usbinit(void)
+{
+	u32 reg;
+
+	reg = reg;
+#if defined (CONFIG_RALINK_RT3883) || defined (CONFIG_RALINK_RT3352) || defined (CONFIG_RALINK_RT5350) || defined (CONFIG_RALINK_RT6855) || defined (CONFIG_RALINK_RT6352)
+	reg = *(volatile u32 *)KSEG1ADDR((RALINK_SYSCTL_BASE + 0x34));
+	reg = reg | RALINK_UDEV_RST | RALINK_UHST_RST;
+	*(volatile u32 *)KSEG1ADDR((RALINK_SYSCTL_BASE + 0x34))= reg;
+
+	reg = *(volatile u32 *)KSEG1ADDR((RALINK_SYSCTL_BASE + 0x30));
+#if defined (CONFIG_RALINK_RT5350) || defined (CONFIG_RALINK_RT6855) || defined (CONFIG_RALINK_RT6352)
+	reg = reg & ~(RALINK_UPHY0_CLK_EN);
+#else
+	reg = reg & ~(RALINK_UPHY0_CLK_EN | RALINK_UPHY1_CLK_EN);
+#endif
+	*(volatile u32 *)KSEG1ADDR((RALINK_SYSCTL_BASE + 0x30))= reg;
+
+#elif defined (CONFIG_RALINK_RT3052)
+	*(volatile u32 *)KSEG1ADDR((RALINK_USB_OTG_BASE + 0xE00)) = 0xF;	// power saving
+#endif
+}
+
+
 int get_ethernet_addr(char *ethernet_addr)
 {
         char *ethaddr_str;
@@ -151,8 +175,12 @@ void prom_init_sysclk(void)
 
 #if defined(CONFIG_RT2880_FPGA)
         mips_cpu_feq = 25000000; 
-#elif defined (CONFIG_RT3052_FPGA) || defined (CONFIG_RT3352_FPGA) || defined (CONFIG_RT2883_FPGA) || defined (CONFIG_RT3883_FPGA) || defined (CONFIG_RT5350_FPGA)
+#elif defined (CONFIG_RT3052_FPGA) || defined (CONFIG_RT3352_FPGA) || defined (CONFIG_RT2883_FPGA) || defined (CONFIG_RT3883_FPGA) || defined (CONFIG_RT5350_FPGA) 
         mips_cpu_feq = 40000000; 
+#elif defined (CONFIG_RT6855_FPGA)
+        mips_cpu_feq = 50000000; 
+#elif defined (CONFIG_RT6352_FPGA)
+        mips_cpu_feq = 50000000; 
 #else
 	u32 	reg, reg2, reg3;
         u8      clk_sel, clk_sel2;
@@ -170,9 +198,13 @@ void prom_init_sysclk(void)
 #elif defined (CONFIG_RT5350_ASIC) 
         clk_sel = (reg>>8) & 0x01;
         clk_sel2 = (reg>>10) & 0x01;
-        clk_sel |= (clk_sel2 << 1);
+        clk_sel |= (clk_sel2 << 1 );
 #elif defined (CONFIG_RT3883_ASIC) 
         clk_sel = (reg>>8) & 0x03;
+#elif defined (CONFIG_RT6855_ASIC) 
+        clk_sel = 0;
+#elif defined (CONFIG_RT6352_ASIC) 
+        clk_sel = 0;
 #else
 #error Please Choice System Type
 #endif
@@ -264,7 +296,14 @@ void prom_init_sysclk(void)
 	case 3:
 		mips_cpu_feq = (300*1000*1000); 
 		break;
-
+#elif defined (CONFIG_RALINK_RT6855) 
+	case 0:
+		mips_cpu_feq = (400*1000*100);
+		break;
+#elif defined (CONFIG_RALINK_RT6352)
+	case 0:
+		mips_cpu_feq = (400*1000*100);
+		break;
 #else
 #error Please Choice Chip Type
 #endif
@@ -322,12 +361,14 @@ void prom_init_sysclk(void)
 		break;
 	}
 
+#elif defined (CONFIG_RALINK_RT6855) || defined (CONFIG_RALINK_RT6352)
+	surfboard_sysclk = mips_cpu_feq/4;
 #elif defined (CONFIG_RALINK_RT2880)
 	surfboard_sysclk = mips_cpu_feq/2;
 #else
 	surfboard_sysclk = mips_cpu_feq/3;
 #endif
-	printk("\n The CPU feqenuce set to %d MHz\n",mips_cpu_feq / 1000 / 1000);
+	printk("\n The CPU frequency set to %d MHz\n",mips_cpu_feq / 1000 / 1000);
 }
 
 /*
@@ -356,7 +397,7 @@ int prom_init_serial_port(void)
   serial_req[0].iobase	   = KSEG1ADDR(RALINK_UART_BASE);
   serial_req[0].regshift   = 2;
   serial_req[0].mapbase    = KSEG1ADDR(RALINK_UART_BASE);
-#if defined (CONFIG_RALINK_RT3883) || defined (CONFIG_RALINK_RT3352) || defined (CONFIG_RALINK_RT5350)
+#if defined (CONFIG_RALINK_RT3883) || defined (CONFIG_RALINK_RT3352) || defined (CONFIG_RALINK_RT5350) || defined (CONFIG_RALINK_RT6855) || defined (CONFIG_RALINK_RT6352)
   serial_req[0].custom_divisor = (40000000 / SURFBOARD_BAUD_DIV / 57600);
 #else
   serial_req[0].custom_divisor = (surfboard_sysclk / SURFBOARD_BAUD_DIV / 57600);
@@ -371,7 +412,7 @@ int prom_init_serial_port(void)
   serial_req[1].iobase	   = KSEG1ADDR(RALINK_UART_LITE_BASE);
   serial_req[1].regshift   = 2;
   serial_req[1].mapbase    = KSEG1ADDR(RALINK_UART_LITE_BASE);
-#if defined (CONFIG_RALINK_RT3883) || defined (CONFIG_RALINK_RT3352) || defined (CONFIG_RALINK_RT5350)
+#if defined (CONFIG_RALINK_RT3883) || defined (CONFIG_RALINK_RT3352) || defined (CONFIG_RALINK_RT5350) || defined (CONFIG_RALINK_RT6855) || defined (CONFIG_RALINK_RT6352)
   serial_req[1].custom_divisor = (40000000 / SURFBOARD_BAUD_DIV / 57600);
 #else
   serial_req[1].custom_divisor = (surfboard_sysclk / SURFBOARD_BAUD_DIV / 57600);
@@ -416,7 +457,7 @@ static void serial_setbrg(unsigned long wBaud)
  	*(volatile u32 *)(RALINK_SYSCTL_BASE + 0xC08)= 0;
         *(volatile u32 *)(RALINK_SYSCTL_BASE + 0xC10)= 0;
         *(volatile u32 *)(RALINK_SYSCTL_BASE + 0xC14)= 0x3;
-#if defined (CONFIG_RALINK_RT3883) || defined (CONFIG_RALINK_RT3352) ||  defined (CONFIG_RALINK_RT5350)
+#if defined (CONFIG_RALINK_RT3883) || defined (CONFIG_RALINK_RT3352) ||  defined (CONFIG_RALINK_RT5350) || defined (CONFIG_RALINK_RT6855) || defined (CONFIG_RALINK_RT6352)
         *(volatile u32 *)(RALINK_SYSCTL_BASE + 0xC28)= (40000000 / SURFBOARD_BAUD_DIV / 57600);
 #else
         *(volatile u32 *)(RALINK_SYSCTL_BASE + 0xC28)= (surfboard_sysclk / SURFBOARD_BAUD_DIV / 57600);
@@ -425,7 +466,7 @@ static void serial_setbrg(unsigned long wBaud)
  	*(volatile u32 *)(RALINK_SYSCTL_BASE + 0x508)= 0;
         *(volatile u32 *)(RALINK_SYSCTL_BASE + 0x510)= 0;
         *(volatile u32 *)(RALINK_SYSCTL_BASE + 0x514)= 0x3;
-#if defined (CONFIG_RALINK_RT3883) || defined (CONFIG_RALINK_RT3352) || defined (CONFIG_RALINK_RT5350)
+#if defined (CONFIG_RALINK_RT3883) || defined (CONFIG_RALINK_RT3352) || defined (CONFIG_RALINK_RT5350) || defined (CONFIG_RALINK_RT6855) || defined (CONFIG_RALINK_RT6352)
         *(volatile u32 *)(RALINK_SYSCTL_BASE + 0x528)= (40000000 / SURFBOARD_BAUD_DIV / 57600);
 #else
         *(volatile u32 *)(RALINK_SYSCTL_BASE + 0x528)= (surfboard_sysclk / SURFBOARD_BAUD_DIV / 57600);
@@ -468,11 +509,12 @@ __init void prom_init(void)
 
 	prom_init_serial_port();  /* Needed for Serial Console */
 	prom_meminit();
+	prom_usbinit();		/* USB power saving*/
 	prom_setup_printf(prom_get_ttysnum());
 	prom_printf("\nLINUX started...\n");
-#if defined(CONFIG_RT2880_FPGA) || defined(CONFIG_RT3052_FPGA) || defined(CONFIG_RT3352_FPGA) || defined(CONFIG_RT2883_FPGA) || defined(CONFIG_RT3883_FPGA) || defined(CONFIG_RT5350_FPGA)
+#if defined(CONFIG_RT2880_FPGA) || defined(CONFIG_RT3052_FPGA) || defined(CONFIG_RT3352_FPGA) || defined(CONFIG_RT2883_FPGA) || defined(CONFIG_RT3883_FPGA) || defined(CONFIG_RT5350_FPGA) || defined (CONFIG_RT6855_FPGA)
 	prom_printf("\n THIS IS FPGA\n");
-#elif defined(CONFIG_RT2880_ASIC) || defined(CONFIG_RT3052_ASIC) || defined(CONFIG_RT3352_ASIC) || defined (CONFIG_RT2883_ASIC) || defined (CONFIG_RT3883_ASIC) || defined (CONFIG_RT5350_ASIC)
+#elif defined(CONFIG_RT2880_ASIC) || defined(CONFIG_RT3052_ASIC) || defined(CONFIG_RT3352_ASIC) || defined (CONFIG_RT2883_ASIC) || defined (CONFIG_RT3883_ASIC) || defined (CONFIG_RT5350_ASIC) || defined (CONFIG_RT6855_ASIC)
 	prom_printf("\n THIS IS ASIC\n");
 #endif
 

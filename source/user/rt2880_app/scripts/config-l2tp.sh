@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: config-l2tp.sh,v 1.7 2010-07-09 07:45:58 steven Exp $
+# $Id: config-l2tp.sh,v 1.7.6.1 2012-02-16 12:26:46 chhung Exp $
 #
 # usage: config-l2tp.sh <mode> <mode_params> <server> <user> <password>
 #
@@ -43,7 +43,7 @@ if [ "$1" = "static" ]; then
 	l2tp_optime=${10}
 elif [ "$1" = "dhcp" ]; then
 	killall -q udhcpc
-	udhcpc -i $2 -s /sbin/udhcpc.sh -p /var/run/udhcpd.pid &
+	udhcpc -i $2 -s /sbin/udhcpc.sh -p /var/run/udhcpc.pid &
 	l2tp_srv=$3
 	l2tp_u=$4
 	l2tp_pw=$5

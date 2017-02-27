@@ -67,9 +67,9 @@ SHARED_MAJORNAME:=$(LIBNAME).so.$(MAJOR_VERSION)
 PREFIX = $(DESTDIR)
 
 # Pull in the user's uClibc++ configuration
-ifeq ($(filter $(noconfig_targets),$(MAKECMDGOALS)),)
--include $(TOPDIR).config
-endif
+#ifeq ($(filter $(noconfig_targets),$(MAKECMDGOALS)),)
+#-include $(TOPDIR).config
+#endif
 
 # A nifty macro to make testing gcc features easier
 check_gcc=$(shell if $(CC) $(1) -S -o /dev/null -xc /dev/null > /dev/null 2>&1; \

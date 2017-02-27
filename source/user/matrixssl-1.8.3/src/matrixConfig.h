@@ -1,6 +1,6 @@
 /*
  *	matrixConfig.h
- *	Release $Name: SDK_3_5_0_0_BRANCH $
+ *	Release $Name: SDK_4_0_0_0_BRANCH $
  *
  *	Configuration settings for building the MatrixSSL library.
  *	These options affect the size and algorithms present in the library.

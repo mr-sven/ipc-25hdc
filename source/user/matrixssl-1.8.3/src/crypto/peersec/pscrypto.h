@@ -1,6 +1,6 @@
 /*
  *	pscrypto.h
- *	Release $Name: SDK_3_5_0_0_BRANCH $
+ *	Release $Name: SDK_4_0_0_0_BRANCH $
  *
  *	Internal definitions for PeerSec Networks MatrixSSL cryptography provider
  */

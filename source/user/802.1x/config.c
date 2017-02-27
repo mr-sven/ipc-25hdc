@@ -1,19 +1,3 @@
-/*
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation. See README and COPYING for
- * more details.
-
-    Module Name:
-    config.c
-
-    Revision History:
-    Who         When          What
-    --------    ----------    ----------------------------------------------
-    Jan, Lee    Dec --2003    modified
-
-*/
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -29,7 +13,7 @@
 #include <linux/if.h>			/* for IFNAMSIZ and co... */
 #include <linux/wireless.h>
 
-#include "rt2860apd.h"
+#include "rtdot1x.h"
 #include "ieee802_1x.h"
 #include "md5.h"
 
@@ -205,18 +189,18 @@ BOOLEAN Query_config_from_driver(int ioctl_sock, char *prefix_name, struct rtapd
 		{			
 #if MULTIPLE_RADIUS  	
 			// RADIUS_Server ip address
-		if (!Config_read_radius_addr(
-            &conf->mbss_auth_servers[i],
+			if (!Config_read_radius_addr(
+        	    &conf->mbss_auth_servers[i],
 	            &conf->mbss_num_auth_servers[i], 
 	            pDot1xCmmConf->Dot1xBssInfo[i].radius_srv_info[idx].radius_ip, 
 	            1812,
-            &conf->mbss_auth_server[i]))
-    	{        	
-            radius_count++;
+            	&conf->mbss_auth_server[i]))
+    		{        	
+        	    radius_count++;
 				DBGPRINT(RT_DEBUG_TRACE, "(no.%d) Radius ip address: '%s'(%x) for %s%d\n", conf->mbss_num_auth_servers[i],
 										inet_ntoa(conf->mbss_auth_server[i]->addr), 
 										conf->mbss_auth_server[i]->addr.s_addr, prefix_name, i);
-	}
+   			}	
 
 			// RADIUS_Port and RADIUS_Key      
 			if (conf->mbss_auth_server[i] && conf->mbss_auth_server[i]->addr.s_addr != 0)
@@ -226,8 +210,8 @@ BOOLEAN Query_config_from_driver(int ioctl_sock, char *prefix_name, struct rtapd
 					radius_port_count++;
 					conf->mbss_auth_server[i]->port = pDot1xCmmConf->Dot1xBssInfo[i].radius_srv_info[idx].radius_port;           					
 					DBGPRINT(RT_DEBUG_TRACE, "(no.%d) Radius port: '%d' for %s%d\n", conf->mbss_num_auth_servers[i], conf->mbss_auth_server[i]->port, prefix_name, i);
-			}
-			else
+				}
+				else
 					DBGPRINT(RT_DEBUG_ERROR, "(no.%d) Radius port is invalid for %s%d\n", conf->mbss_num_auth_servers[i], prefix_name, i);
 
 				if (pDot1xCmmConf->Dot1xBssInfo[i].radius_srv_info[idx].radius_key_len > 0)
@@ -237,11 +221,11 @@ BOOLEAN Query_config_from_driver(int ioctl_sock, char *prefix_name, struct rtapd
 	    	        conf->mbss_auth_server[i]->shared_secret_len = pDot1xCmmConf->Dot1xBssInfo[i].radius_srv_info[idx].radius_key_len;
 					DBGPRINT(RT_DEBUG_TRACE,"(no.%d) Radius key: '%s', key_len: %d for %s%d \n", 
 						conf->mbss_num_auth_servers[i], conf->mbss_auth_server[i]->shared_secret, conf->mbss_auth_server[i]->shared_secret_len, prefix_name, i);	
-			}
-			else
+				}
+				else
 					DBGPRINT(RT_DEBUG_ERROR, "(no.%d) Radius key is invalid for %s%d\n", conf->mbss_num_auth_servers[i], prefix_name, i);
 			
-		}
+			}
 #else
 			// RADIUS_Server ip address
 			if (!Config_read_radius_addr(
@@ -252,7 +236,7 @@ BOOLEAN Query_config_from_driver(int ioctl_sock, char *prefix_name, struct rtapd
 	            &conf->auth_server))
 		    {        	
 		            radius_count++;
-	}	
+			}	
 		    DBGPRINT(RT_DEBUG_TRACE, "(no.%d) Radius ip address: '%s'(%x)\n", 
 												conf->num_auth_servers,
 												inet_ntoa(conf->auth_server->addr), 
@@ -266,8 +250,8 @@ BOOLEAN Query_config_from_driver(int ioctl_sock, char *prefix_name, struct rtapd
 					radius_port_count++;
 		    		conf->auth_server->port = pDot1xCmmConf->Dot1xBssInfo[i].radius_srv_info[idx].radius_port;
 					DBGPRINT(RT_DEBUG_TRACE,"(no.%d) Radius port: '%d'\n", conf->num_auth_servers, conf->auth_server->port);
-		}
-		else
+				}
+				else
 					DBGPRINT(RT_DEBUG_ERROR, "(no.%d) Radius port is invalid\n", conf->num_auth_servers);
 
 				if (pDot1xCmmConf->Dot1xBssInfo[i].radius_srv_info[idx].radius_key_len > 0)
@@ -277,11 +261,11 @@ BOOLEAN Query_config_from_driver(int ioctl_sock, char *prefix_name, struct rtapd
 		        	conf->auth_server->shared_secret_len = pDot1xCmmConf->Dot1xBssInfo[i].radius_srv_info[idx].radius_key_len;
 					DBGPRINT(RT_DEBUG_TRACE,"(no.%d) Radius key: '%s', key_len: %d \n", conf->num_auth_servers, 
 					conf->auth_server->shared_secret, conf->auth_server->shared_secret_len);	
-		} 
-		else
+				} 
+				else
 					DBGPRINT(RT_DEBUG_ERROR, "(no.%d) Radius key is invalid\n", conf->num_auth_servers);
 		
-	}       
+			}       
 #endif			
 		}			
 	}				
@@ -341,7 +325,7 @@ BOOLEAN Query_config_from_driver(int ioctl_sock, char *prefix_name, struct rtapd
 	DBGPRINT(RT_DEBUG_TRACE, "Quiet period %d seconds \n", conf->quiet_interval);
 	
 
-	for (i = 0; i < conf->SsidNum; i++)
+	for (i = 0; i < m_num; i++)
 	{
 		int	g_key_len = 0;
 

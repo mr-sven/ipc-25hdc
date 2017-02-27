@@ -114,7 +114,9 @@ void sendJoinLeaveUpstream(struct RouteTable* route, int join) {
     // Get the upstream VIF...
     upstrIf = getIfByIx( upStreamVif );
     if(upstrIf == NULL) {
-        log(LOG_ERR, 0 ,"FATAL: Unable to get Upstream IF.");
+//        log(LOG_ERR, 0 ,"FATAL: Unable to get Upstream IF.");
+        log(LOG_WARNING, 0 ,"FATAL: Unable to get Upstream IF.");
+        return;
     }
     /*
     IF_DEBUG {

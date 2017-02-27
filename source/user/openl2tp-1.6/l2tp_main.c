@@ -61,6 +61,7 @@ static int l2tp_installed_patches[] = {
 
 /* Private variables */
 
+static char			*l2tp_opt_pid_filename = L2TP_PID_FILENAME;
 #ifdef L2TP_FEATURE_LOCAL_CONF_FILE
 static char			*l2tp_opt_config_filename = NULL;
 #endif
@@ -121,6 +122,7 @@ static void usage(char **argv, int exit_code)
 #ifdef L2TP_FEATURE_RPC_MANAGEMENT
 		"\t-R			Enable remote management (SUN RPC)\n"
 #endif
+		"\t-P <pid-filename>	Use specified file instead of " L2TP_PID_FILENAME "\n"
 		"\t-L <facility>\t	Send syslog messages to the specified facility\n"
  		"\t			local0..local7\n"
 		"\t-D			Enable debug messages in new objects created\n"
@@ -148,13 +150,13 @@ int main(int argc, char **argv)
 	}
 
 	/* Create a pid file, error if already exists */
-	fd = open(L2TP_PID_FILENAME, O_WRONLY | O_CREAT | O_EXCL, 0660);
+	fd = open(l2tp_opt_pid_filename, O_WRONLY | O_CREAT | O_EXCL, 0660);
 	if (fd < 0) {
 		if (errno == EEXIST) {
 			fprintf(stderr, "File %s already exists. Is %s already running?\n",
-				L2TP_PID_FILENAME, argv[0]);
+				l2tp_opt_pid_filename, argv[0]);
 		} else {
-			fprintf(stderr, "File %s: %m", L2TP_PID_FILENAME);
+			fprintf(stderr, "File %s: %m", l2tp_opt_pid_filename);
 		}
 		exit(1);
 	}
@@ -182,7 +184,7 @@ int main(int argc, char **argv)
 	/* We write the PID file AFTER the double-fork */
 	sprintf(&pidstr[0], "%d", getpid());
 	if (write(fd, &pidstr[0], strlen(pidstr)) < 0)
-		syslog(LOG_WARNING, "Failed to write pid file %s", L2TP_PID_FILENAME);
+		syslog(LOG_WARNING, "Failed to write pid file %s", l2tp_opt_pid_filename);
 	close(fd);
 
 	/* Open the syslog */
@@ -288,7 +290,7 @@ static int l2tp_parse_args(int argc, char **argv)
 	int opt;
 	int result = 0;
 
-	while((opt = getopt(argc, argv, "p:d:u:L:c:fRDSy:h")) != -1) {
+	while((opt = getopt(argc, argv, "p:d:u:L:c:fRDSy:P:h")) != -1) {
 		switch(opt) {
 		case 'h':
 			usage(argv, 0);
@@ -334,6 +336,9 @@ static int l2tp_parse_args(int argc, char **argv)
 			break;
 		case 'y':
 			sscanf(optarg, "%d", &l2tp_opt_throttle_ppp_setup_rate);
+			break;
+		case 'P':
+			l2tp_opt_pid_filename = optarg;
 			break;
 		default:
 			usage(argv, 1);
@@ -421,7 +426,7 @@ void l2tp_make_random_vector(void *buf, int buf_len)
 
 	count = usl_fd_read(l2tp_rand_fd, buf, buf_len);
 	if ((count < 0) && (errno != EAGAIN)) {
-		l2tp_log(LOG_ERR, "ERROR: problem reading /dev/random: %s", strerror(errno));
+		l2tp_log(LOG_ERR, "ERROR: problem reading /dev/urandom: %s", strerror(errno));
 		exit(1);
 	}
 }
@@ -715,9 +720,9 @@ static void l2tp_init(void)
 	l2tp_plugin_init();
 	l2tp_net_init();
 
-	l2tp_rand_fd = open("/dev/random", O_RDONLY);
+	l2tp_rand_fd = open("/dev/urandom", O_RDONLY);
 	if (l2tp_rand_fd < 0) {
-		fprintf(stderr, "No /dev/random device found. Exiting.\n");
+		fprintf(stderr, "No /dev/urandom device found. Exiting.\n");
 		exit(1);
 	}
 
@@ -805,6 +810,6 @@ static void l2tp_cleanup(void)
 #endif
 
 	/* Remove pid file */
-	unlink(L2TP_PID_FILENAME);
+	unlink(l2tp_opt_pid_filename);
 }
 

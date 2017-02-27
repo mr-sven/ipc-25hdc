@@ -59,7 +59,11 @@ int flash_read_mac(char *buf)
 		fprintf(stderr, "Could not open mtd device\n");
 		return -1;
 	}
+#if ! defined (NO_WIFI_SOC)
 	lseek(fd, 0x2E, SEEK_SET);
+#else
+	lseek(fd, 0xE006, SEEK_SET);
+#endif
 	ret = read(fd, buf, 6);
 	close(fd);
 	return ret;
@@ -101,13 +105,6 @@ int flash_read(char *buf, off_t from, size_t len)
 	if (len > info.size) {
 		fprintf(stderr, "Too many bytes - %d > %d bytes\n", len, info.erasesize);
 		close(fd);
-		return -1;
-	}
-
-	close(fd);
-	fd = mtd_open("Config", O_RDONLY);
-	if (fd < 0) {
-		fprintf(stderr, "Could not open mtd block device\n");
 		return -1;
 	}
 

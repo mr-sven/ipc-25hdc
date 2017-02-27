@@ -32,6 +32,7 @@ var txPower = '<% getCfg2Zero(1, "TxPower"); %>';
 var autoproBuilt = '<% getRaixAutoProvisionBuilt(); %>';
 var DLSBuilt = '<% getRaixDLSBuilt(); %>';
 var dfsb = '<% getRaixDFSBuilt(); %>';
+var carrierib = '<% getRaixCarrierBuilt(); %>';
 
 function style_display_on()
 {
@@ -138,6 +139,12 @@ function initTranslation()
 	e.innerHTML = _("adv country code hk");
 	e = document.getElementById("advCountryCodeNONE");
 	e.innerHTML = _("wireless none");
+	e = document.getElementById("advCarrierDetect");
+	e.innerHTML = _("adv carrier");
+	e = document.getElementById("advCarrierDetectEnable");
+	e.innerHTML = _("wireless enable");
+	e = document.getElementById("advCarrierDetectDisable");
+	e.innerHTML = _("wireless disable");
 
 	e = document.getElementById("advWiFiMM");
 	e.innerHTML = _("adv wmm");
@@ -275,6 +282,31 @@ function initValue()
 			document.wireless_advanced.rd_region.options.selectedIndex = 1;
 		else
 			document.wireless_advanced.rd_region.options.selectedIndex = 0;
+	}
+
+	carrierib = 1*carrierib;
+	if (carrierib == 1)
+	{
+		document.getElementById("div_carrier_detect").style.visibility = "visible";
+		document.getElementById("div_carrier_detect").style.display = style_display_on();
+		document.wireless_advanced.carrier_detect.disabled = false;
+		var carrierebl = '<% getCfg2Zero(1, "CarrierDetect"); %>';
+		if (carrierebl == "1")
+		{
+			document.wireless_advanced.carrier_detect[0].checked = true;
+			document.wireless_advanced.carrier_detect[1].checked = false;
+		}
+		else
+		{
+			document.wireless_advanced.carrier_detect[0].checked = false;
+			document.wireless_advanced.carrier_detect[1].checked = true;
+		}
+	}
+	else
+	{
+		document.getElementById("div_carrier_detect").style.visibility = "hidden";
+		document.getElementById("div_carrier_detect").style.display = "none";
+		document.wireless_advanced.carrier_detect.disabled = true;
 	}
 
 	wmm_capable_enable_switch();
@@ -644,6 +676,13 @@ function ieee80211h_switch()
         <option value="HK" id="advCountryCodeHK">HK (Hong Kong)</option>
         <option value="NONE" selected id="advCountryCodeNONE">NONE</option>
       </select>
+    </td>
+  </tr>
+  <tr id="div_carrier_detect" name="div_carrier_detect">
+    <td class="head" id="advCarrierDetect">Carrier Detect</td>
+    <td>
+      <input type="radio" name="carrier_detect" value="1"><font id="advCarrierDetectEnable">Enable</font>&nbsp;&nbsp;
+      <input type="radio" name="carrier_detect" value="0" checked><font id="advCarrierDetectDisable">Disable</font>
     </td>
   </tr>
 </table>

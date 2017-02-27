@@ -5,7 +5,7 @@
 menu "Character devices"
 
 config RALINK_GPIO
-	bool "Ralink GPIO Support"
+	tristate "Ralink GPIO Support"
 	default y
 
 config RALINK_GPIO_LED
@@ -25,13 +25,13 @@ choice
 	        bool "PCM/Others"
 		---help---
 		   RT305x/RT3350/RT2883=>Ch0-Ch7:PCM0/PCM1 
-		   RT3352/RT5350/RT3883=>Ch0-Ch7:PCM0/PCM1, Ch8-Ch15:others
+		   RT3352/RT5350/RT3883/RT6855=>Ch0-Ch7:PCM0/PCM1, Ch8-Ch15:others
 	
 	config GDMA_PCM_I2S_OTHERS
 	        bool "PCM/I2S/Others"
 		---help---
 		   RT305x/RT3350/RT2883=>4Ch:PCM0 / 2Ch:I2S / 2Ch:Others
-		   RT3352/RT5350/RT3883=>4Ch:PCM0 / 2Ch:I2S_Tx / 2Ch:I2S_Rx / 8Ch:Others
+		   RT3352/RT5350/RT3883/RT6855=>4Ch:PCM0 / 2Ch:I2S_Tx / 2Ch:I2S_Rx / 8Ch:Others
 
 	config GDMA_EVERYBODY
 	        bool "All for Everybody"
@@ -51,22 +51,22 @@ config RALINK_SPI_CS0_HIGH_ACTIVE
 	
 config RALINK_SPI_CS1_HIGH_ACTIVE
 	depends on RALINK_SPI
-	depends on RALINK_RT3883 || RALINK_RT3352 || RALINK_RT5350
+	depends on RALINK_RT3883 || RALINK_RT3352 || RALINK_RT5350 || RALINK_RT6855
 	bool "SPI CS1(Chip Select) is high active"
 	default n
 
 config RALINK_VITESSE_SWITCH_CONNECT_SPI_CS1
 	depends on RALINK_SPI
-	depends on RALINK_RT3883 || RALINK_RT3352 || RALINK_RT5350
+	depends on RALINK_RT3883 || RALINK_RT3352 || RALINK_RT5350 || RALINK_RT6855
 	bool "Vitess Switch CS Pin Connects to SPI CS1"
 	default n
 
 config RALINK_SLIC_CONNECT_SPI_CS1
         depends on RALINK_SPI
-	depends on RALINK_RT3883 || RALINK_RT3352 || RALINK_RT5350
+	depends on RALINK_RT3883 || RALINK_RT3352 || RALINK_RT5350 || RALINK_RT6855
         bool "SLIC CS Pin Connects to SPI CS1"
-	default n	
-	
+	default n
+
 config RALINK_I2C
 	tristate "Ralink RT2880 I2C Support"
 	default n
@@ -119,9 +119,9 @@ config RALINK_PCMDIV
 config RALINK_PCMINTDIV
         int "PCM Clock Dividor Interger Part Value"
         depends on RALINK_PCM
-        depends on RALINK_RT3352 || RALINK_RT5350 || RALINK_RT3883
+        depends on RALINK_RT3352 || RALINK_RT5350 || RALINK_RT3883 || RALINK_RT6855
 	range 0 1024
-	default "78"
+	default "9"
 	---help---
 	Set PCM clock dividor interger part value based on SoC internal clock (40Mhz).
 
@@ -129,9 +129,9 @@ config RALINK_PCMINTDIV
 config RALINK_PCMCOMPDIV
         int "PCM Clock Dividor Fraction Part Value"
 	depends on RALINK_PCM
-	depends on RALINK_RT3352 || RALINK_RT5350 || RALINK_RT3883
+	depends on RALINK_RT3352 || RALINK_RT5350 || RALINK_RT3883 || RALINK_RT6855
 	range 0 512
-	default "16"
+	default "136"
 	---help---
 	Set PCM clock dividor fraction part value based on SoC internal clock (40Mhz).
 
@@ -139,7 +139,7 @@ config RALINK_PCMSLOTMODE
 	int "PCM slot mode"
 	depends on RALINK_PCM
 	range 0 5
-	default "0"
+	default "3"
 	---help---
 	PCM slot mode : 0 for 4 slots, 1 for 8 slots, 2 for 16 slots, 3 for 32 slots, 4 for 64 slots, and 5 for 128 slots.
 
@@ -169,7 +169,7 @@ config I2S_IN_CLK
 config I2S_MS_MODE
         bool "Ralink SoC as I2S Master Device"
 	depends on RALINK_I2S
-        depends on RALINK_RT3352 || RALINK_RT5350	
+        depends on RALINK_RT3352 || RALINK_RT5350 || RALINK_RT6855
 	default n
 choice
         prompt "Audio Codec MCLK Setting"

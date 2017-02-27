@@ -250,6 +250,26 @@ int ra_check_flash_type(void)
 	boot_from = BOOT_FROM_SPI;
     }else if(strcmp(Id,"RT2880")==0) {
 	boot_from = BOOT_FROM_NOR;
+    }else if(strcmp(Id,"RT6855")==0) {
+	boot_from = BOOT_FROM_SPI;
+		}else if(strcmp(Id,"RT6352")==0) {
+	chip_mode = syscfg & 0xF;
+	switch(chip_mode)
+	{
+	case 0:
+	case 2:
+	case 3:
+		boot_from = BOOT_FROM_SPI;
+		break;
+	case 1:
+	case 10:
+	case 11:
+	case 12:
+		boot_from = BOOT_FROM_NAND;
+		break;	
+	}	
+	}else if(strcmp(Id,"RT71100")==0) {
+	boot_from = BOOT_FROM_SPI;
     } else {
 	printk("%s: %s is not supported\n",__FUNCTION__, Id);
     }
@@ -358,7 +378,7 @@ static void __exit rt2880_mtd_cleanup(void)
 #endif
 }
 
-rootfs_initcall(rt2880_mtd_init);
+fs_initcall(rt2880_mtd_init);
 module_exit(rt2880_mtd_cleanup);
 
 MODULE_AUTHOR("Steven Liu <steven_liu@ralinktech.com.tw>");

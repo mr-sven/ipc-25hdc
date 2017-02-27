@@ -9,8 +9,7 @@ config  RT2880_ASIC
 endchoice
 
 endif
-
-#---------------------------
+#-----------------------------
 
 if RALINK_RT3052
 
@@ -92,7 +91,6 @@ endchoice
 endif
 
 #--------------------------
-
 config FLASH_REMAP_NEED
        bool
        default y if (RALINK_RT2880)
@@ -124,7 +122,7 @@ choice
 
 config MTD_NOR_RALINK
        bool "NOR"
-       depends on  !RALINK_RT3352 && !RALINK_RT5350
+       depends on  !RALINK_RT3352 && !RALINK_RT5350 && !RALINK_RT6855
 
 config MTD_SPI_RALINK
        bool "SPI"
@@ -132,10 +130,11 @@ config MTD_SPI_RALINK
 
 config MTD_NAND_RALINK
        bool "NAND"
-       depends on  !RALINK_RT3352 && !RALINK_RT2880 && !RALINK_RT5350
+       depends on  !RALINK_RT3352 && !RALINK_RT2880 && !RALINK_RT5350 && !RALINK_RT6855
 
 config MTD_ANY_RALINK
        bool "ANY (NOR/SPI/NAND)"
+       depends on  !RALINK_RT3352 && !RALINK_RT5350
 
 endchoice
 
@@ -164,6 +163,10 @@ endchoice
 config  DUAL_IMAGE
 	bool 'Dual Image' 
 
+config  KERNEL_NVRAM
+	bool 'Kernel NVRAM' 
+	default n
+
 #config  RT2880_FLASH_32M
 #        bool "Flash Size 32MB Support"
 #	depends on (RALINK_RT3052_MP2 || RALINK_RT3350) && !MTD_SPI_RALINK
@@ -187,7 +190,10 @@ config MTD_PHYSMAP_START
        default 0xBF000000 if !FLASH_REMAP_NEED && RALINK_RT3052
        default 0x1C000000 if !FLASH_REMAP_NEED && RALINK_RT3352
        default 0x1C000000 if !FLASH_REMAP_NEED && RALINK_RT5350
+       default 0xBC000000 if !FLASH_REMAP_NEED && RALINK_RT2883
        default 0x1C000000 if !FLASH_REMAP_NEED && RALINK_RT3883
+       default 0x1C000000 if !FLASH_REMAP_NEED && RALINK_RT6855
+       default 0x1C000000 if !FLASH_REMAP_NEED && RALINK_RT6352
 
 config MTD_PHYSMAP_LEN
        hex 
@@ -211,8 +217,8 @@ config  RT2880_ROOTFS_IN_RAM
 	select BLK_DEV_INITRD 
 	select BLK_DEV_RAM 
 
-config  RT2880_ROOTFS_IN_FLASH
-        bool "RootFS_in_FLASH"
+#config  RT2880_ROOTFS_IN_FLASH
+#        bool "RootFS_in_FLASH"
 endchoice
 
 config BLK_DEV_RAM_SIZE
@@ -234,10 +240,32 @@ config MTD_KERNEL_PART_SIZ
 	default 0xD0000
 	depends on RT2880_ROOTFS_IN_FLASH && !ROOTFS_IN_FLASH_NO_PADDING
 
+config  RALINK_TIMER
+	tristate 'Ralink Hardware Timer0/Timer1' 
 
 config  RALINK_TIMER_DFS
-        bool "Ralink DFS Timer"
+        bool "Ralink Timer0 (Period/Free-Running/Timeout)"
+        depends on RALINK_TIMER
+
+config  RALINK_TIMER_WDG
+        tristate "Ralink Timer1 (WatchDog Timer)"
+        depends on RALINK_TIMER
+
+config  RALINK_TIMER_WDG_RESET_OUTPUT
+        bool "Ralink WatchDog Reset Output"
+        depends on RALINK_TIMER_WDG
+
+config  RALINK_WDG_TIMER
+        int "WatchDog Timer (Unit:1Sec, Max=30Sec)"
+        default 10
+        depends on RALINK_TIMER_WDG
+
+config  RALINK_WDG_REFRESH_INTERVAL
+        int "WatchDog Refresh Interval (Unit:1Sec, Max=30Sec)"
+        default 4
+        depends on RALINK_TIMER_WDG
+
 
 config RALINK_EXTERNAL_TIMER
 	bool "Ralink External Timer"
-	depends on RALINK_RT3352 || RALINK_RT5350
+	depends on RALINK_RT3352 || RALINK_RT5350 || RALINK_RT6855

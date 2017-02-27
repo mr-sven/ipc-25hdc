@@ -16,7 +16,7 @@ OPENL2TP_IDLETIME="$5"
 
 echo "ppp profile modify profile_name=default \\"  > $OPENL2TP_FILE
 echo "auth_eap=no auth_mschapv1=no auth_mschapv2=no \\"  >> $OPENL2TP_FILE
-echo "default_route=yes "  >> $OPENL2TP_FILE
+echo "default_route=no "  >> $OPENL2TP_FILE
 
 echo "tunnel create tunnel_name=ralink dest_ipaddr=$OPENL2TP_SERVER_IP \\" >> $OPENL2TP_FILE
 if [ $OPENL2TP_OPMODE == "KeepAlive" ]; then

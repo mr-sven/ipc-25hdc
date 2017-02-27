@@ -356,10 +356,28 @@ function CheckValue()
     <td>
       <input type=submit style="{width:120px;}" value="Apply"> &nbsp; &nbsp;
       <input type=reset  style="{width:120px;}" value="Cancel" onClick="window.location.reload()">
+      <input type=reset  style="{width:120px;}" value="SCAN" onClick="window.location.reload()">
     </td>
   </tr>
 </table>
 </form>  
+<table width="600" border="1" cellpadding="2" cellspacing="1">
+  <tr> 
+    <td class="title" colspan="8">Site Survey</td>
+  </tr>
+  <tr> 
+    <td class="head">Ch</td>
+    <td class="head">SSID</td>
+    <td class="head">BSSID</td>
+    <td class="head">Security</td>
+    <td class="head">Signal(%)</td>
+    <td class="head">W-Moe</td>
+    <td class="head">ExtCh</td>
+    <td class="head">NT</td>
+  </tr>
+  <% ApcliScan(); %>
+</table>
+
 
 </td></tr></table>
 </body>

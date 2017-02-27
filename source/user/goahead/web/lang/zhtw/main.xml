@@ -16,6 +16,7 @@
   <message msgid="treeapp internet settings" msgstr="網路設定" />
   <message msgid="treeapp wan" msgstr="廣域網路" />
   <message msgid="treeapp lan" msgstr="區域網路" />
+  <message msgid="treeapp ipv6" msgstr="IPv6" />
   <message msgid="treeapp dhcp clients" msgstr="DHCP 用戶端列表" />
   <message msgid="treeapp vpn passthrough" msgstr="VPN Passthrough" />
   <message msgid="treeapp routing" msgstr="進階路由設定" />

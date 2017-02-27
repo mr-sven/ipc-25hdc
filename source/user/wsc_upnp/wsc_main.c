@@ -22,6 +22,7 @@
 #include "wsc_upnp.h"
 #include "upnp.h"
 
+
 int wsc_debug_level = RT_DBG_OFF;
 
 int ioctl_sock = -1;
@@ -44,7 +45,7 @@ unsigned char HostMacAddr[MAC_ADDR_LEN]={0};			// Used to save the MAC address o
 unsigned int HostIPAddr;								// Used to save the binded IP address of local host.
 char WSC_IOCTL_IF[IFNAMSIZ];
 
-#ifdef MULTIPLE_CARD_SUPPORT
+#if 1 //def MULTIPLE_CARD_SUPPORT
 #define FILE_PATH_LEN	256
 static char pid_file_path[FILE_PATH_LEN];
 #endif // MULTIPLE_CARD_SUPPORT //
@@ -223,10 +224,8 @@ int main(int argc, char **argv)
 		usage();
 	
 	/* first, parsing the input options */
-	while((opt = getopt(argc, argv, "a:i:p:f:w:m:d:Dh"))!= -1)
-	{
-		switch (opt)
-		{
+	while((opt = getopt(argc, argv, "a:i:p:f:w:m:d:Dh"))!= -1) {
+		switch (opt) {
 			case 'a':
 				ipAddr = optarg;
 				break;
@@ -249,7 +248,7 @@ int main(int argc, char **argv)
 				break;
 			case 'm':
 				WscUPnPOpMode = strtol(optarg, NULL, 10);
-				if (WscUPnPOpMode < UPNP_OPMODE_DEV || WscUPnPOpMode > UPNP_OPMODE_BOTH)
+				if (WscUPnPOpMode < WSC_UPNP_OPMODE_DEV || WscUPnPOpMode > WSC_UPNP_OPMODE_BOTH)
 					usage();
 				break;
 			case 'D':
@@ -264,25 +263,24 @@ int main(int argc, char **argv)
         }
     }
 	
-	if ((WscUPnPOpMode < 1) || (WscUPnPOpMode > 3))
-	{
+	if ((WscUPnPOpMode < WSC_UPNP_OPMODE_DEV) || 
+		(WscUPnPOpMode > WSC_UPNP_OPMODE_BOTH)) {
 		fprintf(stderr, "Wrong UPnP Operation Mode: %d\n", WscUPnPOpMode);
 		usage();
 	}
-	if ((wsc_debug_level > RT_DBG_ALL)  || (wsc_debug_level < RT_DBG_OFF))
-	{
+
+	if ((wsc_debug_level > RT_DBG_ALL)  || 
+		(wsc_debug_level < RT_DBG_OFF)) {
 		fprintf(stderr, "Wrong Debug Level: %d\n", wsc_debug_level);
 		usage();
 	}				
     port = (unsigned short)portTemp;
 
-	if (enableDaemon)
-	{
+	if (enableDaemon) {
 		pid_t childPid;
 
 		childPid = fork();
-		if(childPid < 0)
-		{
+		if(childPid < 0) {
 			fprintf(stderr, "Run in deamon mode failed --ErrMsg=%s!\n", strerror(errno));
 			exit(0);
 		} else if (childPid >0)
@@ -294,7 +292,7 @@ int main(int argc, char **argv)
 	}
 		
 	// Write the pid file
-#ifdef MULTIPLE_CARD_SUPPORT
+#if 1 // def MULTIPLE_CARD_SUPPORT
 	memset(&pid_file_path[0], 0, FILE_PATH_LEN);
 	sprintf(pid_file_path, "%s.%s", DEFAULT_PID_FILE_PATH, WSC_IOCTL_IF);
 	DBGPRINTF(RT_DBG_INFO, "The pid file is: %s!\n", pid_file_path);
@@ -315,8 +313,7 @@ int main(int argc, char **argv)
 	wscMsgQInit = TRUE;
 	
 	/* Initialize the netlink interface from kernel space */
-	if(wscK2UModuleInit() != WSC_SYS_SUCCESS)
-	{	
+	if(wscK2UModuleInit() != WSC_SYS_SUCCESS) {	
 		fprintf(stderr, "creat netlink socket thread failed!\n");
 		goto STOP;
 	} else {
@@ -326,8 +323,7 @@ int main(int argc, char **argv)
 	
 	/* Initialize the ioctl interface for data path to kernel space */
 	ioctl_sock = wscU2KModuleInit();
-	if(ioctl_sock == -1)
-	{
+	if(ioctl_sock == -1) {
 		fprintf(stderr, "creat ioctl socket failed!err=%d!\n", errno);
 		goto STOP;
 	}else {
@@ -336,13 +332,11 @@ int main(int argc, char **argv)
 	}
 
 	/* Initialize the upnp related data structure and start upnp service */
-	if(WscUPnPOpMode)
-	{
+	if(WscUPnPOpMode) {
 		struct ifreq  ifr;
 			
 		// Initializing UPnP SDK
-		if ((retVal = UpnpInit(ipAddr, port)) != UPNP_E_SUCCESS)
-		{
+		if ((retVal = UpnpInit(ipAddr, port)) != UPNP_E_SUCCESS) {
 			DBGPRINTF(RT_DBG_ERROR, "Error with UpnpInit -- %d\n", retVal);
 			UpnpFinish();
 			goto STOP;
@@ -359,8 +353,7 @@ int main(int argc, char **argv)
 		// Get the Mac Address of wireless interface
 		memset(&ifr, 0, sizeof(struct ifreq));
 		strcpy(ifr.ifr_name, WSC_IOCTL_IF); 
-		if (ioctl(ioctl_sock, SIOCGIFHWADDR, &ifr) > 0) 
-        { 
+		if (ioctl(ioctl_sock, SIOCGIFHWADDR, &ifr) > 0) {
 			perror("ioctl to get Mac Address");
 			goto STOP;
 		}
@@ -371,7 +364,7 @@ int main(int argc, char **argv)
 				HostMacAddr[2], HostMacAddr[3], HostMacAddr[4], HostMacAddr[5]);
 
 		// Start UPnP Device Service.
-		if (WscUPnPOpMode & UPNP_OPMODE_DEV)
+		if (WscUPnPOpMode & WSC_UPNP_OPMODE_DEV)
 		{	  
 		    retVal = WscUPnPDevStart(ipAddr, port, descDoc, webRootDir);
 			if (retVal != WSC_SYS_SUCCESS)
@@ -381,7 +374,7 @@ int main(int argc, char **argv)
 		}
 
 		// Start UPnP Control Point Service.
-		if(WscUPnPOpMode & UPNP_OPMODE_CP)
+		if(WscUPnPOpMode & WSC_UPNP_OPMODE_CP)
 		{
 			retVal = WscUPnPCPStart(ipAddr, port);
 			if (retVal != WSC_SYS_SUCCESS)
@@ -404,7 +397,7 @@ STOP:
 
 	// Trigger other thread to stop the procedures.
 	stopThread = 1;
-#ifdef MULTIPLE_CARD_SUPPORT
+#if 1 // def MULTIPLE_CARD_SUPPORT
 	unlink(pid_file_path);
 #else
 	unlink(DEFAULT_PID_FILE_PATH);

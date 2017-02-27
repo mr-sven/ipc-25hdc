@@ -102,13 +102,7 @@ static int ipsec_spd_delete(const struct l2tp_tunnel *tunnel, struct sockaddr_in
 	ip = inet_ntoa(dest->sin_addr);
 	strcpy(client, ip);
 
-	/* If the local L2TP client created the tunnel, delete the initial outbound SPD entry */
-	fprintf(f, "spddelete -4n %s[%hu] 0.0.0.0/0[any] udp -P out;\n",
-		server, ntohs(src->sin_port));
-	L2TP_DEBUG(L2TP_PROTOCOL, "%s: tunl %hu: spddelete -4n %s[%hu] 0.0.0.0/0[any] udp -P out;",
-		   __func__, l2tp_tunnel_id(tunnel), server, ntohs(src->sin_port));
-
-	/* Now delete the actual SPD entries, one for each direction */
+	/* Delete the actual SPD entries, one for each direction */
 	fprintf(f, "spddelete -4n %s[%hu] %s[%hu] udp -P out;\n",
 		server, ntohs(src->sin_port), client, ntohs(dest->sin_port));
 	L2TP_DEBUG(L2TP_PROTOCOL, "%s: tunl %hu: spddelete -4n %s[%hu] %s[%hu] udp -P out;",
@@ -168,15 +162,7 @@ static int ipsec_spd_add(const struct l2tp_tunnel *tunnel, struct sockaddr_in *s
 	spd->tunnel = tunnel;
 	usl_list_add(&spd->list, &ipsec_spd_list);
 
-	if (l2tp_tunnel_is_created_by_admin(tunnel)) {
-		/* If the local L2TP client created the tunnel, delete the initial outbound SPD entry */
-		fprintf(f, "spddelete -4n %s[%hu] 0.0.0.0/0[any] udp -P out;\n",
-			server, ntohs(src->sin_port));
-		L2TP_DEBUG(L2TP_PROTOCOL, "%s: tunl %hu: spddelete -4n %s[%hu] 0.0.0.0/0[any] udp -P out;",
-			   __func__, l2tp_tunnel_id(tunnel), server, ntohs(src->sin_port));
-	}
-
-	/* Now add the actual SPD entries, one for each direction */
+	/* Add the actual SPD entries, one for each direction */
 	fprintf(f, "spdadd -4n %s[%hu] %s[%hu] udp -P out ipsec esp/transport//require;\n",
 		server, ntohs(src->sin_port), client, ntohs(dest->sin_port));
 	L2TP_DEBUG(L2TP_PROTOCOL, "%s: tunl %hu: spdadd -4n %s[%hu] %s[%hu] udp -P out ipsec esp/transport//require;",
@@ -329,7 +315,7 @@ static void ipsec_net_socket_disconnect(const struct l2tp_tunnel *tunnel, struct
  * L2TP plugin interface
  *****************************************************************************/
 
-const char openl2tp_plugin_version[] = "V1.0";
+const char openl2tp_plugin_version[] = "V1.1";
 
 int openl2tp_plugin_init(void)
 {

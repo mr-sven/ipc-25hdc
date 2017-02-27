@@ -41,7 +41,7 @@ radvdump: $(radvdump_OBJECTS)
 
 romfs:
 	for i in $(PROGRAMS) ; do $(ROMFSINST) /sbin/$$i ; done
-	$(ROMFSINST) /etc_ro/radvd.conf
+	$(ROMFSINST) /bin/radvd.sh
 
 clean:
 	rm -f $(PROGRAMS)

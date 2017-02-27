@@ -1,19 +1,4 @@
-/*
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation. See README and COPYING for
- * more details.
 
-	Module Name:
-	sta_info.c
-
-	Revision History:
-	Who 		When		  What
-	--------	----------	  ----------------------------------------------
-	Jan, Lee	Dec --2003	  modified
-
-*/
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -25,13 +10,13 @@
 #include <linux/if.h>			/* for IFNAMSIZ and co... */
 #include <linux/wireless.h>
 
-#include "rt2860apd.h"
+#include "rtdot1x.h"
 #include "sta_info.h"
 #include "eloop.h"
 #include "ieee802_1x.h"
 #include "radius.h"
 
-struct sta_info* Ap_get_sta(rtapd *apd, u8 *sa, u8 *apidx, u16 ethertype, int stop, int sock)
+struct sta_info* Ap_get_sta(rtapd *apd, u8 *sa, u8 *apidx, u16 ethertype, int sock)
 {
 	struct sta_info *s;
 
@@ -41,12 +26,6 @@ struct sta_info* Ap_get_sta(rtapd *apd, u8 *sa, u8 *apidx, u16 ethertype, int st
 	
 	if (s == NULL)
 	{
-		if(stop)
-		{
-			DBGPRINT(RT_DEBUG_INFO, "Receive discard-notification form wireless driver, but no this STA.\n");
-			return NULL;
-		}
-
 		if (apd->num_sta >= MAX_STA_COUNT)
 		{
 			/* FIX: might try to remove some old STAs first? */
@@ -83,13 +62,6 @@ struct sta_info* Ap_get_sta(rtapd *apd, u8 *sa, u8 *apidx, u16 ethertype, int st
 	}
 	else
 	{
-		if(stop)
-		{
-			DBGPRINT(RT_DEBUG_TRACE,"Receive discard-notification form wireless driver and remove this station.\n");
-			
-			Ap_free_sta(apd, s);	
-			return NULL;	
-		}	
 		DBGPRINT(RT_DEBUG_TRACE,"A STA has existed(in %s%d)\n", apd->prefix_wlan_name, s->ApIdx);
 	}	
 	

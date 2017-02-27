@@ -45,7 +45,7 @@
 #include <sys/un.h>
 #include <sys/time.h>
 
-#include <net/if.h>
+#include <linux/if.h>
 
 // The multicats API needs linux spesific headers !!!                  
 #ifdef USE_LINUX_IN_H

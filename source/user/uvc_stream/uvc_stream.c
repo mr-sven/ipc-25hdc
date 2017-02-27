@@ -152,7 +152,7 @@ void help(char *progname)
   fprintf(stderr, "Usage: %s\n" \
                   " [-h | --help ]........: display this help\n" \
                   " [-d | --device ]......: video device to open (your camera)\n" \
-                  " [-r | --resolution ]..: 1280x720, 640x480, 320x240, 160x120\n" \
+                  " [-r | --resolution ]..: 1280X720, 640x480, 320x240, 160x120\n" \
                   " [-f | --fps ].........: frames per second\n" \
                   " [-m | --mode ]........: YUV, MJPG\n" \
                   " [-p | --port ]........: TCP-port for the server\n" \

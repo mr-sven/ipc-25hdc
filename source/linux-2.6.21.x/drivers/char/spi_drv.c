@@ -81,19 +81,19 @@ static inline void spi_chip_select(u8 enable)
 {
 	int i;
 	u32* spireg = spi_register[spich];
-
-		for (i=0; i<spi_busy_loop; i++) {
-			if (!IS_BUSY) {
-				/* low active */
-				if (enable) {
+	
+	for (i=0; i<spi_busy_loop; i++) {
+		if (!IS_BUSY) {
+			/* low active */
+			if (enable) {
 				RT2880_REG(spireg[SPICTL]) |= SPICTL_SPIENA_ASSERT;
-				} else  {
+			} else  {
 				RT2880_REG(spireg[SPICTL]) &= SPICTL_SPIENA_NEGATE;			
-				}		
-				break;
-			}
+			}		
+			break;
 		}
-				
+	}
+
 #ifdef DBG
 	if (i == spi_busy_loop) {
 		printk("warning : spi_transfer (spi_chip_select) busy !\n");
@@ -114,7 +114,7 @@ void spi_master_init(void)
 {
 	int i;
 	u32* spireg = spi_register[spich];
-
+	
 	/* reset spi block */
 	RT2880_REG(RT2880_RSTCTRL_REG) |= RSTCTRL_SPI_RESET;
 	RT2880_REG(RT2880_RSTCTRL_REG) &= ~(RSTCTRL_SPI_RESET);
@@ -124,6 +124,10 @@ void spi_master_init(void)
 #if defined(CONFIG_RALINK_VITESSE_SWITCH_CONNECT_SPI_CS1)||defined(CONFIG_RALINK_SLIC_CONNECT_SPI_CS1)
 	/* config ARB and set the low or high active correctly according to the device */
 	RT2880_REG(RT2880_SPI_ARB_REG) = SPIARB_ARB_EN|(SPIARB_SPI1_ACTIVE_MODE<<1)| SPIARB_SPI0_ACTIVE_MODE;
+#if defined(CONFIG_RALINK_RT6352)
+	if (spich > 0) 
+	    RT2880_REG(RT2880_SPI_ARB_REG) |= SPIARB_CS1CTL;
+#endif
 	RT2880_REG(RT2880_SPI1_CTL_REG) = (~SPIARB_SPI1_ACTIVE_MODE)&0x1;     //disable first
 #endif
 	RT2880_REG(RT2880_SPI0_CTL_REG) = (~SPIARB_SPI0_ACTIVE_MODE)&0x1;     //disable first
@@ -153,16 +157,16 @@ static void spi_write(u8 data)
 {
 	int i;
 	u32* spireg = spi_register[spich];
-
-		for (i=0; i<spi_busy_loop; i++) {
-			if (!IS_BUSY) {
+	
+	for (i=0; i<spi_busy_loop; i++) {
+		if (!IS_BUSY) {
 			RT2880_REG(spireg[SPIDATA]) = data;
-				/* start write transfer */
+			/* start write transfer */
 			RT2880_REG(spireg[SPICTL]) = SPICTL_HIZSDO | SPICTL_STARTWR ;
-				break;
-			}
+			break;
 		}
-
+	}
+	
 #ifdef DBG
 	if (i == spi_busy_loop) {
 		printk("warning : spi_transfer (write %02x) busy !\n", data);
@@ -201,35 +205,35 @@ static u8 spi_read(void)
 {
 	int i;
 	u32* spireg = spi_register[spich];
-
+	
 	/* 
 	 * poll busy bit until it is 0 
 	 * then start read transfer
 	 */
 
-		for (i=0; i<spi_busy_loop; i++) {
-			if (!IS_BUSY) {
-			RT2880_REG(spireg[SPIDATA]) = 0;
-				/* start read transfer */
-			RT2880_REG(spireg[SPICTL]) = SPICTL_STARTRD ;
-				break;
-			}
-		}
-		
-		/* 
-		 * poll busy bit until it is 0 
-		 * then get data 
-		 */
-		for (i=0; i<spi_busy_loop; i++) {
+	for (i=0; i<spi_busy_loop; i++) {
 		if (!IS_BUSY) {
-				break;
-			}
+			RT2880_REG(spireg[SPIDATA]) = 0;
+			/* start read transfer */			
+			RT2880_REG(spireg[SPICTL]) = SPICTL_STARTRD ;
+			break;
 		}
+	}
+
+	/* 
+	 * poll busy bit until it is 0 
+	 * then get data 
+	 */
+	for (i=0; i<spi_busy_loop; i++) {
+		if (!IS_BUSY) {
+			break;
+		}
+	}
 		
 #ifdef DBG		
-		if (i == spi_busy_loop) {
-			printk("warning : spi_transfer busy !\n");
-		} 
+	if (i == spi_busy_loop) {
+		printk("warning : spi_transfer busy !\n");
+	} 
 #endif
 
 	return ((u8)RT2880_REG(spireg[SPIDATA]));
@@ -287,7 +291,7 @@ unsigned char spi_eeprom_read(u16 address, u16 nbytes, u8 *dest)
 	u8	status;
 	u16	cnt = 0;
 	int i = 0;
-
+	
 	do {
 		i++;
 		eeprom_get_status_reg(&status);		
@@ -427,7 +431,7 @@ void spi_vtss_read(u8 blk, u8 subblk, u8 addr, u32 *value)
 #else
         spich = 0;
 #endif
-
+	
 	spi_master_init();
 	cmd = (u8)((blk << 5) | subblk);
 	spi_write(cmd);
@@ -600,8 +604,13 @@ int spidrv_release(struct inode *inode, struct file *filp)
 	return 0;
 }
 
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,35)
+int spidrv_ioctl(struct file *filp, unsigned int cmd, 
+		unsigned long arg)
+#else
 int spidrv_ioctl(struct inode *inode, struct file *filp,
 		unsigned int cmd, unsigned long arg)
+#endif
 {
 	unsigned int address, value, size;
 	int vtss_spich = 0;
@@ -676,7 +685,11 @@ int spidrv_ioctl(struct inode *inode, struct file *filp,
 }
 
 struct file_operations spidrv_fops = {
-    ioctl:      spidrv_ioctl,
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,35)
+    unlocked_ioctl:      spidrv_ioctl,
+#else
+    ioctl:	spidrv_ioctl,
+#endif
     open:       spidrv_open,
     release:    spidrv_release,
 };
@@ -706,7 +719,7 @@ static int spidrv_init(void)
     //use normal(SPI) mode instead of GPIO mode
 #ifdef CONFIG_RALINK_RT2880
     RT2880_REG(RALINK_REG_GPIOMODE) &= ~(1 << 2);
-#elif defined (CONFIG_RALINK_RT3052) || defined (CONFIG_RALINK_RT2883) || defined (CONFIG_RALINK_RT3883) || defined (CONFIG_RALINK_RT3352) || defined (CONFIG_RALINK_RT5350)
+#elif defined (CONFIG_RALINK_RT3052) || defined (CONFIG_RALINK_RT2883) || defined (CONFIG_RALINK_RT3883) || defined (CONFIG_RALINK_RT3352) || defined (CONFIG_RALINK_RT5350) || defined (CONFIG_RALINK_RT6855) || defined (CONFIG_RALINK_RT6352) || defined (CONFIG_RALINK_RT71100)
     RT2880_REG(RALINK_REG_GPIOMODE) &= ~(1 << 1);
 #else
 #error Ralink Chip not defined
@@ -757,7 +770,7 @@ void spi_si3220_master_init(int ch)
 	spich = 1;
 #else
 	spich = 0;
-#endif
+#endif	
 	spireg = spi_register[spich];
 	spi_master_init();
 
@@ -872,11 +885,11 @@ void spi_si321x_master_init(int ch)
 #if defined(CONFIG_RALINK_RT3883)
 	RT2880_REG(RALINK_REG_GPIOMODE) &= 0xFFFFFFFD;
 #else	
-	RT2880_REG(RALINK_REG_GPIOMODE) &= 0xFF9FFFFD;  
+	RT2880_REG(RALINK_REG_GPIOMODE) &= 0xFF9FFFFD;
 #endif
 #else
-	RT2880_REG(RALINK_REG_GPIOMODE) &= 0xFFFFFFFD;  	
-#endif
+	RT2880_REG(RALINK_REG_GPIOMODE) &= 0xFFFFFFFD; 
+#endif	
 }
 
 u8 spi_si321x_read8(int sid, unsigned char cid, unsigned char reg)

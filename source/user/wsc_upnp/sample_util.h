@@ -39,8 +39,8 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
-#include <upnptools.h>
-#include <ixml.h>
+#include "upnptools.h"
+#include "ixml.h"
 
 typedef enum {
 	STATE_UPDATE = 0,

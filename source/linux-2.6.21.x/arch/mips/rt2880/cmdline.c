@@ -48,7 +48,7 @@ char rt2880_cmdline[]="console=ttyS1,57600n8 root=/dev/mtdblock5";
 char rt2880_cmdline[]="console=ttyS1,57600n8 root=1f05";
 #endif
 #elif defined (CONFIG_RT2880_ROOTFS_IN_RAM)
-char rt2880_cmdline[]="console=ttyS1,57600n8 root=/dev/ram0";
+char rt2880_cmdline[]="console=ttyS1,57600n8 root=/dev/ram0 ralink_wdt.nowayout=0";
 #else
 #error "RT2880 Root File System not defined"
 #endif
@@ -72,7 +72,9 @@ char * __init prom_getcmdline(void)
 void  __init prom_init_cmdline(void)
 {
 	char *cp;
+#ifdef CONFIG_UBOOT_CMDLINE
 	int actr=1; /* Always ignore argv[0] */
+#endif
 
 	cp = &(arcs_cmdline[0]);
 
@@ -88,7 +90,6 @@ void  __init prom_init_cmdline(void)
 	cp += strlen(rt2880_cmdline);
 	*cp++ = ' ';
 #endif
-
 
 	if (cp != &(arcs_cmdline[0])) /* get rid of trailing space */
 	    --cp;

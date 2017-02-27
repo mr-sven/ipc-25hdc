@@ -5,10 +5,16 @@
 #include "stapriv.h"
 #endif
 
-#ifdef CONFIG_RALINK_RT2880
+#if defined (CONFIG_RALINK_RT2880)
 #define WPS_AP_PBC_LED_GPIO     13   // 0 ~ 24( or disable this feature by undefine it)
-#elif defined CONFIG_RALINK_RT3883
+#elif defined (CONFIG_RALINK_RT3883)
 #define WPS_AP_PBC_LED_GPIO     0   // 0 ~ 24( or disable this feature by undefine it)
+#elif defined (CONFIG_RALINK_RT6855A)
+#if defined (CONFIG_RT6855A_PCIE_PORT0_ENABLE)
+#define WPS_AP_PBC_LED_GPIO     32	// rt6855 WPS LED
+#else
+#define WPS_AP_PBC_LED_GPIO     21	// rt6856 WPS LED
+#endif
 #else
 #define WPS_AP_PBC_LED_GPIO     14   // 0 ~ 24( or disable this feature by undefine it)
 #endif
@@ -121,7 +127,7 @@ typedef struct  _WSC_PROFILE
 #define WSC_ID_PRIMARY_DEVICE_TYPE_LEN	8
 #define WSC_ID_PRIMARY_DEVICE_TYPE_BEACON	0x00000100
 
-#if defined (CONFIG_RTDEV_MII) || defined (CONFIG_RTDEV_USB) || defined (CONFIG_RTDEV_PCI)
+#if defined (RTDEV_SUPPORT)
 #ifndef CONFIG_UNIQUE_WPS
 void formDefineRaixWPS(void);
 unsigned int getAPPIN(char *interface);

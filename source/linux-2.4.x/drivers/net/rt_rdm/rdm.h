@@ -23,7 +23,7 @@
 int rdm_open(struct inode *inode, struct file *filp);
 int rdm_release(struct inode *inode, struct file *filp);
 int rdm_ioctl (struct inode *inode, struct file *filp,
-                     unsigned int cmd, unsigned long arg);
+                     unsigned int cmd, unsigned long *arg);
 
 #define RT_RDM_CMD_SHOW			0x6B01
 #define RT_RDM_CMD_WRITE		0x6B02

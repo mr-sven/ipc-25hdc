@@ -428,11 +428,11 @@ static void QoSDeleteRules(webs_t wp, char_t *path, char_t *query, char *which_r
     if(!j){
 	    free(deleArray);
 	    free(new_rules);
-	    websHeader(wp);
-	    websWrite(wp, T("You didn't select any rules to delete.<br>\n"));
-	    websFooter(wp);
-	    websDone(wp, 200);
-	    return;
+        websHeader(wp);
+        websWrite(wp, T("You didn't select any rules to delete.<br>\n"));
+        websFooter(wp);
+        websDone(wp, 200);
+        return;
     }
 
     deleteNthValueMulti(deleArray, j, new_rules, ';');
@@ -657,7 +657,7 @@ static void QoSSetup(webs_t wp, char_t *path, char_t *query)
 
 static int QoSisPortBasedQoSSupport(int eid, webs_t wp, int argc, char_t **argv)
 {
-#if defined (CONFIG_RALINK_RT3052) || defined (CONFIG_RALINK_RT3352) || defined (CONFIG_RALINK_RT5350)
+#if defined (CONFIG_RALINK_RT3052) || defined (CONFIG_RALINK_RT3352) || defined (CONFIG_RALINK_RT5350) || defined (CONFIG_RALINK_RT6855) || defined (CONFIG_RALNK_RT6352) || defined (CONFIG_RALINK_RT71100)
 	return websWrite(wp, T("1"));
 #else
 	return websWrite(wp, T("0"));

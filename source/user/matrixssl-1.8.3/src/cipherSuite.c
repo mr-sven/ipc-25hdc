@@ -1,6 +1,6 @@
 /*
  *	cipherSuite.c
- *	Release $Name: SDK_3_5_0_0_BRANCH $
+ *	Release $Name: SDK_4_0_0_0_BRANCH $
  *
  *	Wrappers for the various cipher suites.
  *	Contributors should add additional cipher suites here.

@@ -1,9 +1,8 @@
-EXEC = super_dmz
+EXEC = super_dmz udhcpd_superdmz.sh
 
-all: $(EXEC) 
+all: $(EXEC)
 
 romfs:
-	$(STRIP) super_dmz
-	$(ROMFSINST) -e CONFIG_RALINKAPP_SUPERDMZ /bin/super_dmz
-	$(ROMFSINST) -e CONFIG_RALINKAPP_SUPERDMZ /bin/udhcpd_superdmz.sh
+	$(ROMFSINST) /bin/super_dmz
+	$(ROMFSINST) /bin/udhcpd_superdmz.sh
 

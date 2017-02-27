@@ -36,7 +36,7 @@ elif [ $PPTP_OPMODE == "OnDemand" ]; then
 	echo "demand" >> $PPTP_FILE
 	echo "idle $PPTP_OPTIME" >> $PPTP_FILE
 fi
-echo "defaultroute" >> $PPTP_FILE
+#echo "defaultroute" >> $PPTP_FILE
 echo "ipcp-accept-remote ipcp-accept-local noipdefault" >> $PPTP_FILE
 echo "ktune" >> $PPTP_FILE
 echo "default-asyncmap nopcomp noaccomp" >> $PPTP_FILE

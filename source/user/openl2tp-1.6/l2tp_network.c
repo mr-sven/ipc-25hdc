@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (C) 2004,2005,2006,2007,2008 Katalix Systems Ltd
+ * Copyright (C) 2004-2010 Katalix Systems Ltd
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,7 +58,7 @@ struct l2tp_control_hdr {
 		struct {
 			uint8_t X(X(X(X(X(X(p_bit:1, o_bit:1), rsvd_2:1), s_bit:1), rsvd_1:2), l_bit:1), t_bit:1);
 			uint8_t X(ver:4, rsvd_3:4);
-		};
+		} __attribute__((__packed__));
 		uint16_t flags_ver;
 	};
 	union {
@@ -68,10 +68,10 @@ struct l2tp_control_hdr {
 			uint16_t  	session_id;
 			uint16_t  	ns;
 			uint16_t  	nr;
-		};
+		} __attribute__((__packed__));
 		uint8_t			data[0];
 	};
-};
+} __attribute__((__packed__));
 
 #undef X
 

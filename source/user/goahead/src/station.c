@@ -4,7 +4,7 @@
  *
  *  Copyright (c) Ralink Technology Corporation All Rights Reserved.
  *
- *  $Id: station.c,v 1.86 2010-07-23 02:57:02 chhung Exp $
+ *  $Id: station.c,v 1.97 2012-01-03 03:08:36 chhung Exp $
  */
 
 #include	<sys/ioctl.h>
@@ -26,8 +26,8 @@
 #define TOKEN "\t"
 
 static int	getWPASupplicantBuilt(int eid, webs_t wp, int argc, char_t **argv);
-static int getCACLCertList(int eid, webs_t wp, int argc, char_t **argv);
-static int getKeyCertList(int eid, webs_t wp, int argc, char_t **argv);
+static int	getCACLCertList(int eid, webs_t wp, int argc, char_t **argv);
+static int	getKeyCertList(int eid, webs_t wp, int argc, char_t **argv);
 static int	getStaAdhocChannel(int eid, webs_t wp, int argc, char_t **argv);
 static int	getStaAllProfileName(int eid, webs_t wp, int argc, char_t **argv);
 static int	getStaBSSIDList(int eid, webs_t wp, int argc, char_t **argv);
@@ -244,71 +244,6 @@ int OidSetInformation(unsigned long OidQueryCode, int socket_id, char *DeviceNam
 	wrq.u.data.flags = OidQueryCode | OID_GET_SET_TOGGLE;
 
 	return (ioctl(socket_id, RT_PRIV_IOCTL, &wrq));
-}
-
-void ConverterStringToDisplay(char *str)
-{
-    int  len, i;
-    char buffer[193];
-    char *pOut;
-
-    memset(buffer,0,193);
-    len = strlen(str);
-    pOut = &buffer[0];
-
-    for (i = 0; i < len; i++) {
-		switch (str[i]) {
-			case 38:
-				strcpy (pOut, "&amp;");
-				pOut += 5;
-				break;
-
-			case 60: 
-				strcpy (pOut, "&lt;");
-				pOut += 4;
-				break;
-
-			case 62: 
-				strcpy (pOut, "&gt;");
-				pOut += 4;
-				break;
-
-			case 34:
-				strcpy (pOut, "&#34;");
-				pOut += 5;
-				break;
-
-			case 39:
-				strcpy (pOut, "&#39;");
-				pOut += 5;
-				break;
-				//case ' ':
-				//strcpy (pOut, "&nbsp;");
-				//pOut += 6;
-				//break;
-
-			default:
-				if ((str[i]>=0) && (str[i]<=31)) {
-					//Device Control Characters
-					sprintf(pOut, "&#%02d;", str[i]);
-					pOut += 5;
-				} else if ((str[i]==39) || (str[i]==47) || (str[i]==59) || (str[i]==92)) {
-					// ' / ; (backslash)
-					sprintf(pOut, "&#%02d;", str[i]);
-					pOut += 5;
-				} else if (str[i]>=127) {
-					//Device Control Characters
-					sprintf(pOut, "&#%03d;", str[i]);
-					pOut += 6;
-				} else {
-					*pOut = str[i];
-					pOut++;
-				}
-				break;
-		}
-    }
-    *pOut = '\0';
-    strcpy(str, buffer);
 }
 
 unsigned int ConvertRssiToSignalQuality(long RSSI)
@@ -2542,7 +2477,6 @@ static void exec_WPASupplicant(char* ssid, NDIS_802_11_WEP_STATUS encryp, NDIS_8
 			pWepKey->KeyLength = nKeyLen;
 			pWepKey->KeyIndex = keyidx;
 
-			if (keyidx == 1)
 				pWepKey->KeyIndex |= 0x80000000;
 
 			if (strlen(wepkey) == 5)
@@ -2695,7 +2629,11 @@ static void conf_WPASupplicant(char* ssid, RT_WPA_SUPPLICANT_KEY_MGMT keymgmt, R
 			fprintf(wsconf, "eap=MD5\n");
 			fprintf(wsconf, "password=\"%s\"\n", password);
 			fprintf(wsconf, "wep_tx_keyidx=%d\n", keyidx);
+			if (strlen(wepkey) == 5 || strlen(wepkey) == 13)
+				fprintf(wsconf, "wep_key%d=\"%s\"\n", keyidx, wepkey);
+			else if (strlen(wepkey) == 10 || strlen(wepkey) == 26)
 			fprintf(wsconf, "wep_key%d=%s\n", keyidx, wepkey);
+
 			break;
 		default:
 			break;
@@ -3952,11 +3890,8 @@ static void addStaProfile(webs_t wp, char_t *path, char_t *query)
 	nvram_bufset(RT2860_NVRAM, "staPSMode", tmp_buffer);
 
 	//channel
-	value = websGetVar(wp, T("channel"), T(""));
-	if (tmpProfileSetting.NetworkType == Ndis802_11IBSS)
-		tmpProfileSetting.Channel = atoi(value);
-	else
-		tmpProfileSetting.Channel = 0;
+	value = websGetVar(wp, T("channel"), T("0"));
+	tmpProfileSetting.Channel = atoi(value);
 	wordlist = nvram_bufget(RT2860_NVRAM, "staChannel");
 	if (wordlist && strcmp(wordlist, "") != 0)
 		sprintf(tmp_buffer, "%s\t%d", wordlist, tmpProfileSetting.Channel);

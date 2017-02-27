@@ -5,7 +5,7 @@
  *
  * See the file "license.txt" for usage and redistribution license requirements
  *
- * $Id: webcomp.c,v 1.3 2007-02-01 07:41:01 winfred Exp $
+ * $Id: webcomp.c,v 1.4 2010-10-27 08:23:53 chhung Exp $
  */
 
 /******************************** Description *********************************/

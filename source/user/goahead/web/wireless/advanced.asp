@@ -213,11 +213,11 @@ function getRvtEnb()
 	var gi = '<% getCfgZero(1, "HT_GI"); %>';
 	var vt = '<% getCfgZero(1, "VideoTurbine"); %>';
 
-	if (rvt == "1" && rx == "1" && tx == "1" && vt == "1" && gi == "0")
-		return true;
-	else
-		return false;
-}
+	if (rvt == "1" && rx == "1" && tx == "1" && vt == "1" && gi == "0") 
+			return true;
+		else
+			return false;
+	}
 
 function rvt_switch()
 {

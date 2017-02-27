@@ -164,8 +164,18 @@ static int rt3xxx_ehci_probe(struct platform_device *pdev)
 	// wake up usb module from power saving mode...
 	try_wake_up();
 
+#ifdef CONFIG_USB_GADGET_RT
+#warning	"*********************************************************"
+#ifdef CONFIG_RALINK_RT5350
+#error		"*    EHCI won't have any USB port to run!               *"
+#else
+#warning	"*    EHCI will yield USB port0 to device controller!    *"
+#endif /* CONFIG_RALINK_RT5350 */
+#warning	"*********************************************************"
+#else
 	// change port0 to host mode
 	rt_set_host();
+#endif
 
 	retval = usb_add_hcd(hcd, irq, IRQF_DISABLED | IRQF_SHARED);
 	if (retval)

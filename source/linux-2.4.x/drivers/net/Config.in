@@ -400,87 +400,11 @@ bool 'Ralink Driver' CONFIG_RALINK_DRIVER
 if [ "$CONFIG_RALINK_DRIVER" = "y" ]; then
    tristate '  Ralink Reg Debug Module'	     	CONFIG_RALINK_RDM
 
-   if [ "$CONFIG_PCI" = "y" ]; then
-   if [ "$CONFIG_RT2880v2_INIC_PCI" != "n" ]; then
-	   define_bool CONFIG_RT2561_AP n
-   fi
-  
-   if [ "$CONFIG_RT2561_AP" != "n" ]; then
-	   define_bool CONFIG_RT2880v2_INIC_PCI n
-   fi
-   tristate '  Ralink RT2561 802.11abg AP support ' CONFIG_RT2561_AP 
-   dep_mbool '   WSC (WiFi Simple Config) ' CONFIG_RT2561_AP_WSC $CONFIG_RT2561_AP
-   dep_mbool '   LLTD (Link Layer Topology Discovery Protocol) ' CONFIG_RT2561_AP_LLTD $CONFIG_RT2561_AP
-   dep_mbool '   WDS '	 CONFIG_RT2561_AP_WDS $CONFIG_RT2561_AP
-   dep_mbool '   MBSSID '	 CONFIG_RT2561_AP_MBSS $CONFIG_RT2561_AP
-   dep_mbool '   AP-CLient Support' CONFIG_RT2561_AP_APCLI $CONFIG_RT2561_AP
-   dep_mbool '   IGMP snooping Support' CONFIG_RT2561_AP_IGMP_SNOOP $CONFIG_RT2561_AP
-   dep_mbool '   NETIF Block' CONFIG_RT2561_AP_NETIF_BLOCK $CONFIG_RT2561_AP
-   dep_mbool '   Carrier Detect Support' CONFIG_RT2561_AP_CARRIER $CONFIG_RT2561_AP
-   fi
-
+#   source drivers/net/wireless/rt2860v2_ap/Config.in
+#   source drivers/net/wireless/rt2860v2_sta/Config.in
 #   source drivers/net/wireless/iNIC/Config.in
+#   source drivers/net/wireless/rt2561_ap/Config.in
   
-   #tristate '  Ralink RT2680 802.11abg AP support' CONFIG_RT2680_AP 
-   if [ "$CONFIG_RT2860V2_AP" = "y" ]; then
-	   define_bool CONFIG_RT2860V2_STA n
-   fi
-  
-   if [ "$CONFIG_RT2860V2_STA" = "y" ]; then
-	   define_bool CONFIG_RT2860V2_AP n
-   fi
-
-   tristate '  Ralink RT2860 802.11n AP support ' CONFIG_RT2860V2_AP 
-   dep_mbool '   Dual Band (RF=RT2850)' CONFIG_RT2860V2_AP_2850 $CONFIG_RT2860V2_AP
-   dep_mbool '   LED Support ' CONFIG_RT2860V2_AP_LED $CONFIG_RT2860V2_AP
-   dep_mbool '   WSC (WiFi Simple Config) ' CONFIG_RT2860V2_AP_WSC $CONFIG_RT2860V2_AP
-   dep_mbool '   LLTD (Link Layer Topology Discovery Protocol) ' CONFIG_RT2860V2_AP_LLTD $CONFIG_RT2860V2_AP
-   dep_mbool '   WDS '	 CONFIG_RT2860V2_AP_WDS $CONFIG_RT2860V2_AP
-   dep_mbool '   MBSSID '	 CONFIG_RT2860V2_AP_MBSS $CONFIG_RT2860V2_AP
-   dep_mbool '   AP-CLient Support' CONFIG_RT2860V2_AP_APCLI $CONFIG_RT2860V2_AP
-   dep_mbool '   IGMP snooping Support' CONFIG_RT2860V2_AP_IGMP_SNOOP $CONFIG_RT2860V2_AP
-   dep_mbool '   NETIF Block' CONFIG_RT2860V2_AP_NETIF_BLOCK $CONFIG_RT2860V2_AP
-   dep_mbool '   DFS Support' CONFIG_RT2860V2_AP_DFS $CONFIG_RT2860V2_AP
-   dep_mbool '   Carrier Detect Support' CONFIG_RT2860V2_AP_CARRIER $CONFIG_RT2860V2_AP
-   dep_mbool '   DLS (Direct-Link Setup) Support' CONFIG_RT2860V2_AP_DLS $CONFIG_RT2860V2_AP
-   dep_mbool '   IDS (Intrusion Detection System) Support' CONFIG_RT2860V2_AP_IDS $CONFIG_RT2860V2_AP
-   dep_mbool '   MESH Support' CONFIG_RT2860V2_AP_MESH $CONFIG_RT2860V2_AP
-   dep_mbool '   WAPI Support' CONFIG_RT2860V2_AP_WAPI $CONFIG_RT2860V2_AP
-   dep_mbool '   Video Turbine Support' CONFIG_RT2860V2_AP_VIDEO_TURBINE $CONFIG_RT2860V2_AP
-   dep_mbool '   Auto Provision' CONFIG_RT2860V2_AUTO_PROVISION $CONFIG_RT2860V2_AP
-   dep_mbool '   Intelligent Rate Adaption' CONFIG_RT2860V2_AP_INTELLIGENT_RATE_ADAPTION $CONFIG_RT2860V2_AP
-
-   if [ "$CONFIG_RT2860V2_AP_DFS" != "n" -o "$CONFIG_RT2860V2_AP_CARRIER" != "n" ]; then
-	define_bool CONFIG_RALINK_TIMER y
-	define_bool CONFIG_RALINK_TIMER_DFS y
-   fi
-   
-   if [ "$CONFIG_RT2860V2_AP_DFS" = "n" -a "$CONFIG_RT2860V2_AP_CARRIER" = "n" ]; then
-	define_bool CONFIG_RALINK_TIMER_DFS n
-   fi
-   
-   tristate '  Ralink RT2860 802.11n STA support - 2860v2, (RBUS and PCI) ' CONFIG_RT2860V2_STA 
-   if [ "$CONFIG_RT2860V2_STA" != "n" ]; then
-       if [ "$CONFIG_PCI" = "y" ]; then
-           choice   'Bus Type'       "RBUS  CONFIG_RT2860V2_STA_RBUS \
-				      RBUS+PCI   CONFIG_RT2860V2_STA_RBUS_PCI \
-				     "RBUS
-       else
-           choice   'Bus Type'       "RBUS  CONFIG_RT2860V2_STA_RBUS \
-				     "RBUS
-       fi
-   fi
-   dep_mbool '   Dual Band (RF=RT2850)' CONFIG_RT2860V2_STA_2850 $CONFIG_RT2860V2_STA
-   dep_mbool '   LED Support ' CONFIG_RT2860V2_STA_LED $CONFIG_RT2860V2_STA
-   dep_mbool '   WPA Supplicant ' CONFIG_RT2860V2_STA_WPA_SUPPLICANT $CONFIG_RT2860V2_STA
-   dep_mbool '   WSC (WiFi Simple Config)' CONFIG_RT2860V2_STA_WSC $CONFIG_RT2860V2_STA
-   dep_mbool '   DPB Support' CONFIG_RT2860V2_STA_DPB $CONFIG_RT2860V2_STA
-   dep_mbool '   Carrier Detect Support' CONFIG_RT2860V2_STA_CARRIER $CONFIG_RT2860V2_STA
-   dep_mbool '   DLS (Direct-Link Setup) Support' CONFIG_RT2860V2_STA_DLS $CONFIG_RT2860V2_STA
-   dep_mbool '   MESH Support' CONFIG_RT2860V2_STA_MESH $CONFIG_RT2860V2_STA
-   dep_mbool '   WAPI Support' CONFIG_RT2860V2_STA_WAPI $CONFIG_RT2860V2_STA
-   dep_mbool '   Video Turbine Support' CONFIG_RT2860V2_STA_VIDEO_TURBINE $CONFIG_RT2860V2_STA
-
    if [ "$CONFIG_RT2860V2_AP_2850" = "y" -o "$CONFIG_RT2860V2_STA_2850" = "y" ]; then
 	  define_bool CONFIG_RT2860V2_2850 y 
    fi
@@ -513,5 +437,16 @@ if [ "$CONFIG_RALINK_DRIVER" = "y" ]; then
    fi
    dep_mbool '  PSEUDO DRIVER SUPPORTED ' CONFIG_PSEUDO_SUPPORT $CONFIG_RT2880_GMAC
 
+#Added by Steven Liu
+comment ' '     
+choice 'Ralink NAT Type'  "None	  CONFIG_RA_NAT_NONE \
+			   Software    CONFIG_RA_NAT_SW \
+			   Hardware    CONFIG_RA_NAT_HW \
+			  "None
+
+if  [ "$CONFIG_RA_NAT_HW" != "n" ]; then
+source net/nat/hw_nat/Config.in
+fi
+#-----------
 fi
 endmenu

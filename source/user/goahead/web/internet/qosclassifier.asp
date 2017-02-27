@@ -132,8 +132,8 @@ function initTranslation()
 	e.innerHTML = _("qos classifier dir");
 	e = document.getElementById("QoSClassifierGroupStr");
 	e.innerHTML = _("qos classifier group");
-/*	e = document.getElementById("QoSClassifierMacStr");
-	e.innerHTML = _("qos classifier mac");*/
+	e = document.getElementById("QoSClassifierMacStr");
+	e.innerHTML = _("qos classifier mac");
 /*	e = document.getElementById("QoSClassifierInIf");
 	e.innerHTML = _("qos classifier ingress if");  */
 	e = document.getElementById("QoSClassifierDIPStr");
@@ -311,14 +311,14 @@ function checkForm()
 		alert("There is an illegal character in the name.");
 		return false;
 	}
-/*
+
 	if(document.classifier.mac_address.value != ""){
 		if(!checkMac(document.classifier.mac_address.value)){
 			alert("The MAC address format is invalid.");
 			return false;
 		}
 	}
-*/
+
 	if(document.classifier.dip_address.value != ""){
 		if(! checkIpAddr(document.classifier.dip_address.value) ){
 			alert("The destination ip address format is invalid.");
@@ -358,8 +358,7 @@ function checkForm()
 
 
 
-	if(	
-		//document.classifier.mac_address.value == "" &&
+	if(	document.classifier.mac_address.value == "" && 
 		document.classifier.dip_address.value == "" && 
 		document.classifier.sip_address.value == "" &&
 		document.classifier.pktlenfrom.value == "" && 
@@ -471,7 +470,6 @@ function checkForm()
 </table>
 <br>
 <table width="500" border="1" cellpadding="2" cellspacing="1">
-<!--
 <tr>
 	<td class="head" colspan="2" id="QoSClassifierMacStr">
 		Mac address
@@ -480,7 +478,6 @@ function checkForm()
 		 <input type="text" size="18" name="mac_address" id="mac_address">
 	</td>
 </tr>
--->
 
 <!-- 
 <tr>
@@ -506,7 +503,6 @@ function checkForm()
 	</td>
 	<td colspan="2">
 		<input type="text" size="16" name="dip_address" id="dip_address">
-		<input type="hidden" size="18" name="mac_address" id="mac_address">
 		<!-- we dont support ip range in kernel 2.4.30 
 		-<input type="text" size="16" name="dip_address2">
 		-->

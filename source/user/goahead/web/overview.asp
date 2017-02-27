@@ -95,6 +95,10 @@ function setLanguage()
 </p></fieldset></blockquote>
 
 <center>
+<a href="http://certifications.wi-fi.org/wbcs_ViewCertificate.php?product_id=5451"><img src="graphics/wifi_n.gif" border="0"></a>
+<br />
+<img src="graphics/wps.gif" border="0">
+<br />
 <img src="graphics/webserver_logo1.gif" border="0">
 </center>
 

@@ -48,6 +48,8 @@ var WapiAsPort = new Array();
 var WapiAsCertPath = new Array();
 var WapiUserCertPath = new Array();
 var wpsenable  = '<% getCfg2Zero(1, "WscModeOption"); %>';
+var wapib = "<% getRaixWAPIBuilt(); %>";
+var ht_disallow_tkip = "<% getCfg2Zero(1, "HT_DisallowTKIP"); %>";
 
 function checkMac(str){
 	var len = str.length;
@@ -178,6 +180,52 @@ function style_display_on()
 	}
 }
 
+function ASCertUpdate()
+{
+	makeRequest("/goform/UpdateCert", "as");
+}
+
+function UserCertUpdate()
+{
+	makeRequest("/goform/UpdateCert", "user");
+}
+
+function ASContents() {
+	if (http_request.readyState == 4) {
+		if (http_request.status == 200) {
+			ASCertUpdateHTML(http_request.responseText);
+		} else {
+			alert('There was a problem with the request.');
+		}
+	}
+}
+
+function UserContents() {
+	if (http_request.readyState == 4) {
+		if (http_request.status == 200) {
+			UserCertUpdateHTML(http_request.responseText);
+		} else {
+			alert('There was a problem with the request.');
+		}
+	}
+}
+
+function ASCertUpdateHTML(str)
+{
+	if (str.length > 0) {
+		var cert = document.security_form.wapicert_ascert;
+		cert.options[cert.length] = new Option(str, str);
+	}
+}
+
+function UserCertUpdateHTML(str)
+{
+	if (str.length > 0) {
+		var cert = document.security_form.wapicert_usercert;
+		cert.options[cert.length] = new Option(str, str);
+	}
+}
+
 var http_request = false;
 function makeRequest(url, content, handler) {
 	http_request = false;
@@ -199,7 +247,12 @@ function makeRequest(url, content, handler) {
 		alert('Giving up :( Cannot create an XMLHTTP instance');
 		return false;
 	}
-	http_request.onreadystatechange = handler;
+	if (content == "as")
+		http_request.onreadystatechange = ASContents;
+	else if (content == "user")
+		http_request.onreadystatechange = UserContents;
+	else
+		http_request.onreadystatechange = handler;
 	http_request.open('POST', url, true);
 	http_request.send(content);
 }
@@ -284,11 +337,20 @@ function checkData()
 //	var ssid = document.security_form.Ssid.value;
 	
 	securitymode = document.security_form.security_mode.value;
-	if (securitymode == "OPEN" || securitymode == "SHARED" ||securitymode == "WEPAUTO")
+	if (securitymode == "Disable")
+	{
+		if (wpsenable != "0") 
+			alert('This setting is no security!');
+	} 
+	else if (securitymode == "OPEN" || securitymode == "SHARED" ||securitymode == "WEPAUTO")
 	{
 		if(! check_Wep(securitymode) )
 			return false;
-	}else if (securitymode == "WPAPSK" || securitymode == "WPA2PSK" || securitymode == "WPAPSKWPA2PSK" /* || security_mode == 5 */){
+		if (wpsenable != "0") 
+			alert("This setting is going to turn off WPS feature!");
+	}
+	else if (securitymode == "WPAPSK" || securitymode == "WPA2PSK" || securitymode == "WPAPSKWPA2PSK" /* || security_mode == 5 */)
+	{
 		var keyvalue = document.security_form.passphrase.value;
 
 		if (keyvalue.length == 0){
@@ -316,7 +378,6 @@ function checkData()
 		if(check_wpa() == false)
 			return false;
 	}
-	//802.1x
 	else if (securitymode == "IEEE8021X") // 802.1x
 	{
 		if( document.security_form.ieee8021x_wep[0].checked == false &&
@@ -326,13 +387,15 @@ function checkData()
 		}
 		if(check_radius() == false)
 			return false;
-	}else if (securitymode == "WPA" || securitymode == "WPA1WPA2") //     WPA or WPA1WP2 mixed mode
+	}
+	else if (securitymode == "WPA" || securitymode == "WPA1WPA2") //     WPA or WPA1WP2 mixed mode
 	{
 		if(check_wpa() == false)
 			return false;
 		if(check_radius() == false)
 			return false;
-	}else if (securitymode == "WPA2") //         WPA2
+	}
+	else if (securitymode == "WPA2") //         WPA2
 	{
 		if(check_wpa() == false)
 			return false;
@@ -349,12 +412,46 @@ function checkData()
 		if(check_radius() == false)
 			return false;
 	}
+	else if (securitymode == "WAICERT")
+	{
+		if(check_as() == false)
+			return false;
+	}
+	else if (securitymode == "WAIPSK")
+	{
+		var pskey = document.security_form.wapipsk_prekey.value;
+
+		if (pskey.length == 0)
+		{
+			alert('Please input WAPI PSK pre-Shared Key!');
+			return false;
+		}
+
+		if (pskey.length < 8)
+		{
+			alert('Please input at least 8 character of WAPI PSK pre-Shared Key!');
+			return false;
+		}
+		
+		if (checkInjection(pskey) == false)
+		{
+			alert('Invalid characters in pre-Shared Key.');
+			return false;
+		}
+
+		if (document.security_form.wapipsk_keytype.selectedIndex == 0 &&
+		    pskey.length%8 != 0)
+		{
+			alert('Pre-Shared Key of HEX type is a multiple of 8!');
+			return false;
+		}
+	}
 
 	// check Access Policy
 	for(i=0; i<MBSSID_MAX; i++){
 
 
-		if (document.getElementById("newap_text_" + i).value != ""){
+		if( document.getElementById("newap_text_" + i).value != ""){
 			if(!checkMac(document.getElementById("newap_text_" + i).value)){
 				alert("The mac address in Access Policy form is invalid.\n");
 				return false;
@@ -396,7 +493,36 @@ function check_wpa()
 		if(document.security_form.keyRenewalInterval.value == 0){
 			alert('Renew key interval is equal to 0, so the device will not refresh key');
 		}
+		if (ht_disallow_tkip == "1" && document.security_form.cipher[0].checked)
+			alert("Disallow TKIP/WEP encryption is enabled, so 11N rate will turn off!");
 		return true;
+}
+
+function check_as()
+{
+	if (!document.security_form.wapicert_asipaddr.value.length)
+	{
+		alert("Please input the Authenticator Server ip address!");
+		return false;
+	}
+
+	if (!document.security_form.wapicert_asport.value.length)
+	{
+		alert("Please input the Authenticator Server port number!");
+		return false;
+	}
+
+	if (checkIpAddr(document.security_form.wapicert_asipaddr) == false)
+	{
+		alert("Please input a valid Athenticator server ip address!");
+		return false;
+	}
+
+	if( (checkRange(document.security_form.wapicert_asport.value, 1, 1, 65535)==false) ||
+		(checkAllNum(document.security_form.wapicert_asport.value)==false)){
+		alert('Please input a valid Athenticator server port number.');
+		return false;		
+	}
 }
 
 function check_radius()
@@ -480,6 +606,18 @@ function securityMode(c_f)
 	document.security_form.RadiusServerSessionTimeout.disable = true;
 	document.security_form.RadiusServerIdleTimeout.disable = true;	
 
+	// wapi
+	document.getElementById("div_wapi_psk").style.visibility = "hidden";
+	document.getElementById("div_wapi_psk").style.display = "none";
+	document.security_form.wapipsk_prekey.disabled = true;
+	document.security_form.wapipsk_keytype.disabled = true;
+	document.getElementById("div_wapi_cert").style.visibility = "hidden";
+	document.getElementById("div_wapi_cert").style.display = "none";
+	document.security_form.wapicert_asipaddr.disabled = true;
+	document.security_form.wapicert_asport.disabled = true;
+	document.security_form.wapicert_ascert.disabled = true;
+	document.security_form.wapicert_usercert.disabled = true;
+
 	security_mode = document.security_form.security_mode.value;
 
 	if (security_mode == "OPEN" || security_mode == "SHARED" ||security_mode == "WEPAUTO")
@@ -561,6 +699,19 @@ function securityMode(c_f)
 		document.security_form.RadiusServerSecret.disable = false;	
 		document.security_form.RadiusServerSessionTimeout.disable = false;
 		//document.security_form.RadiusServerIdleTimeout.disable = false;
+	}
+	else if (security_mode == "WAIPSK") {
+		document.getElementById("div_wapi_psk").style.visibility = "visible";
+		document.getElementById("div_wapi_psk").style.display = style_display_on();
+		document.security_form.wapipsk_prekey.disabled = false;
+		document.security_form.wapipsk_keytype.disabled = false;
+	} else if (security_mode == "WAICERT") {
+		document.getElementById("div_wapi_cert").style.visibility = "visible";
+		document.getElementById("div_wapi_cert").style.display = style_display_on();
+		document.security_form.wapicert_asipaddr.disabled = false;
+		document.security_form.wapicert_asport.disabled = false;
+		document.security_form.wapicert_ascert.disabled = false;
+		document.security_form.wapicert_usercert.disabled = false;
 	}
 }
 
@@ -699,6 +850,8 @@ function check_Wep(securitymode)
 			}			
 		}
 	}
+	if (ht_disallow_tkip == "1")
+		alert("Disallow TKIP/WEP encryption is enabled, so 11N rate will turn off!");
 	return true;
 }
 
@@ -744,6 +897,11 @@ function LoadFields(MBSSID)
 	 */
 	if (wpsenable == "0")
 		sp_select.options[sp_select.length] = new Option("802.1X",	"IEEE8021X",false, AuthMode[MBSSID] == "IEEE8021X");
+	if (wapib == "1")
+	{
+		sp_select.options[sp_select.length] = new Option("WAPI-PSK", "WAIPSK",	false, AuthMode[MBSSID] == "WAIPSK");
+		sp_select.options[sp_select.length] = new Option("WAPI-Certificate", "WAICERT",	false, AuthMode[MBSSID] == "WAICERT");
+	}
 	// WEP
 	document.getElementById("WEP1").value = Key1Str[MBSSID];
 	document.getElementById("WEP2").value = Key2Str[MBSSID];
@@ -786,6 +944,26 @@ function LoadFields(MBSSID)
 	document.getElementById("RadiusServerPort").value = RADIUS_Port[MBSSID];
 	document.getElementById("RadiusServerSecret").value = RADIUS_Key[MBSSID];			
 	document.getElementById("RadiusServerSessionTimeout").value = session_timeout_interval[MBSSID];
+
+	// wapi
+	document.security_form.wapicert_asipaddr.value = WapiAsIpAddr[MBSSID];
+	for (var i=0;i<document.security_form.wapicert_ascert.length;i++)
+	{
+		var temp = document.security_form.wapicert_ascert.options[i].value;
+		if (temp == WapiAsCertPath[MBSSID])
+			document.security_form.wapicert_ascert.selectedIndex = i;
+	}
+	for (i=0;i<document.security_form.wapicert_usercert.length;i++)
+	{
+		var temp = document.security_form.wapicert_usercert.options[i].value;
+		if (temp == WapiUserCertPath[MBSSID])
+			document.security_form.wapicert_usercert.selectedIndex = i;
+	}
+	document.security_form.wapipsk_prekey.value = WapiPsk[MBSSID];
+	if (WapiPskType[MBSSID] == "1")
+		document.security_form.wapipsk_keytype.selectedIndex = 1;
+	else
+		document.security_form.wapipsk_keytype.selectedIndex = 0;
 
 	securityMode(0);
 }
@@ -1041,6 +1219,13 @@ function onPreAuthenticationClick(type)
 	setChange(1);
 }
 
+function open_wapi_cert_upload(target)
+{
+	if (target == "user")
+		window.open("../wireless/wapi_cert_user_upload.asp","wapi_cert_user_upload","toolbar=no, location=yes, scrollbars=yes, resizable=no, width=500, height=500");
+	else if (target == "as")
+		window.open("../wireless/wapi_cert_as_upload.asp","wapi_cert_as_upload","toolbar=no, location=yes, scrollbars=yes, resizable=no, width=500, height=500");
+}
 </script>
 </head>
 <body onload="initAll()">
@@ -1229,9 +1414,62 @@ function onPreAuthenticationClick(type)
 		<td bgcolor="#E8F8FF"  class="head" id="secureRadiusIdleTimeout"> Idle Timeout </td>
 		<td> <input name="RadiusServerIdleTimeout" id="RadiusServerIdleTimeout" size="3" maxlength="4" value="" onKeyUp="setChange(1)" readonly> </td>
 	</tr>
-
 </tbody></table>
 
+<!-- WAPI PSK -->
+<table id="div_wapi_psk" name="div_wapi_psk" border="1" bordercolor="#9babbd" cellpadding="3" cellspacing="1" hspace="2" vspace="2" width="540" style="visibility: hidden;">
+  <tr>
+    <td class="title" colspan="3" id="wapiWAPIPSK">WAPI-PSK</td>
+  </tr>
+  <tr>
+    <td class="head" id="wapiPreKey">Pre-Shared Key</td>
+    <td>
+      <input type="text" name="wapipsk_prekey" size="28" maxlength="64" value="">
+    </td>
+    <td>
+      <select name="wapipsk_keytype">
+        <option value="0" selected>HEX</option>
+	<option value="1">ASCII</option>
+      </select>
+    </td>
+  </tr>
+</table>
+<!-- WAPI Cert -->
+<table id="div_wapi_cert" name="div_wapi_cert" border="1" bordercolor="#9babbd" cellpadding="3" cellspacing="1" hspace="2" vspace="2" width="540" style="visibility: hidden;">
+  <tr>
+    <td class="title" colspan="2" id="wapiWAPICERT">WAPI-Certificate</td>
+  </tr>
+  <tr> 
+    <td class="head" id="wapiAsIPAddr">AS IP Address </td>
+    <td>
+      <input type="text" name="wapicert_asipaddr" size="16" maxlength="32" value="">
+    </td>
+  </tr>
+  <tr> 
+    <td class="head" id="wapiAsPort">AS Port</td>
+    <td> 
+      <input type="text" name="wapicert_asport" size="5" maxlength="5" value="3810" readOnly>
+    </td>
+  </tr>
+  <tr>
+    <td class="head" id="wapiAsCert">AS Certificate</td>
+    <td>
+      <select name="wapicert_ascert" size="1">
+        <% getWAPIASCertList(); %>
+      </select>
+      <input type="button" value="Install" name="wapi_as_cert_upload" id="wapiASCertInstall" onClick="open_wapi_cert_upload('as')">
+    </td>
+  </tr>
+  <tr>
+    <td class="head" id="wapiUserCert">User Certificate</td>
+    <td>
+      <select name="wapicert_usercert" size="1">
+        <% getWAPIUserCertList(); %>
+      </select>
+      <input type="button" value="Install" name="wapi_apuser_cert_upload" id="wapiUserCertInstall" onClick="open_wapi_cert_upload('user')">
+    </td>
+  </tr>
+</table>
 
 <!--									-->
 <!--	AccessPolicy for mbssid 		-->

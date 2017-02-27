@@ -120,7 +120,6 @@ function updateWPS(){
 		document.WPS.PINPBCRadio[1].disabled = true;
 		document.WPS.PIN.disabled = true;
 		document.WPS.submitWPS.disabled = true;
-		document.wps_cancel.wpsCancel.disabled = false;
 		if (wps_result == "1" || wps_result == "-1") {
 			top.menu.setLockMenu(0);
 			window.location.reload();
@@ -134,7 +133,6 @@ function updateWPS(){
 		document.WPS.PINPBCRadio[1].disabled = false;
 		document.WPS.PIN.disabled = false;
 		document.WPS.submitWPS.disabled = false;
-		document.wps_cancel.wpsCancel.disabled = true;
 	}
 	if (wps_result == "1")
 		refresh_progress_bar(34);
@@ -164,15 +162,23 @@ function disableTextField (field)
 function ValidateChecksum(PIN)
 {
     var accum = 0;
+    var tmp_str = PIN.replace("-", "");
+    var pincode = tmp_str.replace(" ", "");
 
-    accum += 3 * (parseInt(PIN / 10000000) % 10);
-    accum += 1 * (parseInt(PIN / 1000000) % 10);
-    accum += 3 * (parseInt(PIN / 100000) % 10);
-    accum += 1 * (parseInt(PIN / 10000) % 10);
-    accum += 3 * (parseInt(PIN / 1000) % 10);
-    accum += 1 * (parseInt(PIN / 100) % 10);
-    accum += 3 * (parseInt(PIN / 10) % 10);
-    accum += 1 * (parseInt(PIN / 1) % 10);
+    document.WPS.PIN.value = pincode;
+    if (pincode.length == 4)
+	    return 1;
+    if (pincode.length != 8)
+	    return 0;
+    
+    accum += 3 * (parseInt(pincode / 10000000) % 10);
+    accum += 1 * (parseInt(pincode / 1000000) % 10);
+    accum += 3 * (parseInt(pincode / 100000) % 10);
+    accum += 1 * (parseInt(pincode / 10000) % 10);
+    accum += 3 * (parseInt(pincode / 1000) % 10);
+    accum += 1 * (parseInt(pincode / 100) % 10);
+    accum += 3 * (parseInt(pincode / 10) % 10);
+    accum += 1 * (parseInt(pincode / 1) % 10);
 
     return ((accum % 10) == 0);
 }
@@ -182,8 +188,7 @@ function PINPBCFormCheck()
 	if (document.WPS.PINPBCRadio[0].checked) {
 		// PIN
 		if(document.WPS.PIN.value != "") {
-			// Driver 1.9 supports 4 digit PIN code.
-			if (document.WPS.PIN.value.length != 4 && !ValidateChecksum(document.WPS.PIN.value)) {
+			if (!ValidateChecksum(document.WPS.PIN.value)) {
 				alert("PIN number validation failed\n");
 				return false;
 			}
@@ -411,14 +416,6 @@ function clear_progress_bar()
 function WPSCancel()
 {
 	top.menu.setLockMenu(0);
-	document.WPS.PINPBCRadio[0].disabled = false;
-	document.WPS.PINPBCRadio[1].disabled = false;
-	document.WPS.PIN.disabled = false;
-	document.WPS.submitWPS.disabled = false;
-	document.SubmitGenPIN.GenPIN.disabled = false;
-	document.SubmitOOB.submitResetOOB.disabled = false;
-	document.WPSConfig.WPSEnable.disabled = false;
-	document.WPSConfig.submitWPSEnable.disabled = false;
 	document.wps_cancel.submit();
 	window.location.reload();
 }
@@ -533,7 +530,7 @@ function WPSCancel()
 <tr id="PINRow">
 	<td class="head" id="wpsPINNum_text">PIN</td>
 	<td>
-		<input value="" name="PIN" id="PIN" size="8" maxlength="16" type="text">
+		<input value="" name="PIN" id="PIN" size="10" maxlength="10" type="text">
 	</td>
 </tr>
 

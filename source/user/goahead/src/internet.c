@@ -4,7 +4,7 @@
  *
  *	Copyright (c) Ralink Technology Corporation All Rights Reserved.
  *
- *	$Id: internet.c,v 1.195 2010-07-09 07:45:08 steven Exp $
+ *	$Id: internet.c,v 1.203.2.9 2012-03-30 12:31:45 chhung Exp $
  */
 
 #include	<stdlib.h>
@@ -31,13 +31,15 @@
 #endif
 
 static int getUSBBuilt(int eid, webs_t wp, int argc, char_t **argv);
+static int getIPv6Built(int eid, webs_t wp, int argc, char_t **argv);
+static int getIPv66rdBuilt(int eid, webs_t wp, int argc, char_t **argv);
+static int getIPv6DSBuilt(int eid, webs_t wp, int argc, char_t **argv);
 static int getStorageBuilt(int eid, webs_t wp, int argc, char_t **argv);
 static int getFtpBuilt(int eid, webs_t wp, int argc, char_t **argv);
 static int getSmbBuilt(int eid, webs_t wp, int argc, char_t **argv);
 static int getMediaBuilt(int eid, webs_t wp, int argc, char_t **argv);
 static int getWebCamBuilt(int eid, webs_t wp, int argc, char_t **argv);
 static int getPrinterSrvBuilt(int eid, webs_t wp, int argc, char_t **argv);
-static int getUSBiNICBuilt(int eid, webs_t wp, int argc, char_t **argv);
 static int getiTunesBuilt(int eid, webs_t wp, int argc, char_t **argv);
 static int getIgmpProxyBuilt(int eid, webs_t wp, int argc, char_t **argv);
 static int getVPNBuilt(int eid, webs_t wp, int argc, char_t **argv);
@@ -72,6 +74,9 @@ static int getWanNetmask(int eid, webs_t wp, int argc, char_t **argv);
 static int getWanGateway(int eid, webs_t wp, int argc, char_t **argv);
 static int getRoutingTable(int eid, webs_t wp, int argc, char_t **argv);
 static void setLan(webs_t wp, char_t *path, char_t *query);
+#if defined (CONFIG_IPV6)
+static void setIPv6(webs_t wp, char_t *path, char_t *query);
+#endif
 static void setVpnPaThru(webs_t wp, char_t *path, char_t *query);
 static void setWan(webs_t wp, char_t *path, char_t *query);
 static void getMyMAC(webs_t wp, char_t *path, char_t *query);
@@ -108,15 +113,20 @@ void formDefineInternet(void) {
 	websAspDefine(T("getWanGateway"), getWanGateway);
 	websAspDefine(T("getRoutingTable"), getRoutingTable);
 	websAspDefine(T("getUSBBuilt"), getUSBBuilt);
+	websAspDefine(T("getIPv6Built"), getIPv6Built);
+	websAspDefine(T("getIPv66rdBuilt"), getIPv66rdBuilt);
+	websAspDefine(T("getIPv6DSBuilt"), getIPv6DSBuilt);
 	websAspDefine(T("getStorageBuilt"), getStorageBuilt);
 	websAspDefine(T("getFtpBuilt"), getFtpBuilt);
 	websAspDefine(T("getSmbBuilt"), getSmbBuilt);
 	websAspDefine(T("getMediaBuilt"), getMediaBuilt);
 	websAspDefine(T("getWebCamBuilt"), getWebCamBuilt);
 	websAspDefine(T("getPrinterSrvBuilt"), getPrinterSrvBuilt);
-	websAspDefine(T("getUSBiNICBuilt"), getUSBiNICBuilt);
 	websAspDefine(T("getiTunesBuilt"), getiTunesBuilt);
 	websFormDefine(T("setLan"), setLan);
+#if defined (CONFIG_IPV6)
+	websFormDefine(T("setIPv6"), setIPv6);
+#endif
 	websFormDefine(T("setVpnPaThru"), setVpnPaThru);
 	websFormDefine(T("setWan"), setWan);
 	websFormDefine(T("getMyMAC"), getMyMAC);
@@ -307,6 +317,8 @@ char* getWanIfName(void)
 #else
 		if_name = "eth2.2";
 #endif
+#elif defined (CONFIG_GE1_RGMII_AN) && defined (CONFIG_GE2_RGMII_AN)
+		if_name = "eth3";
 #else /* MARVELL & CONFIG_ICPLUS_PHY */
 		if_name = "eth2";
 #endif
@@ -354,12 +366,14 @@ char* getLanIfName(void)
 			if_name = "br0";
 		else
 			if_name = "ra0";
+#elif defined (CONFIG_GE1_RGMII_AN) && defined (CONFIG_GE2_RGMII_AN)
+		if_name = "br0";
 #else
 		if_name = "ra0";
 #endif
 	}
 	else if (!strncmp(mode, "2", 2)) {
-		if_name = "eth2";
+		if_name = "br0";
 	}
 	else if (!strncmp(mode, "3", 2)) {
 		if_name = "br0";
@@ -407,6 +421,11 @@ char *getLanWanNamebyIf(char *ifname)
 		if (!strcmp(ifname, "eth2") || !strcmp(ifname, "ppp0"))
 			return "WAN";
 		return ifname;
+#elif defined (CONFIG_GE1_RGMII_AN) && defined (CONFIG_GE2_RGMII_AN)
+		if(!strcmp(ifname, "br0"))
+			return "LAN";
+		if(!strcmp(ifname, "eth3"))
+			return "WAN";
 #else
 		if(!strcmp(ifname, "ra0"))
 			return "LAN";
@@ -583,6 +602,33 @@ static int getUSBBuilt(int eid, webs_t wp, int argc, char_t **argv)
 #endif
 }
 
+static int getIPv6Built(int eid, webs_t wp, int argc, char_t **argv)
+{
+#if defined (CONFIG_IPV6)
+	return websWrite(wp, T("1"));
+#else
+	return websWrite(wp, T("0"));
+#endif
+}
+
+static int getIPv66rdBuilt(int eid, webs_t wp, int argc, char_t **argv)
+{
+#if defined (CONFIG_IPV6_SIT_6RD)
+	return websWrite(wp, T("1"));
+#else
+	return websWrite(wp, T("0"));
+#endif
+}
+
+static int getIPv6DSBuilt(int eid, webs_t wp, int argc, char_t **argv)
+{
+#if defined (CONFIG_IPV6_TUNNEL)
+	return websWrite(wp, T("1"));
+#else
+	return websWrite(wp, T("0"));
+#endif
+}
+
 static int getStorageBuilt(int eid, webs_t wp, int argc, char_t **argv)
 {
 #if defined CONFIG_USB_STORAGE && defined CONFIG_USER_STORAGE
@@ -631,15 +677,6 @@ static int getWebCamBuilt(int eid, webs_t wp, int argc, char_t **argv)
 static int getPrinterSrvBuilt(int eid, webs_t wp, int argc, char_t **argv)
 {
 #if defined CONFIG_USB && defined CONFIG_USER_P910ND
-	return websWrite(wp, T("1"));
-#else
-	return websWrite(wp, T("0"));
-#endif
-}
-
-static int getUSBiNICBuilt(int eid, webs_t wp, int argc, char_t **argv)
-{
-#if defined CONFIG_RTDEV_USB 
 	return websWrite(wp, T("1"));
 #else
 	return websWrite(wp, T("0"));
@@ -799,7 +836,8 @@ static int getLanNetmask(int eid, webs_t wp, int argc, char_t **argv)
 
 static int getGWBuilt(int eid, webs_t wp, int argc, char_t **argv)
 {
-#if defined CONFIG_LAN_WAN_SUPPORT || defined CONFIG_MAC_TO_MAC_MODE
+#if defined CONFIG_LAN_WAN_SUPPORT || defined CONFIG_MAC_TO_MAC_MODE || \
+	(defined CONFIG_GE1_RGMII_AN && defined CONFIG_GE2_RGMII_AN)
 	return websWrite(wp, T("1"));
 #else
 	return websWrite(wp, T("0"));
@@ -817,7 +855,7 @@ static int getDnsmasqBuilt(int eid, webs_t wp, int argc, char_t **argv)
 
 static int getLltdBuilt(int eid, webs_t wp, int argc, char_t **argv)
 {
-#if defined CONFIG_USER_LLTD && defined CONFIG_RT2860V2_AP_LLTD
+#if defined CONFIG_USER_LLTD
 	return websWrite(wp, T("1"));
 #else
 	return websWrite(wp, T("0"));
@@ -1624,13 +1662,13 @@ int initInternet(void)
 		ledAlways(13, LED_ON); //turn on security LED (gpio 13)
 #endif
 
-#ifdef AP_WAPI_SUPPORT
+#if defined (RT2860_WAPI_SUPPORT) || defined (RTDEV_WAPI_SUPPORT)
 	restartWAPIDaemon(RT2860_NVRAM);	// in wireless.c
 #endif
-#if defined (CONFIG_RT2860V2_AP) || defined (CONFIG_RT2860V2_AP_MODULE)
+#if defined (CONFIG_FIRST_IF_NONE) 
 	restart8021XDaemon(RT2860_NVRAM);	// in wireless.c
 #endif
-#if defined (RTDEV_SUPPORT) || defined (CONFIG_RT2561_AP) || defined (CONFIG_RT2561_AP_MODULE)
+#if defined (CONFIG_SECOND_IF_NONE)
 	restart8021XDaemon(RTDEV_NVRAM);	// in wireless.c
 #endif
 
@@ -1643,6 +1681,9 @@ int initInternet(void)
 	RoutingInit();
 #ifdef CONFIG_RALINKAPP_SWQOS
 	QoSInit();
+#endif
+#if defined (CONFIG_IPV6)
+	ipv6Config(strtol(nvram_bufget(RT2860_NVRAM, "IPv6OpMode"), NULL, 10));
 #endif
 
 	return 0;
@@ -1817,6 +1858,164 @@ static void setLan(webs_t wp, char_t *path, char_t *query)
 	websFooter(wp);
 	websDone(wp, 200);
 }
+
+#if defined (CONFIG_IPV6)
+void ipv6Config(int mode)
+{
+	const char *wan_v6addr = nvram_bufget(RT2860_NVRAM, "IPv6WANIPAddr");
+	const char *srv_v6addr = nvram_bufget(RT2860_NVRAM, "IPv6SrvAddr");
+	int prefix_len = strtol(nvram_bufget(RT2860_NVRAM, "IPv6PrefixLen"), NULL, 10);
+	int wan_prefix_len = strtol(nvram_bufget(RT2860_NVRAM, "IPv6WANPrefixLen"), NULL, 10);
+	const char *gw_v6addr = nvram_bufget(RT2860_NVRAM, "IPv6GWAddr");
+	char *wan_if = getWanIfName();
+	char *lan_if = getLanIfName();
+	char v6addr[40], wan_addr[16]; 
+#if defined (CONFIG_IPV6_SIT_6RD)
+	char ipv6_ip_addr[20];
+	unsigned short temp[8];
+	int i, used, shift;
+	char *tok = NULL;
+#endif
+
+	strcpy(v6addr, nvram_bufget(RT2860_NVRAM, "IPv6IPAddr"));
+#if defined (CONFIG_IPV6_SIT_6RD)
+	doSystem("ip link set 6rdtun down");
+#endif
+	doSystem("echo 0 > /proc/sys/net/ipv6/conf/all/forwarding");
+
+	switch (mode) {
+	case 1:
+		doSystem("ifconfig %s add  %s/%d", lan_if, v6addr, prefix_len);
+		doSystem("ifconfig %s add  %s/%d", wan_if, wan_v6addr, wan_prefix_len);
+		doSystem("route -A inet6 add default gw %s dev %s", gw_v6addr, wan_if);
+		doSystem("echo 1 > /proc/sys/net/ipv6/conf/all/forwarding");
+		doSystem("ecmh");
+		break;
+#if defined (CONFIG_IPV6_SIT_6RD)
+	case 2:
+		if (getIfIp(getWanIfNamePPP(), wan_addr) < 0) {
+			fprintf(stderr, "Can't Query WAN IPv4 Address!\n");
+			return;
+		}
+		memset(temp, 0, sizeof(temp));
+		doSystem("ip tunnel add 6rdtun mode sit local %s ttl 64", wan_addr);
+		for (i=0, tok = strtok(v6addr, ":"); tok; i++, tok = strtok(NULL, ":"))
+			temp[i] = strtol(tok, NULL, 16);
+		if ((shift = 16 - (prefix_len % 16)) < 16) {
+			temp[i-1] = (temp[i-1] >> shift) << shift;
+		}
+		sprintf(v6addr, "%x", temp[0]);
+		for (used=1; used<i; used++)
+			sprintf(v6addr, "%s:%x", v6addr, temp[used]);
+		for (tok = strtok(wan_addr, "."); tok; i++, tok = strtok(NULL, ".")) {
+			temp[i] = strtol(tok, NULL, 10)<<8;
+			tok = strtok(NULL, ".");
+			temp[i] += strtol(tok, NULL, 10);
+		}
+		if (shift < 16) {
+			used = prefix_len / 16;
+			while (used < i) {
+				temp[used] = (temp[used] >> shift) << shift; 
+				temp[used] += temp[used+1]>>(16-shift);
+				temp[used+1] <<= shift;
+				used++;
+			}
+		} else {
+			used = i;
+		}
+		sprintf(ipv6_ip_addr, "%x", temp[0]);
+		for (i=1; i<used; i++) {
+			sprintf(ipv6_ip_addr, "%s:%x", ipv6_ip_addr, temp[i]);
+		}
+		doSystem("ip tunnel 6rd dev 6rdtun 6rd-prefix %s::/%d", v6addr, prefix_len);
+		doSystem("ip addr add %s::1/%d dev 6rdtun", ipv6_ip_addr, prefix_len);
+		doSystem("ip link set 6rdtun up");
+		doSystem("ip route add ::/0 via ::%s dev 6rdtun", srv_v6addr);
+		doSystem("ip addr add %s::1/64 dev %s", ipv6_ip_addr, lan_if);
+		doSystem("echo 1 > /proc/sys/net/ipv6/conf/all/forwarding");
+		doSystem("radvd.sh %s", ipv6_ip_addr);
+		break;
+#endif
+#if defined (CONFIG_IPV6_TUNNEL)
+	case 3:
+		doSystem("config-dslite.sh %s %s %s", srv_v6addr, v6addr, gw_v6addr);
+		break;
+#endif
+	default:
+		break;
+	}
+	return;
+}
+
+/* goform/setIPv6 */
+static void setIPv6(webs_t wp, char_t *path, char_t *query)
+{
+	char_t	*opmode;
+	char_t  *ipaddr, *prefix_len, *wan_ipaddr, *wan_prefix_len, *srv_ipaddr, *gw_ipaddr;
+
+	opmode = websGetVar(wp, T("ipv6_opmode"), T("0"));
+	if (!strcmp(opmode, "1")) {
+		ipaddr = websGetVar(wp, T("ipv6_lan_ipaddr"), T(""));
+		prefix_len = websGetVar(wp, T("ipv6_lan_prefix_len"), T(""));
+		wan_ipaddr = websGetVar(wp, T("ipv6_wan_ipaddr"), T(""));
+		wan_prefix_len = websGetVar(wp, T("ipv6_wan_prefix_len"), T(""));
+		srv_ipaddr = websGetVar(wp, T("ipv6_static_gw"), T(""));
+		nvram_bufset(RT2860_NVRAM, "IPv6IPAddr", ipaddr);
+		nvram_bufset(RT2860_NVRAM, "IPv6PrefixLen", prefix_len);
+		nvram_bufset(RT2860_NVRAM, "IPv6WANIPAddr", wan_ipaddr);
+		nvram_bufset(RT2860_NVRAM, "IPv6WANPrefixLen", wan_prefix_len);
+		nvram_bufset(RT2860_NVRAM, "IPv6GWAddr", srv_ipaddr);
+#if defined (CONFIG_IPV6_SIT_6RD)
+	} else if (!strcmp(opmode, "2")) {
+		ipaddr = websGetVar(wp, T("ipv6_6rd_prefix"), T(""));
+		prefix_len = websGetVar(wp, T("ipv6_6rd_prefix_len"), T(""));
+		srv_ipaddr = websGetVar(wp, T("ipv6_6rd_border_ipaddr"), T(""));
+		nvram_bufset(RT2860_NVRAM, "IPv6IPAddr", ipaddr);
+		nvram_bufset(RT2860_NVRAM, "IPv6PrefixLen", prefix_len);
+		nvram_bufset(RT2860_NVRAM, "IPv6SrvAddr", srv_ipaddr);
+		nvram_bufset(RT2860_NVRAM, "radvdEnabled", "1");
+#endif
+#if defined (CONFIG_IPV6_TUNNEL)
+	} else if (!strcmp(opmode, "3")) {
+		ipaddr = websGetVar(wp, T("ipv6_ds_wan_ipaddr"), T(""));
+		srv_ipaddr = websGetVar(wp, T("ipv6_ds_aftr_ipaddr"), T(""));
+		gw_ipaddr = websGetVar(wp, T("ipv6_ds_gw_ipaddr"), T(""));
+		nvram_bufset(RT2860_NVRAM, "IPv6IPAddr", ipaddr);
+		nvram_bufset(RT2860_NVRAM, "IPv6SrvAddr", srv_ipaddr);
+		nvram_bufset(RT2860_NVRAM, "IPv6GWAddr", gw_ipaddr);
+#endif
+	}
+	nvram_bufset(RT2860_NVRAM, "IPv6OpMode", opmode);
+	nvram_commit(RT2860_NVRAM);
+	initInternet();
+
+	//debug print
+	websHeader(wp);
+	websWrite(wp, T("<h3>IPv6 Setup</h3><br>\n"));
+	websWrite(wp, T("ipv6_opmode: %s<br>\n"), opmode);
+	if (!strcmp(opmode, "1")) {
+		websWrite(wp, T("ipv6_lan_ipaddr: %s<br>\n"), ipaddr);
+		websWrite(wp, T("ipv6_lan_prefix_len: %s<br>\n"), prefix_len);
+		websWrite(wp, T("ipv6_wan_ipaddr: %s<br>\n"), wan_ipaddr);
+		websWrite(wp, T("ipv6_wan_prefix_len: %s<br>\n"), wan_prefix_len);
+		websWrite(wp, T("ipv6_static_gw: %s<br>\n"), srv_ipaddr);
+#if defined (CONFIG_IPV6_SIT_6RD)
+	} else if (!strcmp(opmode, "2")) {
+		websWrite(wp, T("ipv6_6rd_prefix: %s<br>\n"), ipaddr);
+		websWrite(wp, T("ipv6_6rd_prefix_len: %s<br>\n"), prefix_len);
+		websWrite(wp, T("ipv6_6rd_border_ipaddr: %s<br>\n"), srv_ipaddr);
+#endif
+#if defined (CONFIG_IPV6_TUNNEL)
+	} else if (!strcmp(opmode, "3")) {
+		websWrite(wp, T("ipv6_ds_wan_ipaddr: %s<br>\n"), ipaddr);
+		websWrite(wp, T("ipv6_ds_aftr_ipaddr: %s<br>\n"), srv_ipaddr);
+		websWrite(wp, T("ipv6_ds_gw_ipaddr: %s<br>\n"), gw_ipaddr);
+#endif
+	}
+	websFooter(wp);
+	websDone(wp, 200);
+}
+#endif
 
 /* goform/setVpnPaThru */
 static void setVpnPaThru(webs_t wp, char_t *path, char_t *query)

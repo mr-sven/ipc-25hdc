@@ -42,7 +42,7 @@ config RALINK_RT2880
         help
          Ralink evaluation board based on RT2880
 
- config RALINK_RT3052
+config RALINK_RT3052
         bool "Ralink RT305x/RT3350 board"
 	select DMA_NONCOHERENT
 	select IRQ_CPU
@@ -56,7 +56,7 @@ config RALINK_RT2880
         help
          Ralink evaluation board based on RT3052
 
- config RALINK_RT3352
+config RALINK_RT3352
         bool "Ralink RT3352 board"
 	select DMA_NONCOHERENT
 	select IRQ_CPU
@@ -98,6 +98,7 @@ config RALINK_RT3883
 	select RALINK_RT3883_MP
         help
          Ralink evaluation board based on RT3883
+
 endchoice
 
 source "arch/mips/rt2880/Kconfig"

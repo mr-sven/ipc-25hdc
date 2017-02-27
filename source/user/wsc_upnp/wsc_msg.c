@@ -284,11 +284,14 @@ int wscMsgStateUpdate(char *pBuf, int len)
 				Bit 2~15: reserve, should set as 0 now.
 	5. SL:  Segment Length(2 bytes)
 			msg actual length in this segment, The SL may not equal the "TL" field if "F" ==1
-	6. "WSC_MSG" info:
+	6. devMac: device mac address(6 bytes)
+			Indicate the netdevice which this msg belong. For the wscd in user space will 
+			depends this address dispatch the msg to correct UPnP Device instance to handle it.
+	7. "WSC_MSG" info:
 
-          8        4     4    4   2  2     variable length(MAXIMA=232)
-	+------------+----+----+----+--+--+------------------------------+
-	|  Signature |eID |aID | TL |F |SL|            WSC_MSG           |
+                 8                 4       4       4      2    2        6      variable length(MAXIMA=232)
+	+------------+----+----+----+--+--+------+------------------------+
+	|  Signature       |eID  |aID  | TL   | F | SL|devMac| WSC_MSG                          |
 
 */
 int WscRTMPMsgHandler(char *pBuf, int len)
@@ -300,18 +303,22 @@ int WscRTMPMsgHandler(char *pBuf, int len)
 	int qType;
 	
 	pSegHdr = (RTMP_WSC_NLMSG_HDR *)pBuf;
-
-#ifdef MULTIPLE_CARD_SUPPORT
+	
+	
+#if 1 // def MULTIPLE_CARD_SUPPORT
 	if (memcmp(&pSegHdr->devAddr[0],  &HostMacAddr[0], MAC_ADDR_LEN) != 0)
 	{
-		DBGPRINTF(RT_DBG_INFO, "pSegHdr->devAddr=%02x:%02x:%02x:%02x:%02x:%02x, not the device we served(%02x:%02x:%02x:%02x:%02x:%02x)!!\n", 
-								pSegHdr->devAddr[0], pSegHdr->devAddr[1], pSegHdr->devAddr[2], pSegHdr->devAddr[3], pSegHdr->devAddr[4], pSegHdr->devAddr[5],
-								HostMacAddr[0], HostMacAddr[1], HostMacAddr[2], HostMacAddr[3], HostMacAddr[4], HostMacAddr[5]);
+		DBGPRINTF(RT_DBG_INFO, "This msg are not the device we served(%02x:%02x:%02x:%02x:%02x:%02x)!!\n", 
+								getpid(), HostMacAddr[0], HostMacAddr[1], HostMacAddr[2], HostMacAddr[3], 
+								HostMacAddr[4], HostMacAddr[5]);
 		return 0;
 	}
 #endif // MULTIPLE_CARD_SUPPORT //
 
-	DBGPRINTF(RT_DBG_INFO, "pSegHdr->ackID=0x%x!\n", pSegHdr->ackID);
+	DBGPRINTF(RT_DBG_INFO, "pSegHdr->envID=0x%08x, ackID=0x%08x, devAddr=%02x:%02x:%02x:%02x:%02x:%02x\n", 
+							pSegHdr->envID, pSegHdr->ackID, pSegHdr->devAddr[0], pSegHdr->devAddr[1], 
+							pSegHdr->devAddr[2], pSegHdr->devAddr[3], pSegHdr->devAddr[4], pSegHdr->devAddr[5]);
+	
 	if(pSegHdr->ackID == 0)
 	{
 		int emptyIdx = -1;
@@ -354,12 +361,14 @@ int WscRTMPMsgHandler(char *pBuf, int len)
 
 		//For debug
 		if (pEnvPtr->pMsgPtr == NULL) {
-			DBGPRINTF(RT_DBG_INFO, "Receive a new wireless event(WscActiveMsg):\n");
-			DBGPRINTF(RT_DBG_INFO, "\tWscActiveMsgHdr->msgLen=%d\n", pSegHdr->msgLen);
-			DBGPRINTF(RT_DBG_INFO, "\tWscActiveMsgHdr->envID=0x%x\n", pSegHdr->envID);
-			DBGPRINTF(RT_DBG_INFO, "\tWscActiveMsgHdr->ackID=0x%x\n", pSegHdr->ackID);
-			DBGPRINTF(RT_DBG_INFO, "\tWscActiveMsgHdr->flags=0x%x\n", pSegHdr->flags);
-			DBGPRINTF(RT_DBG_INFO, "\tWscActiveMsgHdr->segLen=%d\n", pSegHdr->segLen);	
+			DBGPRINTF(RT_DBG_INFO, "Receive a new wireless event(WscActiveMsg):\n"
+									"\tMsgHdr->msgLen=%d\n"
+									"\tMsgHdr->envID=0x%08x\n"
+									"\tMsgHdr->ackID=0x%08x\n"
+									"\tMsgHdr->flags=0x%04x\n"
+									"\tMsgHdr->segLen=%d\n", 
+									pSegHdr->msgLen, pSegHdr->envID, pSegHdr->ackID, 
+									pSegHdr->flags, pSegHdr->segLen);
 		}
 	}
 	else
@@ -386,14 +395,16 @@ int WscRTMPMsgHandler(char *pBuf, int len)
 
 		//For debug
 		if (pEnvPtr->pMsgPtr == NULL) {
-			DBGPRINTF(RT_DBG_INFO, "Receive a new wireless event(WscPassiveMsg):\n");
-			DBGPRINTF(RT_DBG_INFO, "\tWscPassiveMsgHdr->msgLen=%d\n", pSegHdr->msgLen);
-			DBGPRINTF(RT_DBG_INFO, "\tWscPassiveMsgHdr->envID=0x%x\n", pSegHdr->envID);
-			DBGPRINTF(RT_DBG_INFO, "\tWscPassiveMsgHdr->ackID=0x%x\n", pSegHdr->ackID);
-			DBGPRINTF(RT_DBG_INFO, "\tWscPassiveMsgHdr->flags=0x%x\n", pSegHdr->flags);
-			DBGPRINTF(RT_DBG_INFO, "\tWscPassiveMsgHdr->segLen=%d\n", pSegHdr->segLen);	
+			DBGPRINTF(RT_DBG_INFO, "Receive a new wireless event(WscPassiveMsg):\n"
+									"\tMsgHdr->msgLen=%d\n"
+									"\tMsgHdr->envID=0x%x\n"
+									"\tMsgHdr->ackID=0x%x\n"
+									"\tMsgHdr->flags=0x%x\n"
+									"\tMsgHdr->segLen=%d\n", 
+									pSegHdr->msgLen,  pSegHdr->envID, pSegHdr->ackID, 
+									pSegHdr->flags, pSegHdr->segLen);
 		}
-	}					
+	}
 
 	//Now handle the wsc_msg payload.
 	pos = ((char *)pSegHdr + sizeof(RTMP_WSC_NLMSG_HDR));

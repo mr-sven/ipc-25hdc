@@ -1,19 +1,3 @@
-/*
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation. See README and COPYING for
- * more details.
-
-	Module Name:
-	ieee802_1x.c
-
-	Revision History:
-	Who 		When		  What
-	--------	----------	  ----------------------------------------------
-	Jan, Lee	Dec --2003	  modified
-
-*/
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -30,7 +14,7 @@
 #include <linux/if.h>			/* for IFNAMSIZ and co... */
 #include <linux/wireless.h>
 
-#include "rt2860apd.h"
+#include "rtdot1x.h"
 #include "ieee802_1x.h"
 #include "radius.h"
 #include "radius_client.h"
@@ -621,16 +605,11 @@ void ieee802_1x_receive(
 	struct sta_info *sta;
 	struct ieee802_1x_hdr *hdr;
 	char SNAP_802_1H[] = {0xaa, 0xaa, 0x03, 0x00, 0x00, 0x00};
-	UCHAR 	RalinkIe[9] = {221, 7, 0x00, 0x0c, 0x43, 0x00, 0x00, 0x00, 0x00}; 
 	u16 datalen;
-	int bStop = 0;
 
 	DBGPRINT(RT_DEBUG_TRACE,"IEEE802_1X_RECEIVE : from Supplicant\n");
 	
-	if (len == sizeof(RalinkIe) && RTMPCompareMemory(buf, RalinkIe, sizeof(RalinkIe)) == 0)
-		bStop = 1;
-	
-	sta = Ap_get_sta(rtapd, sa, apidx, ethertype, bStop, SockNum);
+	sta = Ap_get_sta(rtapd, sa, apidx, ethertype, SockNum);
 	if (!sta)
 	{
 		return;

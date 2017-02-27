@@ -1,7 +1,7 @@
 /* ==========================================================================
  * $File: //dwh/usb_iip/dev/software/otg/linux/drivers/dwc_otg_hcd.h $
- * $Revision: 1.5 $
- * $Date: 2010-03-22 07:03:07 $
+ * $Revision: 1.6 $
+ * $Date: 2010-12-01 03:26:14 $
  * $Change: 1064918 $
  *
  * Synopsys HS OTG Linux Software Driver and documentation (hereinafter,
@@ -37,7 +37,11 @@
 #include <linux/list.h>
 #include <linux/usb.h>
 #include <linux/version.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36)
+#include <linux/usb/hcd.h>
+#else
 #include <../drivers/usb/core/hcd.h>
+#endif
 
 struct lm_device;
 struct dwc_otg_device;
@@ -421,7 +425,9 @@ extern void dwc_otg_hcd_stop(struct usb_hcd *hcd);
 extern int dwc_otg_hcd_get_frame_number(struct usb_hcd *hcd);
 extern void dwc_otg_hcd_free(struct usb_hcd *hcd);
 extern int dwc_otg_hcd_urb_enqueue(struct usb_hcd *hcd,
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,35)
 				   struct usb_host_endpoint *ep,
+#endif
 				   struct urb *urb,
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
 				   int mem_flags
@@ -433,7 +439,12 @@ extern int dwc_otg_hcd_urb_dequeue(struct usb_hcd *hcd,
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
 				   struct usb_host_endpoint *ep,
 #endif
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,36)
 				   struct urb *urb);
+#else
+				   struct urb *urb, int status);
+#endif
+
 extern void dwc_otg_hcd_endpoint_disable(struct usb_hcd *hcd,
 					 struct usb_host_endpoint *ep);
 extern irqreturn_t dwc_otg_hcd_irq(struct usb_hcd *hcd

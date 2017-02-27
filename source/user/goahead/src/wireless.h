@@ -3,11 +3,11 @@
  *
  *	Copyright (c) Ralink Technology Corporation All Rights Reserved.
  *
- *	$Id: wireless.h,v 1.11 2010-04-01 03:53:14 chhung Exp $
+ *	$Id: wireless.h,v 1.11.6.1 2012-03-30 12:31:47 chhung Exp $
  */
 
 void formDefineWireless(void);
-#ifdef AP_WAPI_SUPPORT
+#if defined (RT2860_WAPI_SUPPORT) || defined (RTDEV_WAPI_SUPPORT)
 void restartWAPIDaemon(int nvram);
 #endif
 void restart8021XDaemon(int nvram);
