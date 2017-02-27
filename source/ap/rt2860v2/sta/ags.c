@@ -10,123 +10,132 @@
  * or participation in deciphering, decoding, reverse engineering or in any
  * way altering the source code is stricitly prohibited, unless the prior
  * written consent of Ralink Technology, Inc. is obtained.
- ***************************************************************************/
-
+ ***************************************************************************/  
+    
 /****************************************************************************
 
 	Abstract:
 
 	All related AGS (Adaptive Group Switching) function body.
 
-***************************************************************************/
-
+***************************************************************************/ 
+    
 #define MODULE_AGS
 #include "rt_config.h"
-
+    
 #ifdef AGS_SUPPORT
+    
 
-
-//
-// AGS: 1x1 HT-capable rate table
-//
-UCHAR AGS1x1HTRateTable[] = 
-{
-	//
-	// [Item no.] [Mode]* [CurrMCS] [TrainUp] [TrainDown] [downMCS	] [upMCS3] [upMCS2] [upMCS1]
-	//
-	// [Mode]*: 
-	// bit0: STBC
-	// bit1: Short GI
-	// bit2: BW
-	// bit4~bit5: Mode (0:CCK, 1:OFDM, 2:HT Mix, 3:HT GF)
-	//
-	0x09,	0x08,	0,	0,	0,		0,	0,	0,	0,	// Initial used item after association: the number of rate indexes, the initial mcs
-	0x00,	0x21,	0,	30,	101,		0,	16,	8,	1,	// MCS 0
-	0x01,	0x21,	1,	20,	50,		0,	16,	9,	2,	// MCS 1
-	0x02,	0x21,	2,	20,	50,		1,	17,	9,	3,	// MCS 2
-	0x03,	0x21,	3,	15,	50,		2,	17,	10,	4,	// MCS 3
-	0x04,	0x21,	4,	15,	30,		3,	18,	11,	5,	// MCS 4
-	0x05,	0x21,	5,	10,	25,		4,	18,	12,	6,	// MCS 5
-	0x06,	0x21,	6,	8,	14,		5,	19,	12,	7,	// MCS 6
-	0x07,	0x21,	7,	8,	14,		6,	19,	12,	8,	// MCS 7
-	0x08,	0x23,	7,	8,	14,		7,	19,	12,	8,	// MCS 7 + Short GI
+/* */
+/* AGS: 1x1 HT-capable rate table */
+/* */
+    UCHAR AGS1x1HTRateTable[] = 
+ {
+	
+	    /* */
+	    /* [Item no.] [Mode]* [CurrMCS] [TrainUp] [TrainDown] [downMCS  ] [upMCS3] [upMCS2] [upMCS1] */
+	    /* */
+	    /* [Mode]*: */
+	    /* bit0: STBC */
+	    /* bit1: Short GI */
+	    /* bit2: BW */
+	    /* bit4~bit5: Mode (0:CCK, 1:OFDM, 2:HT Mix, 3:HT GF) */
+	    /* */
+	    0x09, 0x08, 0, 0, 0, 0, 0, 0, 0,	/* Initial used item after association: the number of rate indexes, the initial mcs */
+	    0x00, 0x21, 0, 30, 101, 0, 16, 8, 1,	/* MCS 0 */
+	    0x01, 0x21, 1, 20, 50, 0, 16, 9, 2,	/* MCS 1 */
+	    0x02, 0x21, 2, 20, 50, 1, 17, 9, 3,	/* MCS 2 */
+	    0x03, 0x21, 3, 15, 50, 2, 17, 10, 4,	/* MCS 3 */
+	    0x04, 0x21, 4, 15, 30, 3, 18, 11, 5,	/* MCS 4 */
+	    0x05, 0x21, 5, 10, 25, 4, 18, 12, 6,	/* MCS 5 */
+	    0x06, 0x21, 6, 8, 14, 5, 19, 12, 7,	/* MCS 6 */
+	    0x07, 0x21, 7, 8, 14, 6, 19, 12, 8,	/* MCS 7 */
+	    0x08, 0x23, 7, 8, 14, 7, 19, 12, 8,	/* MCS 7 + Short GI */
 };
 
-//
-// AGS: 2x2 HT-capable rate table
-//
-UCHAR AGS2x2HTRateTable[] = 
-{
-	//
-	// [Item no.] [Mode]* [CurrMCS] [TrainUp] [TrainDown] [downMCS	] [upMCS3] [upMCS2] [upMCS1]
-	//
-	// [Mode]*: 
-	// bit0: STBC
-	// bit1: Short GI
-	// bit2: BW
-	// bit4~bit5: Mode (0:CCK, 1:OFDM, 2:HT Mix, 3:HT GF)
-	//
-	0x11,	0x10,	0,	0,	0,		0,	0,	0,	0,	// Initial used item after association: the number of rate indexes, the initial mcs
-	0x00,	0x21,	0,	30,	101,		0,	16,	8,	1,	// MCS 0
-	0x01,	0x21,	1,	20,	50,		0,	16,	9,	2,	// MCS 1
-	0x02,	0x21,	2,	20,	50,		1,	17,	9,	3,	// MCS 2
-	0x03,	0x21,	3,	15,	50,		2,	17,	10,	4,	// MCS 3
-	0x04,	0x21,	4,	15,	30,		3,	18,	11,	5,	// MCS 4
-	0x05,	0x21,	5,	10,	25,		4,	18,	12,	6,	// MCS 5
-	0x06,	0x21,	6,	8,	14,		5,	19,	12,	7,	// MCS 6
-	0x07,	0x21,	7,	8,	14,		6,	19,	12,	7,	// MCS 7
-	0x08,	0x20,	8,	30,	50,		0,	16,	9,	2,	// MCS 8
-	0x09,	0x20,	9,	20,	50,		8,	17,	10,	4,	// MCS 9
-	0x0A,	0x20,	10,	20,	50,		9,	18,	11,	5,	// MCS 10
-	0x0B,	0x20,	11,	15,	30,		10,	18,	12,	6,	// MCS 11
-	0x0C,	0x20,	12,	15,	30,		11,	20,	13,	12,	// MCS 12
-	0x0D,	0x20,	13,	8,	20,		12,	20,	14,	13,	// MCS 13
-	0x0E,	0x20,	14,	8,	18,		13,	21,	15,	14,	// MCS 14
-	0x0F,	0x20,	15,	8,	25,		14,	21,	16,	15,	// MCS 15
-	0x10,	0x22,	15,	8,	25,		15,	21,	16,	16,	// MCS 15 + Short GI
+
+
+/* */
+/* AGS: 2x2 HT-capable rate table */
+/* */
+    UCHAR AGS2x2HTRateTable[] = 
+ {
+	
+	    /* */
+	    /* [Item no.] [Mode]* [CurrMCS] [TrainUp] [TrainDown] [downMCS  ] [upMCS3] [upMCS2] [upMCS1] */
+	    /* */
+	    /* [Mode]*: */
+	    /* bit0: STBC */
+	    /* bit1: Short GI */
+	    /* bit2: BW */
+	    /* bit4~bit5: Mode (0:CCK, 1:OFDM, 2:HT Mix, 3:HT GF) */
+	    /* */
+	    0x11, 0x10, 0, 0, 0, 0, 0, 0, 0,	/* Initial used item after association: the number of rate indexes, the initial mcs */
+	    0x00, 0x21, 0, 30, 101, 0, 16, 8, 1,	/* MCS 0 */
+	    0x01, 0x21, 1, 20, 50, 0, 16, 9, 2,	/* MCS 1 */
+	    0x02, 0x21, 2, 20, 50, 1, 17, 9, 3,	/* MCS 2 */
+	    0x03, 0x21, 3, 15, 50, 2, 17, 10, 4,	/* MCS 3 */
+	    0x04, 0x21, 4, 15, 30, 3, 18, 11, 5,	/* MCS 4 */
+	    0x05, 0x21, 5, 10, 25, 4, 18, 12, 6,	/* MCS 5 */
+	    0x06, 0x21, 6, 8, 14, 5, 19, 12, 7,	/* MCS 6 */
+	    0x07, 0x21, 7, 8, 14, 6, 19, 12, 7,	/* MCS 7 */
+	    0x08, 0x20, 8, 30, 50, 0, 16, 9, 2,	/* MCS 8 */
+	    0x09, 0x20, 9, 20, 50, 8, 17, 10, 4,	/* MCS 9 */
+	    0x0A, 0x20, 10, 20, 50, 9, 18, 11, 5,	/* MCS 10 */
+	    0x0B, 0x20, 11, 15, 30, 10, 18, 12, 6,	/* MCS 11 */
+	    0x0C, 0x20, 12, 15, 30, 11, 20, 13, 12,	/* MCS 12 */
+	    0x0D, 0x20, 13, 8, 20, 12, 20, 14, 13,	/* MCS 13 */
+	    0x0E, 0x20, 14, 8, 18, 13, 21, 15, 14,	/* MCS 14 */
+	    0x0F, 0x20, 15, 8, 25, 14, 21, 16, 15,	/* MCS 15 */
+	    0x10, 0x22, 15, 8, 25, 15, 21, 16, 16,	/* MCS 15 + Short GI */
 };
 
-//
-// AGS: 3x3 HT-capable rate table
-//
-UCHAR AGS3x3HTRateTable[] = 
-{
-	//
-	// [Item no.] [Mode]* [CurrMCS] [TrainUp] [TrainDown] [downMCS	] [upMCS3] [upMCS2] [upMCS1]
-	//
-	// [Mode]*: 
-	// bit0: STBC
-	// bit1: Short GI
-	// bit2: BW
-	// bit4~bit5: Mode (0:CCK, 1:OFDM, 2:HT Mix, 3:HT GF)
-	//
-	0x19,	0x18,	0,	0,	0,		0,	0,	0,	0,	// Initial used item after association: the number of rate indexes, the initial mcs
-	0x00,	0x21,	0,	30,	101,		0,	16,	8,	1,	// MCS 0
-	0x01,	0x21,	1,	20,	50,		0,	16,	9,	2,	// MCS 1
-	0x02,	0x21,	2,	20,	50,		1,	17,	9,	3,	// MCS 2
-	0x03,	0x21,	3,	15,	50,		2,	17,	10,	4,	// MCS 3
-	0x04,	0x21,	4,	15,	30,		3,	18,	11,	5,	// MCS 4
-	0x05,	0x21,	5,	10,	25,		4,	18,	12,	6,	// MCS 5
-	0x06,	0x21,	6,	8,	14,		5,	19,	12,	7,	// MCS 6
-	0x07,	0x21,	7,	8,	14,		6,	19,	12,	7,	// MCS 7
-	0x08,	0x20,	8,	30,	50,		0,	16,	9,	2,	// MCS 8
-	0x09,	0x20,	9,	20,	50,		8,	17,	10,	4,	// MCS 9
-	0x0A,	0x20,	10,	20,	50,		9,	18,	11,	5,	// MCS 10
-	0x0B,	0x20,	11,	15,	30,		10,	18,	12,	6,	// MCS 11
-	0x0C,	0x20,	12,	15,	30,		11,	20,	13,	12,	// MCS 12
-	0x0D,	0x20,	13,	8,	20,		12,	20,	14,	13,	// MCS 13
-	0x0E,	0x20,	14,	8,	18,		13,	21,	15,	14,	// MCS 14
-	0x0F,	0x20,	15,	8,	14,		14,	21,	15,	15,	// MCS 15
-	0x10,	0x20,	16,	30,	50,		8,	17,	9,	3,	// MCS 16
-	0x11,	0x20,	17,	20,	50,		16,	18,	11,	5,	// MCS 17
-	0x12,	0x20,	18,	20,	50,		17,	19,	12,	7,	// MCS 18
-	0x13,	0x20,	19,	15,	30,		18,	20,	13,	19,	// MCS 19
-	0x14,	0x20,	20,	15,	30,		19,	21,	15,	20,	// MCS 20
-	0x15,	0x20,	21,	8,	20,		20,	22,	21,	21,	// MCS 21
-	0x16,	0x20,	22,	8,	20,		21,	23,	22,	22,	// MCS 22
-	0x17,	0x20,	23,	6,	18,		22,	24,	23,	23,	// MCS 23
-	0x18,	0x22,	23,	6,	14,		23,	24,	24,	24,	// MCS 23 + Short GI
+
+
+/* */
+/* AGS: 3x3 HT-capable rate table */
+/* */
+    UCHAR AGS3x3HTRateTable[] = 
+ {
+	
+	    /* */
+	    /* [Item no.] [Mode]* [CurrMCS] [TrainUp] [TrainDown] [downMCS  ] [upMCS3] [upMCS2] [upMCS1] */
+	    /* */
+	    /* [Mode]*: */
+	    /* bit0: STBC */
+	    /* bit1: Short GI */
+	    /* bit2: BW */
+	    /* bit4~bit5: Mode (0:CCK, 1:OFDM, 2:HT Mix, 3:HT GF) */
+	    /* */
+	    0x19, 0x18, 0, 0, 0, 0, 0, 0, 0,	/* Initial used item after association: the number of rate indexes, the initial mcs */
+	    0x00, 0x21, 0, 30, 101, 0, 16, 8, 1,	/* MCS 0 */
+	    0x01, 0x21, 1, 20, 50, 0, 16, 9, 2,	/* MCS 1 */
+	    0x02, 0x21, 2, 20, 50, 1, 17, 9, 3,	/* MCS 2 */
+	    0x03, 0x21, 3, 15, 50, 2, 17, 10, 4,	/* MCS 3 */
+	    0x04, 0x21, 4, 15, 30, 3, 18, 11, 5,	/* MCS 4 */
+	    0x05, 0x21, 5, 10, 25, 4, 18, 12, 6,	/* MCS 5 */
+	    0x06, 0x21, 6, 8, 14, 5, 19, 12, 7,	/* MCS 6 */
+	    0x07, 0x21, 7, 8, 14, 6, 19, 12, 7,	/* MCS 7 */
+	    0x08, 0x20, 8, 30, 50, 0, 16, 9, 2,	/* MCS 8 */
+	    0x09, 0x20, 9, 20, 50, 8, 17, 10, 4,	/* MCS 9 */
+	    0x0A, 0x20, 10, 20, 50, 9, 18, 11, 5,	/* MCS 10 */
+	    0x0B, 0x20, 11, 15, 30, 10, 18, 12, 6,	/* MCS 11 */
+	    0x0C, 0x20, 12, 15, 30, 11, 20, 13, 12,	/* MCS 12 */
+	    0x0D, 0x20, 13, 8, 20, 12, 20, 14, 13,	/* MCS 13 */
+	    0x0E, 0x20, 14, 8, 18, 13, 21, 15, 14,	/* MCS 14 */
+	    0x0F, 0x20, 15, 8, 14, 14, 21, 15, 15,	/* MCS 15 */
+	    0x10, 0x20, 16, 30, 50, 8, 17, 9, 3,	/* MCS 16 */
+	    0x11, 0x20, 17, 20, 50, 16, 18, 11, 5,	/* MCS 17 */
+	    0x12, 0x20, 18, 20, 50, 17, 19, 12, 7,	/* MCS 18 */
+	    0x13, 0x20, 19, 15, 30, 18, 20, 13, 19,	/* MCS 19 */
+	    0x14, 0x20, 20, 15, 30, 19, 21, 15, 20,	/* MCS 20 */
+	    0x15, 0x20, 21, 8, 20, 20, 22, 21, 21,	/* MCS 21 */
+	    0x16, 0x20, 22, 8, 20, 21, 23, 22, 22,	/* MCS 22 */
+	    0x17, 0x20, 23, 6, 18, 22, 24, 23, 23,	/* MCS 23 */
+	    0x18, 0x22, 23, 6, 14, 23, 24, 24, 24,	/* MCS 23 + Short GI */
 };
+
+
 
 
 INT Show_AGS_Proc(
@@ -148,19 +157,19 @@ INT Show_AGS_Proc(
 }
 
 
-//
-// The dynamic Tx rate switching for AGS (Adaptive Group Switching)
-//
-// Parameters
-//	pAd: The adapter data structure
-//	pEntry: Pointer to a caller-supplied variable in which points to a MAC table entry
-//	pTable: Pointer to a caller-supplied variable in wich points to a Tx rate switching table
-//	TableSize: The size, in bytes, of the specified Tx rate switching table
-//	pAGSStatisticsInfo: Pointer to a caller-supplied variable in which points to the statistics information
-//
-// Return Value:
-//	None
-//
+/* */
+/* The dynamic Tx rate switching for AGS (Adaptive Group Switching) */
+/* */
+/* Parameters */
+/*	pAd: The adapter data structure */
+/*	pEntry: Pointer to a caller-supplied variable in which points to a MAC table entry */
+/*	pTable: Pointer to a caller-supplied variable in wich points to a Tx rate switching table */
+/*	TableSize: The size, in bytes, of the specified Tx rate switching table */
+/*	pAGSStatisticsInfo: Pointer to a caller-supplied variable in which points to the statistics information */
+/* */
+/* Return Value: */
+/*	None */
+/* */
 VOID MlmeDynamicTxRateSwitchingAGS(
 	IN PRTMP_ADAPTER pAd, 
 	IN PMAC_TABLE_ENTRY pEntry, 
@@ -197,9 +206,9 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 	pCurrTxRate = (PRTMP_TX_RATE_SWITCH_AGS)(&pTable[(CurrRateIdx + 1) *
 												SIZE_OF_AGS_RATE_TABLE_ENTRY]);
 
-	//
-	// Select the next upgrade rate and the next downgrade rate, if any
-	//
+	/* */
+	/* Select the next upgrade rate and the next downgrade rate, if any */
+	/* */
 	do 
 	{
 		if (InitTxRateIdx == AGS3x3HTRateTable[1])
@@ -220,20 +229,20 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 				pCurrTxRate->upMcs1, 
 				pCurrTxRate->ItemNo));
 
-			//
-			// 3x3 peer device (Adhoc, DLS or AP)
-			//
+			/* */
+			/* 3x3 peer device (Adhoc, DLS or AP) */
+			/* */
 			/* for 3*3, pEntry->AGSCtrl.MCSGroup = 0, 3, 3, 3, ... */
 			switch (pEntry->AGSCtrl.MCSGroup)
 			{
-				case 0: // MCS selection in round robin policy (different MCS group)
+				case 0: /* MCS selection in round robin policy (different MCS group) */
 				{
 					UpRateIdx = pCurrTxRate->upMcs3;
 					DBGPRINT_RAW(RT_DEBUG_TRACE,
 							("ags> MCSGroup = 0; UpRateIdx = %d in group 3 is better.\n",
 							UpRateIdx));
 
-					// MCS group #2 has better Tx quality
+					/* MCS group #2 has better Tx quality */
 					if ((pEntry->TxQuality[UpRateIdx] >
 								pEntry->TxQuality[pCurrTxRate->upMcs2]) && 
 					     (pCurrTxRate->upMcs2 != pCurrTxRate->ItemNo))
@@ -246,7 +255,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 							UpRateIdx));
 					}
 
-					// MCS group #1 has better Tx quality
+					/* MCS group #1 has better Tx quality */
 					if ((pEntry->TxQuality[UpRateIdx] >
 								pEntry->TxQuality[pCurrTxRate->upMcs1]) && 
 					     (pCurrTxRate->upMcs1 != pCurrTxRate->ItemNo))
@@ -348,16 +357,16 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 				pCurrTxRate->upMcs1, 
 				pCurrTxRate->ItemNo));
 
-			//
-			// 2x2 peer device (Adhoc, DLS or AP)
-			//
+			/* */
+			/* 2x2 peer device (Adhoc, DLS or AP) */
+			/* */
 			switch (pEntry->AGSCtrl.MCSGroup)
 			{
-				case 0: // MCS selection in round robin policy
+				case 0: /* MCS selection in round robin policy */
 				{
 					UpRateIdx = pCurrTxRate->upMcs2;
 
-					// MCS group #1 has better Tx quality
+					/* MCS group #1 has better Tx quality */
 					if ((pEntry->TxQuality[UpRateIdx] >
 								pEntry->TxQuality[pCurrTxRate->upMcs1]) && 
 					     (pCurrTxRate->upMcs1 != pCurrTxRate->ItemNo))
@@ -414,9 +423,9 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 		} 
 		else 
 		{
-			//
-			// 1x1 peer device (Adhoc, DLS or AP)
-			//
+			/* */
+			/* 1x1 peer device (Adhoc, DLS or AP) */
+			/* */
 			switch (pEntry->AGSCtrl.MCSGroup)
 			{
 				case 1:
@@ -439,13 +448,13 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 		}
 
 
-		//
-		// The STA uses the best Tx rate at this moment.
-		//
+		/* */
+		/* The STA uses the best Tx rate at this moment. */
+		/* */
 		if (UpRateIdx == pEntry->CurrTxRateIndex)
 		{
 			/* current rate is the best one */
-			pEntry->AGSCtrl.MCSGroup = 0; // Try to escape the local optima
+			pEntry->AGSCtrl.MCSGroup = 0; /* Try to escape the local optima */
 
 			DBGPRINT_RAW(RT_DEBUG_TRACE,
 						("ags> Current rate is the best one!\n"));
@@ -459,7 +468,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 				Quality of up rate is bad try to use lower group.
 				So continue to get the up rate index.
 			*/
-			pEntry->AGSCtrl.MCSGroup--; // Try to use the MCS of the lower MCS group
+			pEntry->AGSCtrl.MCSGroup--; /* Try to use the MCS of the lower MCS group */
 		}
 		else
 		{
@@ -482,22 +491,22 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 		TrainDown	= (pCurrTxRate->TrainDown + (pCurrTxRate->TrainDown >> 1));
 	}
 	else
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 	{
 		TrainUp = pCurrTxRate->TrainUp;
 		TrainDown	= pCurrTxRate->TrainDown;
 	}
 
-	//
-	// Keep the TxRateChangeAction status
-	//
+	/* */
+	/* Keep the TxRateChangeAction status */
+	/* */
 	pEntry->LastTimeTxRateChangeAction = pEntry->LastSecTxRateChangeAction;
 
 
 
-	//
-	// MCS selection based on the RSSI information when the Tx samples are fewer than 15.
-	//
+	/* */
+	/* MCS selection based on the RSSI information when the Tx samples are fewer than 15. */
+	/* */
 	if (pAGSStatisticsInfo->AccuTxTotalCnt <= 15)
 	{
 		CHAR idx = 0;
@@ -506,9 +515,9 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 		UCHAR MCS8 = 0, MCS9 = 0, MCS10 = 0, MCS11 = 0, MCS12 = 0, MCS13 = 0, MCS14 = 0, MCS15 = 0;
 		UCHAR MCS16 = 0, MCS17 = 0, MCS18 = 0, MCS19 = 0, MCS20 = 0, MCS21 = 0, MCS22 = 0, MCS23 = 0;
 
-		//
-		// Check the existence and index of each needed MCS
-		//
+		/* */
+		/* Check the existence and index of each needed MCS */
+		/* */
 		/* for 3*3, maximum is 0x19 columns */
 		while (idx < pTable[0])
 		{
@@ -618,9 +627,9 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 		
 		if (InitTxRateIdx == AGS3x3HTRateTable[1])
 		{
-			//
-			// 3x3 peer device (Adhoc, DLS or AP)
-			//
+			/* */
+			/* 3x3 peer device (Adhoc, DLS or AP) */
+			/* */
 			if (MCS23 && (pAGSStatisticsInfo->RSSI > (-67 + RssiOffset)))
 			{
 				TxRateIdx = MCS23;
@@ -662,9 +671,9 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 		}
 		else if (InitTxRateIdx == AGS2x2HTRateTable[1])
 		{
-			//
-			// 2x2 peer device (Adhoc, DLS or AP)
-			//
+			/* */
+			/* 2x2 peer device (Adhoc, DLS or AP) */
+			/* */
 			if (MCS15 && (pAGSStatisticsInfo->RSSI > (-69 + RssiOffset)))
 			{
 				TxRateIdx = MCS15;
@@ -702,9 +711,9 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 		} 
 		else 
 		{
-			//
-			// 1x1 peer device (Adhoc, DLS or AP)
-			//
+			/* */
+			/* 1x1 peer device (Adhoc, DLS or AP) */
+			/* */
 			if (MCS7 && (pAGSStatisticsInfo->RSSI > (-71 + RssiOffset)))
 			{
 				TxRateIdx = MCS7;
@@ -751,20 +760,20 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 		RTMPZeroMemory(pEntry->PER, (sizeof(UCHAR) * MAX_STEP_OF_TX_RATE_SWITCH));
 
 		pEntry->fLastSecAccordingRSSI = TRUE;			
-		// reset all OneSecTx counters
+		/* reset all OneSecTx counters */
 		RESET_ONE_SEC_TX_CNT(pEntry);
 		return;
 	}
 
 
-	//
-	// The MCS selection is based on the RSSI and skips the rate tuning this time.
-	//
+	/* */
+	/* The MCS selection is based on the RSSI and skips the rate tuning this time. */
+	/* */
 	if (pEntry->fLastSecAccordingRSSI == TRUE)
 	{
 		pEntry->fLastSecAccordingRSSI = FALSE;
 		pEntry->LastSecTxRateChangeAction = 0;
-		// reset all OneSecTx counters
+		/* reset all OneSecTx counters */
 		RESET_ONE_SEC_TX_CNT(pEntry);
 		
 		DBGPRINT_RAW(RT_DEBUG_TRACE,
@@ -789,7 +798,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 					__FUNCTION__, CurrRateIdx,
 					pEntry->TxQuality[CurrRateIdx], pEntry->TxRateUpPenalty));
 
-		if (pAGSStatisticsInfo->TxErrorRatio >= TrainDown) // Poor quality
+		if (pAGSStatisticsInfo->TxErrorRatio >= TrainDown) /* Poor quality */
 		{
 			/* error ratio too high, do rate down */
 			DBGPRINT_RAW(RT_DEBUG_TRACE,
@@ -797,7 +806,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 			bTrainUpDown = TRUE;
 			pEntry->TxQuality[CurrRateIdx] = AGS_TX_QUALITY_WORST_BOUND;
 		}
-		else if (pAGSStatisticsInfo->TxErrorRatio <= TrainUp) // Good quality
+		else if (pAGSStatisticsInfo->TxErrorRatio <= TrainUp) /* Good quality */
 		{
 			/* error ratio low, maybe rate up */
 			bTrainUpDown = TRUE;
@@ -812,7 +821,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 
 			if (pEntry->TxQuality[CurrRateIdx])
 			{
-				// Good quality in the current Tx rate
+				/* Good quality in the current Tx rate */
 				pEntry->TxQuality[CurrRateIdx]--;
 			}
 
@@ -844,7 +853,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 				}
 			}
 		}
-		else if (pEntry->AGSCtrl.MCSGroup > 0) //even if TxErrorRatio > TrainUp
+		else if (pEntry->AGSCtrl.MCSGroup > 0) /*even if TxErrorRatio > TrainUp */
 		{
 			/* not bad and not good */
 			if (UpRateIdx != 0)
@@ -853,13 +862,13 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 				
 				if (pEntry->TxQuality[CurrRateIdx])
 				{
-					// Good quality in the current Tx rate
+					/* Good quality in the current Tx rate */
 					pEntry->TxQuality[CurrRateIdx]--;
 				}
 
 				if (pEntry->TxQuality[UpRateIdx])
 				{
-					// It may improve next train-up Tx rate's quality
+					/* It may improve next train-up Tx rate's quality */
 					pEntry->TxQuality[UpRateIdx]--;
 				}
 
@@ -870,9 +879,9 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 		/* update error ratio for current MCS */
 		pEntry->PER[CurrRateIdx] = (UCHAR)(pAGSStatisticsInfo->TxErrorRatio);
 
-		//
-		// Update the current Tx rate
-		//
+		/* */
+		/* Update the current Tx rate */
+		/* */
 		if (bTrainUpDown)
 		{
 			/* need to rate up or down */
@@ -885,19 +894,19 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 				pEntry->TxQuality[CurrRateIdx], 
 				pEntry->TxQuality[UpRateIdx]));
 			
-			// Downgrade Tx rate
+			/* Downgrade Tx rate */
 			if ((CurrRateIdx != DownRateIdx) && 
 			     (pEntry->TxQuality[CurrRateIdx] >= AGS_TX_QUALITY_WORST_BOUND))
 			{
 				pEntry->CurrTxRateIndex = DownRateIdx;
-				pEntry->LastSecTxRateChangeAction = 2; // Tx rate down
+				pEntry->LastSecTxRateChangeAction = 2; /* Tx rate down */
 				DBGPRINT_RAW(RT_DEBUG_TRACE, ("ags> rate down!\n"));
 			}
 			else if ((CurrRateIdx != UpRateIdx) && 
-					(pEntry->TxQuality[UpRateIdx] <= 0)) // Upgrade Tx rate
+					(pEntry->TxQuality[UpRateIdx] <= 0)) /* Upgrade Tx rate */
 			{
 				pEntry->CurrTxRateIndex = UpRateIdx;
-				pEntry->LastSecTxRateChangeAction = 1; // Tx rate up
+				pEntry->LastSecTxRateChangeAction = 1; /* Tx rate up */
 				DBGPRINT_RAW(RT_DEBUG_TRACE, ("ags> rate up!\n"));
 			}
 		}
@@ -910,8 +919,8 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 		CurrRateIdx, 
 		pEntry->LastSecTxRateChangeAction));
 
-	// rate up/down post handle
-	// Tx rate up
+	/* rate up/down post handle */
+	/* Tx rate up */
 	if ((pEntry->CurrTxRateIndex != CurrRateIdx) && 
 	     (pEntry->LastSecTxRateChangeAction == 1))
 	{
@@ -921,13 +930,13 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 			pEntry->CurrTxRateIndex));
 		
 		pEntry->TxRateUpPenalty = 0;
-		pEntry->LastSecTxRateChangeAction = 1; // Tx rate up
+		pEntry->LastSecTxRateChangeAction = 1; /* Tx rate up */
 		RTMPZeroMemory(pEntry->PER, sizeof(UCHAR) * MAX_STEP_OF_TX_RATE_SWITCH);
 		pEntry->AGSCtrl.lastRateIdx = CurrRateIdx;
 
-		//
-		// Tx rate fast train up
-		//
+		/* */
+		/* Tx rate fast train up */
+		/* */
 		if (!pAd->StaCfg.StaQuickResponeForRateUpTimerRunning)
 		{
 			RTMPSetTimer(&pAd->StaCfg.StaQuickResponeForRateUpTimer, 100);
@@ -938,22 +947,22 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 		bTxRateChanged = TRUE;
 	}
 	else if ((pEntry->CurrTxRateIndex != CurrRateIdx) && 
-	             (pEntry->LastSecTxRateChangeAction == 2)) // Tx rate down
+	             (pEntry->LastSecTxRateChangeAction == 2)) /* Tx rate down */
 	{
 		DBGPRINT_RAW(RT_DEBUG_TRACE, ("%s: AGS: --TX rate from %d to %d\n", 
 			__FUNCTION__, 
 			CurrRateIdx, 
 			pEntry->CurrTxRateIndex));
 		
-		pEntry->TxRateUpPenalty = 0; // No penalty
-		pEntry->LastSecTxRateChangeAction = 2; // Tx rate down
+		pEntry->TxRateUpPenalty = 0; /* No penalty */
+		pEntry->LastSecTxRateChangeAction = 2; /* Tx rate down */
 		pEntry->TxQuality[pEntry->CurrTxRateIndex] = 0;
 		pEntry->PER[pEntry->CurrTxRateIndex] = 0;
 		pEntry->AGSCtrl.lastRateIdx = CurrRateIdx;
 
-		//
-		// Tx rate fast train down
-		// 
+		/* */
+		/* Tx rate fast train down */
+		/* */
 		if (!pAd->StaCfg.StaQuickResponeForRateUpTimerRunning)
 		{
 			RTMPSetTimer(&pAd->StaCfg.StaQuickResponeForRateUpTimer, 100);
@@ -963,9 +972,9 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 
 		bTxRateChanged = TRUE;
 	}
-	else // Tx rate remains unchanged.
+	else /* Tx rate remains unchanged. */
 	{
-		pEntry->LastSecTxRateChangeAction = 0; // Tx rate remains unchanged.
+		pEntry->LastSecTxRateChangeAction = 0; /* Tx rate remains unchanged. */
 		bTxRateChanged = FALSE;
 		DBGPRINT_RAW(RT_DEBUG_TRACE, ("ags> no rate up/down!\n"));
 	}
@@ -984,15 +993,15 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 		MlmeSetTxRate(pAd, pEntry, pNextTxRate);
 	}
 
-	//
-	// RDG threshold control for the infrastructure mode only
-	//
-//	if (INFRA_ON(pAd) && (pAd->OpMode == OPMODE_STA) && (!DLS_ON(pAd)) && (!TDLS_ON(pAd)))
+	/* */
+	/* RDG threshold control for the infrastructure mode only */
+	/* */
+/*	if (INFRA_ON(pAd) && (pAd->OpMode == OPMODE_STA) && (!DLS_ON(pAd)) && (!TDLS_ON(pAd))) */
 	if (INFRA_ON(pAd))
 	{
 		if ((pAd->CommonCfg.bRdg == TRUE) &&
 			CLIENT_STATUS_TEST_FLAG(&pAd->MacTab.Content[BSSID_WCID],
-									fCLIENT_STATUS_RDG_CAPABLE)) // RDG capable
+									fCLIENT_STATUS_RDG_CAPABLE)) /* RDG capable */
 		{
 			TXOP_THRESHOLD_CFG_STRUC TxopThCfg = {{0}};
 			TX_LINK_CFG_STRUC TxLinkCfg = {{0}};
@@ -1006,7 +1015,7 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 				RTMP_IO_WRITE32(pAd, TX_LINK_CFG, TxLinkCfg.word);
 
 				RTMP_IO_READ32(pAd, TXOP_THRES_CFG, &TxopThCfg.word);
-				TxopThCfg.field.RDG_IN_THRES = 0xFF; // Similar to diable Rx RDG
+				TxopThCfg.field.RDG_IN_THRES = 0xFF; /* Similar to diable Rx RDG */
 				TxopThCfg.field.RDG_OUT_THRES = 0x00;
 				RTMP_IO_WRITE32(pAd, TXOP_THRES_CFG, TxopThCfg.word);
 
@@ -1028,25 +1037,25 @@ VOID MlmeDynamicTxRateSwitchingAGS(
 		}
 	}
 
-	// reset all OneSecTx counters
+	/* reset all OneSecTx counters */
 	RESET_ONE_SEC_TX_CNT(pEntry);
 
 	DBGPRINT_RAW(RT_DEBUG_TRACE, ("AGS: <--- %s\n", __FUNCTION__));
 }
 
-//
-// Auto Tx rate faster train up/down for AGS (Adaptive Group Switching)
-//
-// Parameters
-//	pAd: The adapter data structure
-//	pEntry: Pointer to a caller-supplied variable in which points to a MAC table entry
-//	pTable: Pointer to a caller-supplied variable in wich points to a Tx rate switching table
-//	TableSize: The size, in bytes, of the specified Tx rate switching table
-//	pAGSStatisticsInfo: Pointer to a caller-supplied variable in which points to the statistics information
-//
-// Return Value:
-//	None
-//
+/* */
+/* Auto Tx rate faster train up/down for AGS (Adaptive Group Switching) */
+/* */
+/* Parameters */
+/*	pAd: The adapter data structure */
+/*	pEntry: Pointer to a caller-supplied variable in which points to a MAC table entry */
+/*	pTable: Pointer to a caller-supplied variable in wich points to a Tx rate switching table */
+/*	TableSize: The size, in bytes, of the specified Tx rate switching table */
+/*	pAGSStatisticsInfo: Pointer to a caller-supplied variable in which points to the statistics information */
+/* */
+/* Return Value: */
+/*	None */
+/* */
 VOID StaQuickResponeForRateUpExecAGS(
 	IN PRTMP_ADAPTER pAd, 
 	IN PMAC_TABLE_ENTRY pEntry, 
@@ -1101,9 +1110,9 @@ VOID StaQuickResponeForRateUpExecAGS(
 		TrainDown	= pCurrTxRate->TrainDown;
 	}
 		
-	//
-	// MCS selection based on the RSSI information when the Tx samples are fewer than 15.
-	//
+	/* */
+	/* MCS selection based on the RSSI information when the Tx samples are fewer than 15. */
+	/* */
 	if (pAGSStatisticsInfo->AccuTxTotalCnt <= 15)
 	{
 		RTMPZeroMemory(pEntry->TxQuality, sizeof(USHORT) * MAX_STEP_OF_TX_RATE_SWITCH);
@@ -1136,7 +1145,7 @@ VOID StaQuickResponeForRateUpExecAGS(
 			ratio = 4;
 		}
 
-		if (pAGSStatisticsInfo->TxErrorRatio >= TrainDown) // Poor quality
+		if (pAGSStatisticsInfo->TxErrorRatio >= TrainDown) /* Poor quality */
 		{
 			pEntry->TxQuality[CurrRateIdx] = AGS_TX_QUALITY_WORST_BOUND;
 		}
@@ -1145,11 +1154,11 @@ VOID StaQuickResponeForRateUpExecAGS(
 
 		OneSecTxNoRetryOKRationCount = (pAGSStatisticsInfo->TxSuccess * ratio);
 		
-		// Tx rate down
+		/* Tx rate down */
 		if ((pEntry->LastSecTxRateChangeAction == 1) &&
 			(CurrRateIdx != DownRateIdx))
 		{
-			if ((pEntry->LastTxOkCount + 2) >= OneSecTxNoRetryOKRationCount) // Poor quality
+			if ((pEntry->LastTxOkCount + 2) >= OneSecTxNoRetryOKRationCount) /* Poor quality */
 			{
 				pEntry->CurrTxRateIndex = DownRateIdx;
 				pEntry->TxQuality[CurrRateIdx] = AGS_TX_QUALITY_WORST_BOUND;
@@ -1159,7 +1168,7 @@ VOID StaQuickResponeForRateUpExecAGS(
 					pEntry->LastTxOkCount, 
 					OneSecTxNoRetryOKRationCount));
 			}
-			else // Good quality
+			else /* Good quality */
 			{
 				DBGPRINT_RAW(RT_DEBUG_TRACE, ("%s: QuickAGS: (UP) keep rate-up (L:%lu, C:%lu)\n", 
 					__FUNCTION__, 
@@ -1172,16 +1181,16 @@ VOID StaQuickResponeForRateUpExecAGS(
 				{
 					if (InitTxRateIdx == AGS3x3HTRateTable[1])
 					{
-						//
-						// 3x3 peer device (Adhoc, DLS or AP)
-						//
+						/* */
+						/* 3x3 peer device (Adhoc, DLS or AP) */
+						/* */
 						pEntry->AGSCtrl.MCSGroup = 3;
 					}
 					else if (InitTxRateIdx == AGS2x2HTRateTable[1])
 					{
-						//
-						// 2x2 peer device (Adhoc, DLS or AP)
-						//
+						/* */
+						/* 2x2 peer device (Adhoc, DLS or AP) */
+						/* */
 						pEntry->AGSCtrl.MCSGroup = 2;
 					}
 					else
@@ -1192,23 +1201,23 @@ VOID StaQuickResponeForRateUpExecAGS(
 			}
 		}
 		else if ((pEntry->LastSecTxRateChangeAction == 2) &&
-				(CurrRateIdx != UpRateIdx)) // Tx rate up
+				(CurrRateIdx != UpRateIdx)) /* Tx rate up */
 		{
 			if ((pAGSStatisticsInfo->TxErrorRatio >= 50) ||
-				(pAGSStatisticsInfo->TxErrorRatio >= TrainDown)) // Poor quality
+				(pAGSStatisticsInfo->TxErrorRatio >= TrainDown)) /* Poor quality */
 			{
 				if (InitTxRateIdx == AGS3x3HTRateTable[1])
 				{
-					//
-					// 3x3 peer device (Adhoc, DLS or AP)
-					//
+					/* */
+					/* 3x3 peer device (Adhoc, DLS or AP) */
+					/* */
 					pEntry->AGSCtrl.MCSGroup = 3;
 				}
 				else if (InitTxRateIdx == AGS2x2HTRateTable[1])
 				{
-					//
-					// 2x2 peer device (Adhoc, DLS or AP)
-					//
+					/* */
+					/* 2x2 peer device (Adhoc, DLS or AP) */
+					/* */
 					pEntry->AGSCtrl.MCSGroup = 2;
 				}
 				else
@@ -1234,16 +1243,16 @@ VOID StaQuickResponeForRateUpExecAGS(
 			{
 				if (InitTxRateIdx == AGS3x3HTRateTable[1])
 				{
-					//
-					// 3x3 peer device (Adhoc, DLS or AP)
-					//
+					/* */
+					/* 3x3 peer device (Adhoc, DLS or AP) */
+					/* */
 					pEntry->AGSCtrl.MCSGroup = 3;
 				}
 				else if (InitTxRateIdx == AGS2x2HTRateTable[1])
 				{
-					//
-					// 2x2 peer device (Adhoc, DLS or AP)
-					//
+					/* */
+					/* 2x2 peer device (Adhoc, DLS or AP) */
+					/* */
 					pEntry->AGSCtrl.MCSGroup = 2;
 				}
 				else
@@ -1262,19 +1271,19 @@ VOID StaQuickResponeForRateUpExecAGS(
 	DBGPRINT_RAW(RT_DEBUG_TRACE,
 				("ags> new group = %d\n", pEntry->AGSCtrl.MCSGroup));
 
-	//
-	// Last action is rate-up
-	//
+	/* */
+	/* Last action is rate-up */
+	/* */
 	if (pEntry->LastSecTxRateChangeAction == 1) 
 	{
-		// looking for the next group with valid MCS
+		/* looking for the next group with valid MCS */
 		if ((pEntry->CurrTxRateIndex != CurrRateIdx) && (pEntry->AGSCtrl.MCSGroup > 0))
 		{
-			pEntry->AGSCtrl.MCSGroup--; // Try to use the MCS of the lower MCS group
+			pEntry->AGSCtrl.MCSGroup--; /* Try to use the MCS of the lower MCS group */
 			pCurrTxRate = (PRTMP_TX_RATE_SWITCH_AGS)(&pTable[(DownRateIdx + 1) * SIZE_OF_AGS_RATE_TABLE_ENTRY]);
 		}
 		
-		// UpRateIdx is for temp use in this section
+		/* UpRateIdx is for temp use in this section */
 		switch (pEntry->AGSCtrl.MCSGroup)
 		{
 			case 3: 
@@ -1312,7 +1321,7 @@ VOID StaQuickResponeForRateUpExecAGS(
 
 		if (UpRateIdx == pEntry->CurrTxRateIndex)
 		{
-			pEntry->AGSCtrl.MCSGroup = 0; // Try to escape the local optima
+			pEntry->AGSCtrl.MCSGroup = 0; /* Try to escape the local optima */
 		}
 		
 		DBGPRINT_RAW(RT_DEBUG_TRACE, ("%s: QuickAGS: next MCS group,  pEntry->AGSCtrl.MCSGroup = %d\n", 
@@ -1322,7 +1331,7 @@ VOID StaQuickResponeForRateUpExecAGS(
 	}
 
 	if ((pEntry->CurrTxRateIndex != CurrRateIdx) && 
-	     (pEntry->LastSecTxRateChangeAction == 2)) // Tx rate up
+	     (pEntry->LastSecTxRateChangeAction == 2)) /* Tx rate up */
 	{
 		DBGPRINT_RAW(RT_DEBUG_TRACE, ("%s: QuickAGS: ++TX rate from %d to %d\n", 
 			__FUNCTION__, 
@@ -1330,18 +1339,18 @@ VOID StaQuickResponeForRateUpExecAGS(
 			pEntry->CurrTxRateIndex));	
 		
 		pEntry->TxRateUpPenalty = 0;
-		pEntry->TxQuality[pEntry->CurrTxRateIndex] = 0; //restore the TxQuality from max to 0
+		pEntry->TxQuality[pEntry->CurrTxRateIndex] = 0; /*restore the TxQuality from max to 0 */
 		RTMPZeroMemory(pEntry->PER, sizeof(UCHAR) * MAX_STEP_OF_TX_RATE_SWITCH);
 	}
 	else if ((pEntry->CurrTxRateIndex != CurrRateIdx) && 
-	            (pEntry->LastSecTxRateChangeAction == 1)) // Tx rate down
+	            (pEntry->LastSecTxRateChangeAction == 1)) /* Tx rate down */
 	{
 		DBGPRINT_RAW(RT_DEBUG_TRACE, ("%s: QuickAGS: --TX rate from %d to %d\n", 
 			__FUNCTION__, 
 			CurrRateIdx, 
 			pEntry->CurrTxRateIndex));
 		
-		pEntry->TxRateUpPenalty = 0; // No penalty
+		pEntry->TxRateUpPenalty = 0; /* No penalty */
 		pEntry->TxQuality[pEntry->CurrTxRateIndex] = 0;
 		pEntry->PER[pEntry->CurrTxRateIndex] = 0;
 	}
@@ -1362,12 +1371,14 @@ VOID StaQuickResponeForRateUpExecAGS(
 		MlmeSetTxRate(pAd, pEntry, pNextTxRate);
 	}
 
-	// reset all OneSecTx counters
+	/* reset all OneSecTx counters */
 	RESET_ONE_SEC_TX_CNT(pEntry);
 
 	DBGPRINT_RAW(RT_DEBUG_TRACE, ("QuickAGS: <--- %s\n", __FUNCTION__));
 }
 
-#endif // AGS_SUPPORT //
 
-/* End of ags.c */
+
+#endif	/* AGS_SUPPORT */
+    
+/* End of ags.c */ 

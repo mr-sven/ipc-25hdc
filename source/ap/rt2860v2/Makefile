@@ -1,8 +1,16 @@
+ifeq ($(WIFI_MODE),)
 RT28xx_MODE = APSTA
+else
+RT28xx_MODE = $(WIFI_MODE)
+endif
 
+ifeq ($(TARGET),)
 TARGET = LINUX
+endif
 
+ifeq ($(CHIPSET),)
 CHIPSET = SOC
+endif
 
 #OS ABL - YES or NO
 OSABL = NO
@@ -46,6 +54,22 @@ PLATFORM = PC
 #PLATFORM = MT85XX
 #PLATFORM = NXP_TV550
 #PLATFORM = MVL5
+#PLATFORM = RALINK_3352
+
+#APSOC
+ifeq ($(CHIPSET),3050)
+PLATFORM = RALINK_3050
+endif
+ifeq ($(CHIPSET),3052)
+PLATFORM = RALINK_3052
+endif
+ifeq ($(CHIPSET),3350)
+PLATFORM = RALINK_3050
+endif
+ifeq ($(CHIPSET),3352)
+PLATFORM = RALINK_3352
+endif
+
 
 #RELEASE Package
 RELEASE = DPA
@@ -62,8 +86,14 @@ ifeq ($(TARGET),THREADX)
 MAKE = gmake
 endif
 
+ifeq ($(TARGET), ECOS)
+MAKE = make
+MODULE = $(shell pwd | sed "s/.*\///" ).o
+export MODULE
+endif
+
 ifeq ($(PLATFORM),5VT)
-LINUX_SRC = /project/stable/5vt/ralink-2860-sdk/linux-2.6.17
+LINUX_SRC = /home/ralink-2860-sdk-5vt-distribution/linux-2.6.17
 CROSS_COMPILE = /opt/crosstool/uClibc_v5te_le_gcc_4_1_1/bin/arm-linux-
 endif
 
@@ -215,6 +245,11 @@ LINUX_SRC = /home/bhushan/itcenter/may28/linux-2.6-samsung
 CROSS_COMPILE = /usr/local/arm/4.2.2-eabi/usr/bin/arm-linux-
 endif
 
+ifeq ($(PLATFORM),RALINK_3352)
+LINUX_SRC = /home/sample/3352/RT288x_SDK/source/linux-2.6.21.x
+CROSS_COMPILE = /opt/buildroot-gcc342/bin/mipsel-linux-
+endif
+
 ifeq ($(PLATFORM),KODAK_DC)
 SKD_SRC = C:/SigmaTel/DC1250_SDK_v1-9/sdk
 CROSS_COMPILE = $(cc)
@@ -245,10 +280,10 @@ export OSABL RT28xx_DIR RT28xx_MODE LINUX_SRC CROSS_COMPILE CROSS_COMPILE_INCLUD
 # The targets that may be used.
 PHONY += all build_tools test UCOS THREADX LINUX release prerelease clean uninstall install libwapi osabl
 
-ifeq ($(TARGET),THREADX)
-all: $(TARGET)
-else
+ifeq ($(TARGET),LINUX)
 all: build_tools $(TARGET)
+else
+all: $(TARGET)
 endif 
 
 
@@ -264,6 +299,9 @@ UCOS:
 	$(MAKE) -C os/ucos/ MODE=$(RT28xx_MODE)
 	echo $(RT28xx_MODE)
 
+ECOS:
+	$(MAKE) -C os/ecos/ MODE=$(RT28xx_MODE)
+	cp -f os/ecos/$(MODULE) $(MODULE)
 
 THREADX:
 	$(MAKE) -C $(RT28xx_DIR)/os/Threadx -f $(RT28xx_DIR)/os/ThreadX/Makefile
@@ -358,10 +396,12 @@ endif
 
 
 release:
-ifeq ($(TARGET), LINUX)
 	$(MAKE) -C $(RT28xx_DIR)/striptool -f Makefile.release clean
 	$(MAKE) -C $(RT28xx_DIR)/striptool -f Makefile.release
 	striptool/striptool.out
+ifeq ($(RELEASE), DPO)
+	gcc -o striptool/banner striptool/banner.c
+	./striptool/banner -b striptool/copyright.gpl -s DPO/ -d DPO_GPL -R
 endif
 
 prerelease:
@@ -391,6 +431,9 @@ endif
 ifeq ($(TARGET), UCOS)
 	$(MAKE) -C os/ucos clean MODE=$(RT28xx_MODE)
 endif
+ifeq ($(TARGET), ECOS)
+	$(MAKE) -C os/ecos clean MODE=$(RT28xx_MODE)
+endif
 
 uninstall:
 ifeq ($(TARGET), LINUX)
@@ -419,20 +462,40 @@ else
 	$(MAKE) -C  $(LINUX_SRC) SUBDIRS=$(RT28xx_DIR)/os/linux modules	
 endif	
 
-osabl:
+osutil:
 ifeq ($(OSABL),YES)
 ifneq (,$(findstring 2.4,$(LINUX_SRC)))
 	cp -f os/linux/Makefile.4.util $(RT28xx_DIR)/os/linux/Makefile
 	$(MAKE) -C $(RT28xx_DIR)/os/linux/
-	cp -f os/linux/Makefile.4.netif $(RT28xx_DIR)/os/linux/Makefile
-	$(MAKE) -C $(RT28xx_DIR)/os/linux/
 else
 	cp -f os/linux/Makefile.6.util $(RT28xx_DIR)/os/linux/Makefile
 	$(MAKE) -C $(LINUX_SRC) SUBDIRS=$(RT28xx_DIR)/os/linux modules
+endif
+endif
+	cp -f $(RT28xx_DIR)/os/linux/rtutil$(CHIPSET)ap.ko /tftpboot
+
+osnet:
+ifeq ($(OSABL),YES)
+ifneq (,$(findstring 2.4,$(LINUX_SRC)))
+	cp -f os/linux/Makefile.4.netif $(RT28xx_DIR)/os/linux/Makefile
+	$(MAKE) -C $(RT28xx_DIR)/os/linux/
+else
 	cp -f os/linux/Makefile.6.netif $(RT28xx_DIR)/os/linux/Makefile
 	$(MAKE) -C $(LINUX_SRC) SUBDIRS=$(RT28xx_DIR)/os/linux modules
 endif
 endif
+	cp -f $(RT28xx_DIR)/os/linux/rtnet$(CHIPSET)ap.ko /tftpboot
+
+
+osdrv:
+ifneq (,$(findstring 2.4,$(LINUX_SRC)))
+	cp -f os/linux/Makefile.4 $(RT28xx_DIR)/os/linux/Makefile
+	$(MAKE) -C $(RT28xx_DIR)/os/linux/
+else
+	cp -f os/linux/Makefile.6 $(RT28xx_DIR)/os/linux/Makefile
+	$(MAKE) -C $(LINUX_SRC) SUBDIRS=$(RT28xx_DIR)/os/linux modules
+endif
+	cp -f $(RT28xx_DIR)/os/linux/rt$(CHIPSET)ap.ko /tftpboot
 
 libautoprovision:
 	rm -f os/linux/lib.a

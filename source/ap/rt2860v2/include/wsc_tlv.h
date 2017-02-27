@@ -30,7 +30,7 @@
 #ifndef	__WSC_TLV_H__
 #define	__WSC_TLV_H__
 
-// Data Element Definitions
+/* Data Element Definitions */
 #define WSC_ID_AP_CHANNEL          0x1001
 #define WSC_ID_ASSOC_STATE         0x1002
 #define WSC_ID_AUTH_TYPE           0x1003
@@ -118,14 +118,21 @@
 #define WSC_ID_APPSESSIONKEY       0x1063
 #define WSC_ID_WEPTRANSMITKEY      0x1064
 
-// Association states
+/* WFA Vendor Extension Subelements */
+#define WFA_EXT_ID_VERSION2				0x00
+#define WFA_EXT_ID_AUTHORIZEDMACS		0x01
+#define WFA_EXT_ID_NW_KEY_SHAREABLE		0x02
+#define WFA_EXT_ID_REQ_TO_ENROLL		0x03
+#define WFA_EXT_ID_SETTINGS_DELAY_TIME	0x04
+
+/* Association states */
 #define WSC_ASSOC_NOT_ASSOCIATED  0
 #define WSC_ASSOC_CONN_SUCCESS    1
 #define WSC_ASSOC_CONFIG_FAIL     2
 #define WSC_ASSOC_ASSOC_FAIL      3
 #define WSC_ASSOC_IP_FAIL         4
 
-// Authentication types
+/* Authentication types */
 #define WSC_AUTHTYPE_OPEN        0x0001
 #define WSC_AUTHTYPE_WPAPSK      0x0002
 #define WSC_AUTHTYPE_SHARED      0x0004
@@ -134,7 +141,7 @@
 #define WSC_AUTHTYPE_WPA2PSK     0x0020
 #define WSC_AUTHTYPE_WPANONE     0x0080
 
-// Config methods
+/* Config methods */
 #define WSC_CONFMET_USBA            0x0001
 #define WSC_CONFMET_ETHERNET        0x0002
 #define WSC_CONFMET_LABEL           0x0004
@@ -145,7 +152,7 @@
 #define WSC_CONFMET_PBC             0x0080
 #define WSC_CONFMET_KEYPAD          0x0100
 
-// WSC error messages
+/* WSC error messages */
 #define WSC_ERROR_NO_ERROR                0
 #define WSC_ERROR_OOB_INT_READ_ERR        1
 #define WSC_ERROR_DECRYPT_CRC_FAIL        2
@@ -171,11 +178,11 @@
 #define WSC_ERROR_HASH_FAIL               254
 #define WSC_ERROR_HMAC_FAIL               255
 
-// Connection types
+/* Connection types */
 #define WSC_CONNTYPE_ESS    0x01
 #define WSC_CONNTYPE_IBSS   0x02
 
-// Device password ID
+/* Device password ID */
 #define WSC_DEVICEPWDID_DEFAULT          0x0000
 #define WSC_DEVICEPWDID_USER_SPEC        0x0001
 #define WSC_DEVICEPWDID_MACHINE_SPEC     0x0002
@@ -183,7 +190,7 @@
 #define WSC_DEVICEPWDID_PUSH_BTN         0x0004
 #define WSC_DEVICEPWDID_REG_SPEC         0x0005
 
-// Device type
+/* Device type */
 #define WSC_DEVICETYPE_COMPUTER            "Computer"
 #define WSC_DEVICETYPE_AP                  "Access_Point"
 #define WSC_DEVICETYPE_ROUTER_AP           "Router_AP"
@@ -203,13 +210,13 @@
 #define WSC_DEVICETYPE_GAME_CONSOLE        "Game_console"
 #define WSC_DEVICETYPE_OTHER               "Other"
 
-// Encryption type
+/* Encryption type */
 #define WSC_ENCRTYPE_NONE    0x0001
 #define WSC_ENCRTYPE_WEP     0x0002
 #define WSC_ENCRTYPE_TKIP    0x0004
 #define WSC_ENCRTYPE_AES     0x0008
 
-// WSC Message Types
+/* WSC Message Types */
 #define WSC_ID_BEACON            0x01
 #define WSC_ID_PROBE_REQ         0x02
 #define WSC_ID_PROBE_RESP        0x03
@@ -230,7 +237,7 @@
 #define	WSC_ID_MESSAGE_EAP_FAIL			0x23	
 #define	WSC_ID_MESSAGE_UNKNOWN			0xFF
 
-//Device Type categories for primary and secondary device types
+/* Device Type categories for primary and secondary device types */
 #define WSC_DEVICE_TYPE_CAT_COMPUTER        1
 #define WSC_DEVICE_TYPE_CAT_INPUT_DEVICE    2
 #define WSC_DEVICE_TYPE_CAT_PRINTER         3
@@ -242,7 +249,7 @@
 #define WSC_DEVICE_TYPE_CAT_GAME_DEVICES    9
 #define WSC_DEVICE_TYPE_CAT_TELEPHONE       10
 
-//Device Type sub categories for primary and secondary device types
+/* Device Type sub categories for primary and secondary device types */
 #define WSC_DEVICE_TYPE_SUB_CAT_COMP_PC         1
 #define WSC_DEVICE_TYPE_SUB_CAT_COMP_SERVER     2
 #define WSC_DEVICE_TYPE_SUB_CAT_COMP_MEDIA_CTR  3
@@ -265,10 +272,9 @@
 #define WSC_DEVICE_TYPE_SUB_CAT_PHONE_WM        1
 
 typedef	struct _WSC_TLV_0B {
-	USHORT	tag;
+	/*USHORT	tag;*/
 	USHORT	len;
 } WSC_TLV_0B, *PWSC_TLV_0B;
 
-extern void InitializeWSCTLV(void);
+#endif	/* __WSC_TLV_H__ */
 
-#endif	// __WSC_TLV_H__

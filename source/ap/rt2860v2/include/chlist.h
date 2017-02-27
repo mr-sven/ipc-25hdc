@@ -36,6 +36,17 @@
 #define BAND_24G        1
 #define BAND_BOTH       2
 
+typedef struct _CH_DESC {
+	UCHAR FirstChannel;
+	UCHAR NumOfCh;
+	UCHAR ChannelProp;
+}CH_DESC, *PCH_DESC;
+
+typedef struct _COUNTRY_REGION_CH_DESC {
+	UCHAR RegionIndex;
+	PCH_DESC pChDesc;
+}COUNTRY_REGION_CH_DESC, *PCOUNTRY_REGION_CH_DESC;
+
 #ifdef EXT_BUILD_CHANNEL_LIST
 #define ODOR			0
 #define IDOR			1
@@ -44,19 +55,19 @@
 typedef struct _CH_DESP {
 	UCHAR FirstChannel;
 	UCHAR NumOfCh;
-	CHAR MaxTxPwr;			// dBm
-	UCHAR Geography;			// 0:out door, 1:in door, 2:both
-	BOOLEAN DfsReq;			// Dfs require, 0: No, 1: yes.
+	CHAR MaxTxPwr;			/* dBm */
+	UCHAR Geography;			/* 0:out door, 1:in door, 2:both */
+	BOOLEAN DfsReq;			/* Dfs require, 0: No, 1: yes. */
 } CH_DESP, *PCH_DESP;
 
 typedef struct _CH_REGION {
 	UCHAR CountReg[3];
-	UCHAR DfsType;			// 0: CE, 1: FCC, 2: JAP, 3:JAP_W53, JAP_W56
+	UCHAR DfsType;			/* 0: CE, 1: FCC, 2: JAP, 3:JAP_W53, JAP_W56 */
 	CH_DESP ChDesp[10];
 } CH_REGION, *PCH_REGION;
 
 extern CH_REGION ChRegion[];
-#endif // EXT_BUILD_CHANNEL_LIST //
+#endif /* EXT_BUILD_CHANNEL_LIST */
 
 typedef struct _CH_FREQ_MAP_{
 	UINT16		channel;
@@ -83,7 +94,7 @@ VOID BuildBeaconChList(
 	IN PRTMP_ADAPTER pAd,
 	OUT PUCHAR pBuf,
 	OUT	PULONG pBufLen);
-#endif // EXT_BUILD_CHANNEL_LIST //
+#endif /* EXT_BUILD_CHANNEL_LIST */
 
 #ifdef DOT11_N_SUPPORT
 VOID N_ChannelCheck(
@@ -91,7 +102,7 @@ VOID N_ChannelCheck(
 
 VOID N_SetCenCh(
 	IN PRTMP_ADAPTER pAd);
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 
 UINT8 GetCuntryMaxTxPwr(
 	IN PRTMP_ADAPTER pAd,
@@ -104,6 +115,21 @@ VOID RTMP_MapChannelID2KHZ(
 VOID RTMP_MapKHZ2ChannelID(
 	IN ULONG Freq,
 	OUT INT *pCh);
+
+UCHAR GetChannel_5GHZ(
+	IN PCH_DESC pChDesc, 
+	IN UCHAR index);
+
+UCHAR GetChannel_2GHZ(
+	IN PCH_DESC pChDesc, 
+	IN UCHAR index);
+
+UCHAR GetChannelFlag(
+	IN PCH_DESC pChDesc, 
+	IN UCHAR index);
+
+UINT16 TotalChNum(
+	IN PCH_DESC pChDesc);
 	
-#endif // __CHLIST_H__
+#endif /* __CHLIST_H__ */
 

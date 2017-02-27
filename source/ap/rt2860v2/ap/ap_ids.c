@@ -27,7 +27,7 @@
 
 #include "rt_config.h"
 
-#define IDS_EXEC_INTV          1000				// 1 sec
+#define IDS_EXEC_INTV          1000				/* 1 sec */
 
 
 VOID RTMPIdsStart(
@@ -78,13 +78,13 @@ VOID RTMPHandleIdsEvent(
 	FloodFrameThreshold[5] = pAd->ApCfg.DeauthFloodThreshold;
 	FloodFrameThreshold[6] = pAd->ApCfg.EapReqFloodThreshold;
 
-	// trigger flooding traffic event
+	/* trigger flooding traffic event */
 	for (j = 0; j < IW_FLOOD_EVENT_TYPE_NUM; j++)
 	{		
 		if ((FloodFrameThreshold[j] > 0) && (FloodFrameCount[j] > FloodFrameThreshold[j]))
 		{						
-			RTMPSendWirelessEvent(pAd, IW_FLOOD_AUTH_EVENT_FLAG + j, NULL, MAX_MBSSID_NUM, 0);	
-			//DBGPRINT(RT_DEBUG_TRACE, ("flooding traffic event(%d) - %d\n", IW_FLOOD_AUTH_EVENT_FLAG + j, FloodFrameCount[j]));	
+			RTMPSendWirelessEvent(pAd, IW_FLOOD_AUTH_EVENT_FLAG + j, NULL, MAX_MBSSID_NUM(pAd), 0);	
+			/*DBGPRINT(RT_DEBUG_TRACE, ("flooding traffic event(%d) - %d\n", IW_FLOOD_AUTH_EVENT_FLAG + j, FloodFrameCount[j])); */
 		}
 	}	
 	
@@ -116,19 +116,19 @@ VOID RTMPHandleIdsEvent(
 		RssiOfSpoofedFrame[8] = pAd->ApCfg.MBSSID[i].RssiOfRcvdSpoofedUnknownMgmt;
 		RssiOfSpoofedFrame[9] = pAd->ApCfg.MBSSID[i].RssiOfRcvdReplayAttack;
 
-		// trigger spoofed attack event
+		/* trigger spoofed attack event */
 		for (k = 0; k < IW_SPOOF_EVENT_TYPE_NUM; k++)
 		{
 			if (SpoofedFrameCount[k] > 0)
 			{			
 				RTMPSendWirelessEvent(pAd, IW_CONFLICT_SSID_EVENT_FLAG + k, NULL, i, RssiOfSpoofedFrame[k]);	
-				//DBGPRINT(RT_DEBUG_TRACE, ("spoofed attack event(%d) - %d\n", IW_CONFLICT_SSID_EVENT_FLAG + k, SpoofedFrameCount[k]));	
+				/*DBGPRINT(RT_DEBUG_TRACE, ("spoofed attack event(%d) - %d\n", IW_CONFLICT_SSID_EVENT_FLAG + k, SpoofedFrameCount[k])); */
 			}
 		}					
 	}
 
 }
-#endif // SYSTEM_LOG_SUPPORT //
+#endif /* SYSTEM_LOG_SUPPORT */
 
 VOID RTMPClearAllIdsCounter(
 	IN PRTMP_ADAPTER	pAd)
@@ -181,15 +181,15 @@ VOID RTMPIdsPeriodicExec(
 	pAd->ApCfg.IDSTimerRunning = FALSE;
 
 #ifdef SYSTEM_LOG_SUPPORT
-	// when IDS occured, send out wireless event
+	/* when IDS occured, send out wireless event */
 	if (pAd->CommonCfg.bWirelessEvent)	
 		RTMPHandleIdsEvent(pAd);
-#endif // SYSTEM_LOG_SUPPORT //
+#endif /* SYSTEM_LOG_SUPPORT */
 
-	// clear all IDS counter
+	/* clear all IDS counter */
 	RTMPClearAllIdsCounter(pAd);
 
-	// set timer
+	/* set timer */
 	if (pAd->ApCfg.IdsEnable)
 	{
 		RTMPSetTimer(&pAd->ApCfg.IDSTimer, IDS_EXEC_INTV);
@@ -225,7 +225,7 @@ BOOLEAN RTMPSpoofedMgmtDetection(
 
 	for (i = 0; i < pAd->ApCfg.BssidNum; i++)
 	{
-		// Spoofed BSSID detection
+		/* Spoofed BSSID detection */
 		if (NdisEqualMemory(pHeader->Addr2, pAd->ApCfg.MBSSID[i].Bssid, MAC_ADDR_LEN))
 		{
 			CHAR RcvdRssi;
@@ -298,7 +298,7 @@ VOID RTMPConflictSsidDetection(
 	
 	for (i = 0; i < pAd->ApCfg.BssidNum; i++)
 	{
-		// Conflict SSID detection
+		/* Conflict SSID detection */
 		if (SSID_EQUAL(pSsid, SsidLen, pAd->ApCfg.MBSSID[i].Ssid, pAd->ApCfg.MBSSID[i].SsidLen))
 		{
 			CHAR RcvdRssi;
@@ -323,7 +323,7 @@ BOOLEAN RTMPReplayAttackDetection(
 	
 	for (i = 0; i < pAd->ApCfg.BssidNum; i++)
 	{
-		// Conflict SSID detection
+		/* Conflict SSID detection */
 		if (NdisEqualMemory(pAddr2, pAd->ApCfg.MBSSID[i].Bssid, MAC_ADDR_LEN))
 		{
 			CHAR RcvdRssi;
@@ -347,32 +347,32 @@ VOID RTMPUpdateStaMgmtCounter(
 	{
 		case SUBTYPE_ASSOC_REQ:
           	pAd->ApCfg.RcvdAssocReqCount ++;
-			//DBGPRINT(RT_DEBUG_TRACE, ("RcvdAssocReqCount=%d\n", pAd->ApCfg.RcvdAssocReqCount));
+			/*DBGPRINT(RT_DEBUG_TRACE, ("RcvdAssocReqCount=%d\n", pAd->ApCfg.RcvdAssocReqCount)); */
 			break;
 
 		case SUBTYPE_REASSOC_REQ:
           	pAd->ApCfg.RcvdReassocReqCount ++;
-			//DBGPRINT(RT_DEBUG_TRACE, ("RcvdReassocReqCount=%d\n", pAd->ApCfg.RcvdReassocReqCount));
+			/*DBGPRINT(RT_DEBUG_TRACE, ("RcvdReassocReqCount=%d\n", pAd->ApCfg.RcvdReassocReqCount)); */
 			break;
 
 		case SUBTYPE_PROBE_REQ:
           	pAd->ApCfg.RcvdProbeReqCount ++;
-			//DBGPRINT(RT_DEBUG_TRACE, ("RcvdProbeReqCount=%d\n", pAd->ApCfg.RcvdProbeReqCount));
+			/*DBGPRINT(RT_DEBUG_TRACE, ("RcvdProbeReqCount=%d\n", pAd->ApCfg.RcvdProbeReqCount)); */
 			break;	
 
 		case SUBTYPE_DISASSOC:
           	pAd->ApCfg.RcvdDisassocCount ++;
-			//DBGPRINT(RT_DEBUG_TRACE, ("RcvdDisassocCount=%d\n", pAd->ApCfg.RcvdDisassocCount));
+			/*DBGPRINT(RT_DEBUG_TRACE, ("RcvdDisassocCount=%d\n", pAd->ApCfg.RcvdDisassocCount)); */
 			break;
 
 		case SUBTYPE_DEAUTH:
           	pAd->ApCfg.RcvdDeauthCount ++;
-			//DBGPRINT(RT_DEBUG_TRACE, ("RcvdDeauthCount=%d\n", pAd->ApCfg.RcvdDeauthCount));
+			/*DBGPRINT(RT_DEBUG_TRACE, ("RcvdDeauthCount=%d\n", pAd->ApCfg.RcvdDeauthCount)); */
 			break;
 
 		case SUBTYPE_AUTH:
           	pAd->ApCfg.RcvdAuthCount ++;
-			//DBGPRINT(RT_DEBUG_TRACE, ("RcvdAuthCount=%d\n", pAd->ApCfg.RcvdAuthCount));
+			/*DBGPRINT(RT_DEBUG_TRACE, ("RcvdAuthCount=%d\n", pAd->ApCfg.RcvdAuthCount)); */
 			break;	
 
 	}
@@ -384,7 +384,7 @@ VOID rtmp_read_ids_from_file(
 			PSTRING tmpbuf,
 			PSTRING buffer)
 {	
-	//IdsEnable
+	/*IdsEnable */
 	if(RTMPGetKeyParameter("IdsEnable", tmpbuf, 10, buffer, TRUE))
 	{						
 		if (simple_strtol(tmpbuf, 0, 10) == 1)
@@ -395,7 +395,7 @@ VOID rtmp_read_ids_from_file(
 		DBGPRINT(RT_DEBUG_TRACE, ("IDS is %s\n", pAd->ApCfg.IdsEnable ? "enabled" : "disabled"));
 	}
 
-	//AuthFloodThreshold
+	/*AuthFloodThreshold */
 	if(RTMPGetKeyParameter("AuthFloodThreshold", tmpbuf, 10, buffer, TRUE))
 	{						
 		pAd->ApCfg.AuthFloodThreshold = simple_strtol(tmpbuf, 0, 10);
@@ -403,7 +403,7 @@ VOID rtmp_read_ids_from_file(
 		DBGPRINT(RT_DEBUG_TRACE, ("AuthFloodThreshold = %d\n", pAd->ApCfg.AuthFloodThreshold));
 	}
 
-	//AssocReqFloodThreshold
+	/*AssocReqFloodThreshold */
 	if(RTMPGetKeyParameter("AssocReqFloodThreshold", tmpbuf, 10, buffer, TRUE))
 	{						
 		pAd->ApCfg.AssocReqFloodThreshold = simple_strtol(tmpbuf, 0, 10);
@@ -411,7 +411,7 @@ VOID rtmp_read_ids_from_file(
 		DBGPRINT(RT_DEBUG_TRACE, ("AssocReqFloodThreshold = %d\n", pAd->ApCfg.AssocReqFloodThreshold));
 	}
 
-	//ReassocReqFloodThreshold
+	/*ReassocReqFloodThreshold */
 	if(RTMPGetKeyParameter("ReassocReqFloodThreshold", tmpbuf, 10, buffer, TRUE))
 	{						
 		pAd->ApCfg.ReassocReqFloodThreshold = simple_strtol(tmpbuf, 0, 10);
@@ -419,7 +419,7 @@ VOID rtmp_read_ids_from_file(
 		DBGPRINT(RT_DEBUG_TRACE, ("ReassocReqFloodThreshold = %d\n", pAd->ApCfg.ReassocReqFloodThreshold));
 	}
 
-	//ProbeReqFloodThreshold
+	/*ProbeReqFloodThreshold */
 	if(RTMPGetKeyParameter("ProbeReqFloodThreshold", tmpbuf, 10, buffer, TRUE))
 	{						
 		pAd->ApCfg.ProbeReqFloodThreshold = simple_strtol(tmpbuf, 0, 10);
@@ -427,7 +427,7 @@ VOID rtmp_read_ids_from_file(
 		DBGPRINT(RT_DEBUG_TRACE, ("ProbeReqFloodThreshold = %d\n", pAd->ApCfg.ProbeReqFloodThreshold));
 	}
 
-	//DisassocFloodThreshold
+	/*DisassocFloodThreshold */
 	if(RTMPGetKeyParameter("DisassocFloodThreshold", tmpbuf, 10, buffer, TRUE))
 	{						
 		pAd->ApCfg.DisassocFloodThreshold = simple_strtol(tmpbuf, 0, 10);
@@ -435,7 +435,7 @@ VOID rtmp_read_ids_from_file(
 		DBGPRINT(RT_DEBUG_TRACE, ("DisassocFloodThreshold = %d\n", pAd->ApCfg.DisassocFloodThreshold));
 	}
 
-	//DeauthFloodThreshold
+	/*DeauthFloodThreshold */
 	if(RTMPGetKeyParameter("DeauthFloodThreshold", tmpbuf, 10, buffer, TRUE))
 	{						
 		pAd->ApCfg.DeauthFloodThreshold = simple_strtol(tmpbuf, 0, 10);
@@ -443,7 +443,7 @@ VOID rtmp_read_ids_from_file(
 		DBGPRINT(RT_DEBUG_TRACE, ("DeauthFloodThreshold = %d\n", pAd->ApCfg.DeauthFloodThreshold));
 	}
 
-	//EapReqFloodThreshold
+	/*EapReqFloodThreshold */
 	if(RTMPGetKeyParameter("EapReqFloodThreshold", tmpbuf, 10, buffer, TRUE))
 	{						
 		pAd->ApCfg.EapReqFloodThreshold = simple_strtol(tmpbuf, 0, 10);
@@ -452,4 +452,4 @@ VOID rtmp_read_ids_from_file(
 	}
 }
 
-#endif // IDS_SUPPORT //
+#endif /* IDS_SUPPORT */

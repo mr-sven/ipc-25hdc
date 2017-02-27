@@ -41,8 +41,8 @@
  *  For shorter udelay().
  *  (ripped from rtmp.h)
  */
-//#define RTMP_BBP_IO_READ8_BY_REG_ID(_A, _I, _pV)    {}
-// Read BBP register by register's ID. Generate PER to test BA
+/*#define RTMP_BBP_IO_READ8_BY_REG_ID(_A, _I, _pV)    {} */
+/* Read BBP register by register's ID. Generate PER to test BA */
 #define RTMP_BBP_IO_READ8_BY_REG_ID_SHORT_DELAY(_A, _I, _pV)		\
 {									\
 	BBP_CSR_CFG_STRUC  BbpCsr;					\

@@ -115,6 +115,6 @@ VOID VideoConfigInit(
 	pAd->VideoTurbine.TxBASize = pAd->CommonCfg.TxBASize; 
 }
 
-#endif // VIDEO_TURBINE_SUPPORT //
+#endif /* VIDEO_TURBINE_SUPPORT */
 
 

@@ -514,14 +514,14 @@ VOID RTMPCkipInsertCMIC(
         return;
 
     pProto = pSrcBufVA + 12;
-    payloadlen = PacketInfo.TotalPacketLength - LENGTH_802_3 + 18; // CKIP_LLC(8)+CMIC(4)+TxSEQ(4)+PROTO(2)=18
+    payloadlen = PacketInfo.TotalPacketLength - LENGTH_802_3 + 18; /* CKIP_LLC(8)+CMIC(4)+TxSEQ(4)+PROTO(2)=18 */
     
     bigethlen[0] = (unsigned char)(payloadlen >> 8);
     bigethlen[1] = (unsigned char)payloadlen;
 
-	//
-	// Encryption Key expansion to form the CKIP Key (CKIP_CK).
-	//
+	/* */
+	/* Encryption Key expansion to form the CKIP Key (CKIP_CK). */
+	/* */
 	if (pKey->KeyLen < 16)
 	{
 		for(i = 0; i < (16 / pKey->KeyLen); i++)
@@ -539,17 +539,17 @@ VOID RTMPCkipInsertCMIC(
 		NdisMoveMemory(ckip_ck, pKey->Key, pKey->KeyLen);
 	}	
     RTMPCkipMicInit(&mic_ctx, ckip_ck);
-    RTMPMicUpdate(&mic_ctx, pDA, MAC_ADDR_LEN);            // MIC <-- DA
-    RTMPMicUpdate(&mic_ctx, pSA, MAC_ADDR_LEN);            // MIC <-- SA
-    RTMPMicUpdate(&mic_ctx, bigethlen, 2);                 // MIC <-- payload length starting from CKIP SNAP
-    RTMPMicUpdate(&mic_ctx, mic_snap, 8);                  // MIC <-- snap header 
-    RTMPMicUpdate(&mic_ctx, pAd->StaCfg.TxSEQ, 4);   // MIC <-- TxSEQ
-    RTMPMicUpdate(&mic_ctx, pProto, 2);                    // MIC <-- Protocol
+    RTMPMicUpdate(&mic_ctx, pDA, MAC_ADDR_LEN);            /* MIC <-- DA */
+    RTMPMicUpdate(&mic_ctx, pSA, MAC_ADDR_LEN);            /* MIC <-- SA */
+    RTMPMicUpdate(&mic_ctx, bigethlen, 2);                 /* MIC <-- payload length starting from CKIP SNAP */
+    RTMPMicUpdate(&mic_ctx, mic_snap, 8);                  /* MIC <-- snap header */
+    RTMPMicUpdate(&mic_ctx, pAd->StaCfg.TxSEQ, 4);   /* MIC <-- TxSEQ */
+    RTMPMicUpdate(&mic_ctx, pProto, 2);                    /* MIC <-- Protocol */
 
     pSrcBufVA += LENGTH_802_3;
     SrcBufLen -= LENGTH_802_3;
 
-    // Mic <-- original payload. loop until all payload processed
+    /* Mic <-- original payload. loop until all payload processed */
     do
     {
         if (SrcBufLen > 0)
@@ -564,6 +564,6 @@ VOID RTMPCkipInsertCMIC(
             break;
     } while (TRUE);
     
-    RTMPMicFinal(&mic_ctx, pMIC);                          // update MIC
+    RTMPMicFinal(&mic_ctx, pMIC);                          /* update MIC */
 }
 

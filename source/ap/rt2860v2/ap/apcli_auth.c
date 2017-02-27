@@ -91,27 +91,27 @@ VOID ApCliAuthStateMachineInit(
 		(STATE_MACHINE_FUNC)Drop, APCLI_AUTH_REQ_IDLE,
 		APCLI_AUTH_MACHINE_BASE);
 
-	// the first column
+	/* the first column */
 	StateMachineSetAction(Sm, APCLI_AUTH_REQ_IDLE, APCLI_MT2_MLME_AUTH_REQ, (STATE_MACHINE_FUNC)ApCliMlmeAuthReqAction);
 	StateMachineSetAction(Sm, APCLI_AUTH_REQ_IDLE, APCLI_MT2_PEER_DEAUTH, (STATE_MACHINE_FUNC)ApCliPeerDeauthAction);
 	StateMachineSetAction(Sm, APCLI_AUTH_REQ_IDLE, APCLI_MT2_MLME_DEAUTH_REQ, (STATE_MACHINE_FUNC)ApCliMlmeDeauthReqAction);
 
-	// the second column
+	/* the second column */
 	StateMachineSetAction(Sm, APCLI_AUTH_WAIT_SEQ2, APCLI_MT2_MLME_AUTH_REQ, (STATE_MACHINE_FUNC)ApCliInvalidStateWhenAuth);
 	StateMachineSetAction(Sm, APCLI_AUTH_WAIT_SEQ2, APCLI_MT2_PEER_AUTH_EVEN, (STATE_MACHINE_FUNC)ApCliPeerAuthRspAtSeq2Action);
 	StateMachineSetAction(Sm, APCLI_AUTH_WAIT_SEQ2, APCLI_MT2_PEER_DEAUTH, (STATE_MACHINE_FUNC)ApCliPeerDeauthAction);
 	StateMachineSetAction(Sm, APCLI_AUTH_WAIT_SEQ2, APCLI_MT2_AUTH_TIMEOUT, (STATE_MACHINE_FUNC)ApCliAuthTimeoutAction);
 	StateMachineSetAction(Sm, APCLI_AUTH_WAIT_SEQ2, APCLI_MT2_MLME_DEAUTH_REQ, (STATE_MACHINE_FUNC)ApCliMlmeDeauthReqAction);
 
-	// the third column
+	/* the third column */
 	StateMachineSetAction(Sm, APCLI_AUTH_WAIT_SEQ4, APCLI_MT2_MLME_AUTH_REQ, (STATE_MACHINE_FUNC)ApCliInvalidStateWhenAuth);
 	StateMachineSetAction(Sm, APCLI_AUTH_WAIT_SEQ4, APCLI_MT2_PEER_AUTH_EVEN, (STATE_MACHINE_FUNC)ApCliPeerAuthRspAtSeq4Action);
 	StateMachineSetAction(Sm, APCLI_AUTH_WAIT_SEQ4, APCLI_MT2_PEER_DEAUTH, (STATE_MACHINE_FUNC)ApCliPeerDeauthAction);
 	StateMachineSetAction(Sm, APCLI_AUTH_WAIT_SEQ4, APCLI_MT2_AUTH_TIMEOUT, (STATE_MACHINE_FUNC)ApCliAuthTimeoutAction);
 	StateMachineSetAction(Sm, APCLI_AUTH_WAIT_SEQ4, APCLI_MT2_MLME_DEAUTH_REQ, (STATE_MACHINE_FUNC)ApCliMlmeDeauthReqAction);
 
-	// timer init
-	RTMPInitTimer(pAd, &pAd->MlmeAux.ApCliAuthTimer, GET_TIMER_FUNCTION(ApCliAuthTimeout), pAd, FALSE);
+	/* timer init */
+	RTMPInitTimer(pAd, &pAd->ApCliMlmeAux.ApCliAuthTimer, GET_TIMER_FUNCTION(ApCliAuthTimeout), pAd, FALSE);
 
 	for (i=0; i < MAX_APCLI_NUM; i++)
 		pAd->ApCfg.ApCliTab[i].AuthCurrState = APCLI_AUTH_REQ_IDLE;
@@ -165,7 +165,7 @@ static VOID ApCliMlmeAuthReqAction(
 	if (ifIndex >= MAX_APCLI_NUM)
 		return;
 
-	// Block all authentication request durning WPA block period
+	/* Block all authentication request durning WPA block period */
 	if (pAd->ApCfg.ApCliTab[ifIndex].bBlockAssoc == TRUE)
 	{
 		DBGPRINT(RT_DEBUG_TRACE, ("APCLI AUTH - Block Auth request durning WPA block period!\n"));
@@ -176,16 +176,16 @@ static VOID ApCliMlmeAuthReqAction(
 	}
 	else if(MlmeAuthReqSanity(pAd, Elem->Msg, Elem->MsgLen, Addr, &Timeout, &Alg))
 	{
-		// reset timer
-		RTMPCancelTimer(&pAd->MlmeAux.ApCliAuthTimer, &Cancelled);
+		/* reset timer */
+		RTMPCancelTimer(&pAd->ApCliMlmeAux.ApCliAuthTimer, &Cancelled);
 
-		pAd->MlmeAux.Alg  = Alg;
+		pAd->ApCliMlmeAux.Alg  = Alg;
 
 		Seq = 1;
 		Status = MLME_SUCCESS;
 
-		// allocate and send out AuthReq frame
-		NState = MlmeAllocateMemory(pAd, &pOutBuffer);  //Get an unused nonpaged memory
+		/* allocate and send out AuthReq frame */
+		NState = MlmeAllocateMemory(pAd, &pOutBuffer);  /*Get an unused nonpaged memory */
 		if(NState != NDIS_STATUS_SUCCESS)
 		{
 			DBGPRINT(RT_DEBUG_TRACE, ("APCLI AUTH - MlmeAuthReqAction() allocate memory failed\n"));
@@ -198,7 +198,7 @@ static VOID ApCliMlmeAuthReqAction(
 		}
 
 		DBGPRINT(RT_DEBUG_TRACE, ("APCLI AUTH - Send AUTH request seq#1 (Alg=%d)...\n", Alg));
-		ApCliMgtMacHeaderInit(pAd, &AuthHdr, SUBTYPE_AUTH, 0, Addr, pAd->MlmeAux.Bssid, ifIndex);
+		ApCliMgtMacHeaderInit(pAd, &AuthHdr, SUBTYPE_AUTH, 0, Addr, pAd->ApCliMlmeAux.Bssid, ifIndex);
 
 		MakeOutgoingFrame(pOutBuffer,           &FrameLen, 
 						  sizeof(HEADER_802_11),&AuthHdr, 
@@ -210,7 +210,7 @@ static VOID ApCliMlmeAuthReqAction(
 		MiniportMMRequest(pAd, QID_AC_BE, pOutBuffer, FrameLen);
 		MlmeFreeMemory(pAd, pOutBuffer);
 
-		RTMPSetTimer(&pAd->MlmeAux.ApCliAuthTimer, AUTH_TIMEOUT);
+		RTMPSetTimer(&pAd->ApCliMlmeAux.ApCliAuthTimer, AUTH_TIMEOUT);
 
 		*pCurrState = APCLI_AUTH_WAIT_SEQ2;
 	} else
@@ -236,7 +236,8 @@ static VOID ApCliPeerAuthRspAtSeq2Action(
 	USHORT          Seq, Status, Alg;
 	USHORT          RemoteStatus;
 	UCHAR			iv_hdr[LEN_WEP_IV_HDR];
-	UCHAR           ChlgText[CIPHER_TEXT_LEN];
+/*	UCHAR           ChlgText[CIPHER_TEXT_LEN]; */
+	UCHAR           *ChlgText = NULL;
 	UCHAR           CyperChlgText[CIPHER_TEXT_LEN + 8 + 8];
 	ULONG			c_len = 0;	
 	HEADER_802_11   AuthHdr;
@@ -252,16 +253,24 @@ static VOID ApCliPeerAuthRspAtSeq2Action(
 	if (ifIndex >= MAX_APCLI_NUM)
 		return;
 
+	/* allocate memory */
+	os_alloc_mem(NULL, (UCHAR **)&ChlgText, CIPHER_TEXT_LEN);
+	if (ChlgText == NULL)
+	{
+		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n", __FUNCTION__));
+		return;
+	}
+
 	if(PeerAuthSanity(pAd, Elem->Msg, Elem->MsgLen, Addr2, &Alg, &Seq, &Status, (CHAR *) ChlgText))
 	{
-		if(MAC_ADDR_EQUAL(pAd->MlmeAux.Bssid, Addr2) && Seq == 2)
+		if(MAC_ADDR_EQUAL(pAd->ApCliMlmeAux.Bssid, Addr2) && Seq == 2)
 		{
 			DBGPRINT(RT_DEBUG_TRACE, ("APCLI AUTH - Receive AUTH_RSP seq#2 to me (Alg=%d, Status=%d)\n", Alg, Status));
-			RTMPCancelTimer(&pAd->MlmeAux.ApCliAuthTimer, &Cancelled);
+			RTMPCancelTimer(&pAd->ApCliMlmeAux.ApCliAuthTimer, &Cancelled);
 
 			if(Status == MLME_SUCCESS)
 			{
-				if(pAd->MlmeAux.Alg == Ndis802_11AuthModeOpen)
+				if(pAd->ApCliMlmeAux.Alg == Ndis802_11AuthModeOpen)
 				{
 					*pCurrState = APCLI_AUTH_REQ_IDLE;
 
@@ -276,10 +285,10 @@ static VOID ApCliPeerAuthRspAtSeq2Action(
 
 					pKey = &pAd->ApCfg.ApCliTab[ifIndex].SharedKey[default_key];
 
-					// 2. shared key, need to be challenged
+					/* 2. shared key, need to be challenged */
 					Seq++;
 					RemoteStatus = MLME_SUCCESS;
-					// allocate and send out AuthRsp frame					
+					/* allocate and send out AuthRsp frame */
 					NState = MlmeAllocateMemory(pAd, &pOutBuffer); 					
 					if(NState != NDIS_STATUS_SUCCESS)
 					{
@@ -289,14 +298,14 @@ static VOID ApCliPeerAuthRspAtSeq2Action(
 						ApCliCtrlMsg.Status= MLME_FAIL_NO_RESOURCE;
 						MlmeEnqueue(pAd, APCLI_CTRL_STATE_MACHINE, APCLI_CTRL_AUTH_RSP,
 							sizeof(APCLI_CTRL_MSG_STRUCT), &ApCliCtrlMsg, ifIndex);
-						return;
+						goto LabelOK;
 					}
 
 					DBGPRINT(RT_DEBUG_TRACE, ("AUTH - Send AUTH request seq#3...\n"));
-					ApCliMgtMacHeaderInit(pAd, &AuthHdr, SUBTYPE_AUTH, 0, Addr2, pAd->MlmeAux.Bssid, ifIndex);
+					ApCliMgtMacHeaderInit(pAd, &AuthHdr, SUBTYPE_AUTH, 0, Addr2, pAd->ApCliMlmeAux.Bssid, ifIndex);
 					AuthHdr.FC.Wep = 1;
 					
-					// Encrypt challenge text & auth information
+					/* Encrypt challenge text & auth information */
 					/* TSC increment */ 
 					INC_TX_TSC(pKey->TxTsc, LEN_WEP_TSC);
 
@@ -329,7 +338,7 @@ static VOID ApCliPeerAuthRspAtSeq2Action(
 						ApCliCtrlMsg.Status= MLME_FAIL_NO_RESOURCE;
 						MlmeEnqueue(pAd, APCLI_CTRL_STATE_MACHINE, APCLI_CTRL_AUTH_RSP,
 									sizeof(APCLI_CTRL_MSG_STRUCT), &ApCliCtrlMsg, ifIndex);
-						return;
+						goto LabelOK;
 					}
 
 					/* Update the total length for 4-bytes ICV */
@@ -343,9 +352,7 @@ static VOID ApCliPeerAuthRspAtSeq2Action(
 
 					MiniportMMRequest(pAd, QID_AC_BE, pOutBuffer, FrameLen);
 				
-					MlmeFreeMemory(pAd, pOutBuffer);
-
-					RTMPSetTimer(&pAd->MlmeAux.ApCliAuthTimer, AUTH_TIMEOUT);
+					RTMPSetTimer(&pAd->ApCliMlmeAux.ApCliAuthTimer, AUTH_TIMEOUT);
 					*pCurrState = APCLI_AUTH_WAIT_SEQ4;
 				}
 			} 
@@ -363,6 +370,11 @@ static VOID ApCliPeerAuthRspAtSeq2Action(
 		DBGPRINT(RT_DEBUG_TRACE, ("APCLI AUTH - PeerAuthSanity() sanity check fail\n"));
 	}
 
+LabelOK:
+	if (pOutBuffer != NULL)
+		MlmeFreeMemory(pAd, pOutBuffer);
+	if (ChlgText != NULL)
+		os_free_mem(NULL, ChlgText);
 	return;
 }
 
@@ -388,10 +400,10 @@ static VOID ApCliPeerAuthRspAtSeq4Action(
 
 	if(PeerAuthSanity(pAd, Elem->Msg, Elem->MsgLen, Addr2, &Alg, &Seq, &Status, ChlgText))
 	{
-		if(MAC_ADDR_EQUAL(pAd->MlmeAux.Bssid, Addr2) && Seq == 4)
+		if(MAC_ADDR_EQUAL(pAd->ApCliMlmeAux.Bssid, Addr2) && Seq == 4)
 		{
 			DBGPRINT(RT_DEBUG_TRACE, ("APCLI AUTH - Receive AUTH_RSP seq#4 to me\n"));
-			RTMPCancelTimer(&pAd->MlmeAux.ApCliAuthTimer, &Cancelled);
+			RTMPCancelTimer(&pAd->ApCliMlmeAux.ApCliAuthTimer, &Cancelled);
 
 			ApCliCtrlMsg.Status = MLME_SUCCESS;
 
@@ -427,15 +439,12 @@ static VOID ApCliPeerDeauthAction(
 	USHORT      Reason;
 	USHORT ifIndex = (USHORT)(Elem->Priv);
 	PULONG pCurrState = &pAd->ApCfg.ApCliTab[ifIndex].AuthCurrState;
-
 	if (ifIndex >= MAX_APCLI_NUM)
 		return;
-
 	if (PeerDeauthSanity(pAd, Elem->Msg, Elem->MsgLen, Addr1, Addr2, Addr3, &Reason))
 	{
 		DBGPRINT(RT_DEBUG_TRACE, ("APCLI AUTH_RSP - receive DE-AUTH from our AP\n"));
 		*pCurrState = APCLI_AUTH_REQ_IDLE;
-
 		MlmeEnqueue(pAd, APCLI_CTRL_STATE_MACHINE, APCLI_CTRL_PEER_DISCONNECT_REQ, 0, NULL, ifIndex);
 	}
 	else
@@ -517,7 +526,7 @@ static VOID ApCliMlmeDeauthReqAction(
 
 	*pCurrState= APCLI_AUTH_REQ_IDLE;
 
-	NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);  //Get an unused nonpaged memory
+	NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);  /*Get an unused nonpaged memory */
 	if (NStatus != NDIS_STATUS_SUCCESS)
 		return;
 	
@@ -534,5 +543,5 @@ static VOID ApCliMlmeDeauthReqAction(
 	return;
 }
 
-#endif // APCLI_SUPPORT //
+#endif /* APCLI_SUPPORT */
 

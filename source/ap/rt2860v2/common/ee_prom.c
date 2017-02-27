@@ -31,17 +31,17 @@
 
 
 
-// IRQL = PASSIVE_LEVEL
+/* IRQL = PASSIVE_LEVEL*/
 static inline VOID RaiseClock(
     IN	PRTMP_ADAPTER	pAd,
     IN  UINT32 *x)
 {
 	*x = *x | EESK;
 	RTMP_IO_WRITE32(pAd, E2PROM_CSR, *x);
-	RTMPusecDelay(1);				// Max frequency = 1MHz in Spec. definition 
+	RTMPusecDelay(1);				/* Max frequency = 1MHz in Spec. definition */
 }
 
-// IRQL = PASSIVE_LEVEL
+/* IRQL = PASSIVE_LEVEL*/
 static inline VOID LowerClock(
     IN	PRTMP_ADAPTER	pAd,
     IN  UINT32 *x)
@@ -51,7 +51,7 @@ static inline VOID LowerClock(
 	RTMPusecDelay(1);
 }
 
-// IRQL = PASSIVE_LEVEL
+/* IRQL = PASSIVE_LEVEL*/
 static inline USHORT ShiftInBits(
 	IN PRTMP_ADAPTER	pAd)
 {
@@ -68,7 +68,7 @@ static inline USHORT ShiftInBits(
 		RaiseClock(pAd, &x);
 
 		RTMP_IO_READ32(pAd, E2PROM_CSR, &x);
-		LowerClock(pAd, &x); //prevent read failed
+		LowerClock(pAd, &x); /*prevent read failed*/
 		
 		x &= ~(EEDI);
 		if(x & EEDO)
@@ -79,7 +79,7 @@ static inline USHORT ShiftInBits(
 }
 
 
-// IRQL = PASSIVE_LEVEL
+/* IRQL = PASSIVE_LEVEL*/
 static inline VOID ShiftOutBits(
 	IN PRTMP_ADAPTER	pAd,
 	IN USHORT			data,
@@ -110,7 +110,7 @@ static inline VOID ShiftOutBits(
 }
 
 
-// IRQL = PASSIVE_LEVEL
+/* IRQL = PASSIVE_LEVEL*/
 static inline VOID EEpromCleanup(
 	IN PRTMP_ADAPTER	pAd)
 {
@@ -131,17 +131,17 @@ static inline VOID EWEN(
 {
 	UINT32	x;
 
-	// reset bits and set EECS
+	/* reset bits and set EECS*/
 	RTMP_IO_READ32(pAd, E2PROM_CSR, &x);
 	x &= ~(EEDI | EEDO | EESK);
 	x |= EECS;
 	RTMP_IO_WRITE32(pAd, E2PROM_CSR, x);
 
-	// kick a pulse
+	/* kick a pulse*/
 	RaiseClock(pAd, &x);
 	LowerClock(pAd, &x);
 
-	// output the read_opcode and six pulse in that order    
+	/* output the read_opcode and six pulse in that order    */
 	ShiftOutBits(pAd, EEPROM_EWEN_OPCODE, 5);
 	ShiftOutBits(pAd, 0, 6);
 
@@ -154,17 +154,17 @@ static inline VOID EWDS(
 {
 	UINT32	x;
 
-	// reset bits and set EECS
+	/* reset bits and set EECS*/
 	RTMP_IO_READ32(pAd, E2PROM_CSR, &x);
 	x &= ~(EEDI | EEDO | EESK);
 	x |= EECS;
 	RTMP_IO_WRITE32(pAd, E2PROM_CSR, x);
 
-	// kick a pulse
+	/* kick a pulse*/
 	RaiseClock(pAd, &x);
 	LowerClock(pAd, &x);
 
-	// output the read_opcode and six pulse in that order    
+	/* output the read_opcode and six pulse in that order    */
 	ShiftOutBits(pAd, EEPROM_EWDS_OPCODE, 5);
 	ShiftOutBits(pAd, 0, 6);
 
@@ -172,7 +172,7 @@ static inline VOID EWDS(
 }
 
 
-// IRQL = PASSIVE_LEVEL
+/* IRQL = PASSIVE_LEVEL*/
 int rtmp_ee_prom_read16(
 	IN PRTMP_ADAPTER	pAd,
 	IN USHORT			Offset,
@@ -183,25 +183,25 @@ int rtmp_ee_prom_read16(
 
 
 	Offset /= 2;
-	// reset bits and set EECS
+	/* reset bits and set EECS*/
 	RTMP_IO_READ32(pAd, E2PROM_CSR, &x);
 	x &= ~(EEDI | EEDO | EESK);
 	x |= EECS;
 	RTMP_IO_WRITE32(pAd, E2PROM_CSR, x);
 
-	// patch can not access e-Fuse issue
+	/* patch can not access e-Fuse issue*/
 	if (!(IS_RT3090(pAd) || IS_RT3572(pAd) || IS_RT3390(pAd) || IS_RT3593(pAd)))
 	{
-		// kick a pulse
+		/* kick a pulse*/
 		RaiseClock(pAd, &x);
 		LowerClock(pAd, &x);
 	}
 
-	// output the read_opcode and register number in that order    
+	/* output the read_opcode and register number in that order    */
 	ShiftOutBits(pAd, EEPROM_READ_OPCODE, 3);
 	ShiftOutBits(pAd, Offset, pAd->EEPROMAddressNum);
 
-	// Now read the data (16 bits) in from the selected EEPROM word
+	/* Now read the data (16 bits) in from the selected EEPROM word*/
 	data = ShiftInBits(pAd);
 
 	EEpromCleanup(pAd);
@@ -225,31 +225,31 @@ int rtmp_ee_prom_write16(
 
 	EWEN(pAd);
 
-	// reset bits and set EECS
+	/* reset bits and set EECS*/
 	RTMP_IO_READ32(pAd, E2PROM_CSR, &x);
 	x &= ~(EEDI | EEDO | EESK);
 	x |= EECS;
 	RTMP_IO_WRITE32(pAd, E2PROM_CSR, x);
 
-	// patch can not access e-Fuse issue
+	/* patch can not access e-Fuse issue*/
 	if (!(IS_RT3090(pAd) || IS_RT3572(pAd) || IS_RT3390(pAd) || IS_RT3593(pAd)))
 	{
-		// kick a pulse
+		/* kick a pulse*/
 		RaiseClock(pAd, &x);
 		LowerClock(pAd, &x);
 	}
 	
-	// output the read_opcode ,register number and data in that order    
+	/* output the read_opcode ,register number and data in that order    */
 	ShiftOutBits(pAd, EEPROM_WRITE_OPCODE, 3);
 	ShiftOutBits(pAd, Offset, pAd->EEPROMAddressNum);
-	ShiftOutBits(pAd, Data, 16);		// 16-bit access
+	ShiftOutBits(pAd, Data, 16);		/* 16-bit access*/
 
-	// read DO status
+	/* read DO status*/
 	RTMP_IO_READ32(pAd, E2PROM_CSR, &x);
 
 	EEpromCleanup(pAd);
 
-	RTMPusecDelay(10000);	//delay for twp(MAX)=10ms
+	RTMPusecDelay(10000);	/*delay for twp(MAX)=10ms*/
 
 	EWDS(pAd);
 

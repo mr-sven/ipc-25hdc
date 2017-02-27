@@ -72,5 +72,5 @@ UCHAR APAutoSelectChannel(
 	IN PRTMP_ADAPTER pAd,
 	IN ChannelSel_Alg Alg);
 
-#endif // __AUTOCHSELECT_H__ //
+#endif /* __AUTOCHSELECT_H__ */
 

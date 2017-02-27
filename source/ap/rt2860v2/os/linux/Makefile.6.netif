@@ -23,9 +23,7 @@ obj-m := $(MOD_NAME).o
 #ifdef CONFIG_AP_SUPPORT
 
 rtnet$(CHIPSET)ap-objs := \
-	../../ap/ap_mbss.o\
-	../../common/rtmp_init_inf.o\
-	../../os/linux/rt_profile.o\
+	../../ap/ap_mbss_inf.o\
 	../../os/linux/ap_ioctl.o\
 	../../os/linux/rt_main_dev.o
 
@@ -67,7 +65,6 @@ endif
 ifeq ($(CHIPSET),2870)
 rtnet$(CHIPSET)ap-objs += \
 	../../common/rtusb_dev_id.o\
-	../../os/linux/rt_usb.o\
 	../../os/linux/usb_main_dev.o
 endif
 
@@ -75,7 +72,6 @@ endif
 ifeq ($(CHIPSET),2070)
 rtnet$(CHIPSET)ap-objs += \
 	../../common/rtusb_dev_id.o\
-	../../os/linux/rt_usb.o\
 	../../os/linux/usb_main_dev.o
 endif
 
@@ -83,7 +79,6 @@ endif
 ifeq ($(CHIPSET),3070)
 rtnet$(CHIPSET)ap-objs += \
 	../../common/rtusb_dev_id.o\
-	../../os/linux/rt_usb.o\
 	../../os/linux/usb_main_dev.o
 endif
 
@@ -98,7 +93,6 @@ endif
 ifeq ($(CHIPSET),3572)
 rtnet$(CHIPSET)ap-objs += \
 	../../common/rtusb_dev_id.o\
-	../../os/linux/rt_usb.o\
 	../../os/linux/usb_main_dev.o
 endif
 
@@ -134,7 +128,6 @@ endif
 ifeq ($(CHIPSET),3370)
 rtnet$(CHIPSET)ap-objs += \
 	../../common/rtusb_dev_id.o\
-	../../os/linux/rt_usb.o\
 	../../os/linux/usb_main_dev.o
 endif
 
@@ -142,8 +135,6 @@ endif
 
 #ifdef CONFIG_STA_SUPPORT
 rtnet$(CHIPSET)sta-objs := \
-	../../common/rtmp_init_inf.o\
-	../../os/linux/rt_profile.o\
 	../../os/linux/sta_ioctl.o\
 	../../os/linux/rt_main_dev.o
 
@@ -155,6 +146,12 @@ endif
 ifeq ($(HAS_MESH_SUPPORT),y)
 rtnet$(CHIPSET)sta-objs += \
 	../../common/mesh_inf.o
+endif
+
+ifeq ($(HAS_P2P_SUPPORT), y)
+rtnet$(CHIPSET)sta-objs += \
+	../../common/p2p_inf.o\
+	../../os/linux/ap_ioctl.o
 endif
 
 #ifdef RT2860
@@ -175,7 +172,6 @@ endif
 ifeq ($(CHIPSET),2870)
 rtnet$(CHIPSET)sta-objs += \
 	../../common/rtusb_dev_id.o\
-	../../os/linux/rt_usb.o\
 	../../os/linux/usb_main_dev.o
 endif
 
@@ -183,7 +179,6 @@ endif
 ifeq ($(CHIPSET),2070)
 rtnet$(CHIPSET)sta-objs += \
 	../../common/rtusb_dev_id.o\
-	../../os/linux/rt_usb.o\
 	../../os/linux/usb_main_dev.o
 endif
 
@@ -191,7 +186,6 @@ endif
 ifeq ($(CHIPSET),3070)
 rtnet$(CHIPSET)sta-objs += \
 	../../common/rtusb_dev_id.o\
-	../../os/linux/rt_usb.o\
 	../../os/linux/usb_main_dev.o
 endif
 
@@ -206,7 +200,6 @@ endif
 ifeq ($(CHIPSET),3572)
 rtnet$(CHIPSET)sta-objs += \
 	../../common/rtusb_dev_id.o\
-	../../os/linux/rt_usb.o\
 	../../os/linux/usb_main_dev.o
 endif
 
@@ -241,8 +234,7 @@ endif
 #ifdef RT3370
 ifeq ($(CHIPSET),3370)
 rtnet$(CHIPSET)sta-objs += \
-        ../../common/rtusb_dev_id.o\
-        ../../os/linux/rt_usb.o\
+	../../common/rtusb_dev_id.o\
 	../../os/linux/usb_main_dev.o
 endif
 
@@ -250,9 +242,8 @@ endif
 
 #ifdef CONFIG_APSTA_SUPPORT
 rtnet$(CHIPSET)apsta-objs := \
-	../../ap/ap_mbss.o\
-	../../common/rtmp_init_inf.o\
-	../../os/linux/rt_profile.o\
+	../../ap/ap_mbss_inf.o\
+	../../common/p2p_inf.o\
 	../../os/linux/ap_ioctl.o\
 	../../os/linux/sta_ioctl.o\
 	../../os/linux/rt_main_dev.o
@@ -331,6 +322,9 @@ clean:
 	rm -f ../../os/linux/.*.{cmd,flags,d}
 	rm -fr ../../os/linux/.tmp_versions
 	rm -f ../../os/linux/Module.symvers
+	rm -f ../../os/linux/Modules.symvers
+	rm -f ../../os/linux/Module.markers
+	rm -f ../../os/linux/modules.order
 	rm -f ../../chips/*.o
 	rm -f ../../chips/.*.{cmd,flags,d}
 ifeq ($(RT28xx_MODE),AP)

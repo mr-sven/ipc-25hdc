@@ -33,36 +33,39 @@
 
 #include "rt_config.h"
 
-
 int wl_proc_init(void);
 int wl_proc_exit(void);
 
 #ifdef CONFIG_RALINK_RT2880
 #define PROCREG_DIR             "rt2880"
-#endif // CONFIG_RALINK_RT2880 //
+#endif /* CONFIG_RALINK_RT2880 */
 
 #ifdef CONFIG_RALINK_RT3052
 #define PROCREG_DIR             "rt3052"
-#endif // CONFIG_RALINK_RT3052 //
+#endif /* CONFIG_RALINK_RT3052 */
 
 #ifdef CONFIG_RALINK_RT2883
 #define PROCREG_DIR             "rt2883"
-#endif // CONFIG_RALINK_RT2883 //
+#endif /* CONFIG_RALINK_RT2883 */
 
 #ifdef CONFIG_RALINK_RT3883
 #define PROCREG_DIR             "rt3883"
-#endif // CONFIG_RALINK_RT3883 //
+#endif /* CONFIG_RALINK_RT3883 */
+
+#ifdef CONFIG_RALINK_RT5350
+#define PROCREG_DIR             "rt5350"
+#endif /* CONFIG_RALINK_RT5350 */
 
 #ifndef PROCREG_DIR
 #define PROCREG_DIR             "rt2880"
-#endif // PROCREG_DIR //
+#endif /* PROCREG_DIR */
 
 #ifdef CONFIG_PROC_FS
 extern struct proc_dir_entry *procRegDir;
 
 #ifdef VIDEO_TURBINE_SUPPORT
 AP_VIDEO_STRUCT GLOBAL_AP_VIDEO_CONFIG;
-//struct proc_dir_entry *proc_ralink_platform, *proc_ralink_wl, *proc_ralink_wl_video;
+/*struct proc_dir_entry *proc_ralink_platform, *proc_ralink_wl, *proc_ralink_wl_video; */
 struct proc_dir_entry *proc_ralink_wl, *proc_ralink_wl_video;
 static struct proc_dir_entry *entry_wl_video_Enable, *entry_wl_video_ClassifierEnable, *entry_wl_video_HighTxMode, *entry_wl_video_TxPwr, *entry_wl_video_VideoMCSEnable, *entry_wl_video_VideoMCS, *entry_wl_video_TxBASize, *entry_wl_video_TxLifeTimeMode, *entry_wl_video_TxLifeTime, *entry_wl_video_TxRetryLimit;
 
@@ -457,18 +460,19 @@ int wl_video_proc_exit(void)
 
 	return 0;
 }
-#endif // VIDEO_TURBINE_SUPPORT //
+#endif /* VIDEO_TURBINE_SUPPORT */
 
 int wl_proc_init(void)
 {
-#ifdef VIDEO_TURBINE_SUPPORT
 	if (procRegDir == NULL)
 		procRegDir = proc_mkdir(PROCREG_DIR, NULL);
 
 	if (procRegDir) {
+#ifdef VIDEO_TURBINE_SUPPORT
 		wl_video_proc_init();
+#endif /* VIDEO_TURBINE_SUPPORT */
 	}
-#endif // VIDEO_TURBINE_SUPPORT //
+
 	return 0;
 }
 
@@ -481,7 +485,7 @@ int wl_proc_exit(void)
 	}
 	if (proc_ralink_wl)
 		remove_proc_entry("wl", procRegDir);
-#endif // VIDEO_TURBINE_SUPPORT //
+#endif /* VIDEO_TURBINE_SUPPORT */
 
 	
 	return 0;
@@ -497,5 +501,5 @@ int wl_proc_exit(void)
 
 	return 0;
 }
-#endif // CONFIG_PROC_FS //
+#endif /* CONFIG_PROC_FS */
 

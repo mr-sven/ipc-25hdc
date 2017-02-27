@@ -57,14 +57,14 @@
 #ifdef UAPSD_AP_SUPPORT
 #include "ap_uapsd.h"
 
-//#define UAPSD_DEBUG
+/*#define UAPSD_DEBUG */
 
 /* used to enable or disable UAPSD power save queue maintain mechanism */
 UCHAR gUAPSD_FlgNotQueueMaintain;
 
 #ifdef UAPSD_DEBUG
 UINT32 gUAPSD_SP_CloseAbnormalNum;
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
 
 #ifdef UAPSD_TIMING_RECORD_FUNC
 /* all unit: us */
@@ -86,7 +86,7 @@ UINT64 gUAPSD_TimingTx2Air[UAPSD_TIMING_RECORD_MAX];
 UINT32 gUAPSD_TimingSumIsr2Tasklet;
 UINT32 gUAPSD_TimingSumTrig2Txqueue;
 UINT32 gUAPSD_TimingSumTxqueue2Air;
-#endif // UAPSD_TIMING_RECORD_FUNC //
+#endif /* UAPSD_TIMING_RECORD_FUNC */
 
 
 #ifdef VENDOR_FEATURE3_SUPPORT
@@ -95,7 +95,7 @@ static VOID UAPSD_InsertTailQueueAc(
 	IN	MAC_TABLE_ENTRY	*pEntry,
 	IN	QUEUE_HEADER	*pQueueHeader,
 	IN	QUEUE_ENTRY		*pQueueEntry);
-#endif // VENDOR_FEATURE3_SUPPORT //
+#endif /* VENDOR_FEATURE3_SUPPORT */
 
 
 
@@ -118,15 +118,15 @@ VOID UAPSD_Init(
 	IN	PRTMP_ADAPTER		pAd)
 {
     /* allocate a lock resource for SMP environment */
-	NdisAllocateSpinLock(&pAd->UAPSDEOSPLock);
+	NdisAllocateSpinLock(pAd, &pAd->UAPSDEOSPLock);
 
 #ifdef UAPSD_DEBUG
 	DBGPRINT(RT_DEBUG_TRACE, ("uapsd> allocate a spinlock!\n"));
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
 
 #ifdef UAPSD_DEBUG
 	gUAPSD_SP_CloseAbnormalNum = 0;
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
 
 #ifdef UAPSD_TIMING_RECORD_FUNC
 	gUAPSD_TimingFlag = 0; /* default: DISABLE */
@@ -137,7 +137,7 @@ VOID UAPSD_Init(
 	gUAPSD_TimingSumIsr2Tasklet = 0;
 	gUAPSD_TimingSumTrig2Txqueue = 0;
 	gUAPSD_TimingSumTxqueue2Air = 0;
-#endif // UAPSD_TIMING_RECORD_FUNC //
+#endif /* UAPSD_TIMING_RECORD_FUNC */
 } /* End of UAPSD_Init */
 
 
@@ -163,7 +163,7 @@ VOID UAPSD_Release(
 
 #ifdef UAPSD_DEBUG
 	DBGPRINT(RT_DEBUG_TRACE, ("uapsd> release a spinlock!\n"));
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
 } /* End of UAPSD_Release */
 
 
@@ -195,7 +195,7 @@ VOID UAPSD_SP_Close(
 			/* SP is started for the station */
 #ifdef UAPSD_DEBUG
 			DBGPRINT(RT_DEBUG_TRACE, ("uapsd> [3] close SP!\n"));
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
 
 			if (pEntry->pUAPSDEOSPFrame != NULL)
 	        {
@@ -207,7 +207,7 @@ VOID UAPSD_SP_Close(
 				DBGPRINT(RT_DEBUG_TRACE, ("uapsd> [3] Free EOSP (UP = %d)!\n",
 						RTMP_GET_PACKET_UP(
 							QUEUE_ENTRY_TO_PACKET(pEntry->pUAPSDEOSPFrame))));
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
 
 				RELEASE_NDIS_PACKET(pAd,
 									QUEUE_ENTRY_TO_PACKET(pEntry->pUAPSDEOSPFrame),
@@ -339,9 +339,6 @@ VOID UAPSD_AssocParse(
         /* backup its UAPSD parameters */
 		pQosInfo = (PQBSS_STA_INFO_PARM) pElm;
 
-#ifdef WMM_ACM_SUPPORT
-		ACM_TG_CMT_MAX_SP_LENGTH;
-#endif // WMM_ACM_SUPPORT //
 
 		UAPSD[QID_AC_BE] = pQosInfo->UAPSD_AC_BE;
 		UAPSD[QID_AC_BK] = pQosInfo->UAPSD_AC_BK;
@@ -359,11 +356,6 @@ VOID UAPSD_AssocParse(
 			pEntry->bAPSDCapablePerAC[IdApsd] = UAPSD[IdApsd];
 			pEntry->bAPSDDeliverEnabledPerAC[IdApsd] = UAPSD[IdApsd];
 
-#ifdef WMM_ACM_SUPPORT
-			/* backup static APSD state in (re)association request frame */
-			pEntry->bACMAPSDBackup[IdApsd] = UAPSD[IdApsd];
-			pEntry->bACMAPSDBackupDeliverEnabled[IdApsd] = UAPSD[IdApsd];
-#endif // WMM_ACM_SUPPORT //
 		} /* End of for */
 
 		if ((pEntry->bAPSDCapablePerAC[QID_AC_BE] == 0) &&
@@ -476,7 +468,7 @@ VOID UAPSD_PacketEnqueue(
 					(ULONG)pPacket, IdAc,
 					pQueUapsd->Number));
 		} /* End of if */
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
     } /* End of if */
 } /* End of UAPSD_PacketEnqueue */
 
@@ -579,7 +571,7 @@ VOID UAPSD_QoSNullTxMgmtTxDoneHandle(
 
 #ifdef UAPSD_DEBUG
 			DBGPRINT(RT_DEBUG_TRACE, ("uapsd> close SP in QoSNullTxDoneHandle()!\n"));
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
         } /* End of if */
 
 		RTMP_SEM_UNLOCK(&pAd->UAPSDEOSPLock);
@@ -603,7 +595,7 @@ VOID UAPSD_QoSNullTxMgmtTxDoneHandle(
 #ifdef UAPSD_DEBUG
 			DBGPRINT(RT_DEBUG_TRACE, ("uapsd> a ps management frame is DMA done (Num = %d)!\n",
 					pEntry->UAPSDTxNum));
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
 
 			if (pEntry->UAPSDTxNum > 0)
 			{
@@ -692,7 +684,7 @@ VOID UAPSD_QoSNullTxMgmtTxDoneHandle(
 
 #ifdef UAPSD_DEBUG
 						DBGPRINT(RT_DEBUG_TRACE, ("uapsd> close SP2 in QoSNullTxMgmtTxDoneHandle()!\n"));
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
 					}
 					else
 					{
@@ -735,7 +727,11 @@ VOID UAPSD_QoSNullTxMgmtTxDoneHandle(
 						DEQUEUE_LOCK() -->
 						RTMP_IRQ_LOCK() ERROR!
 				*/
-				tasklet_hi_schedule(&pCookie->uapsd_eosp_sent_task);
+#ifdef WORKQUEUE_BH	
+				RTMP_OS_TASKLET_SCHE(&pCookie->uapsd_eosp_sent_work);
+#else
+				RTMP_OS_TASKLET_SCHE(&pCookie->uapsd_eosp_sent_task);
+#endif /* WORKQUEUE_BH */
 
 			} /* End of if */
 		}
@@ -811,9 +807,8 @@ VOID UAPSD_QueueMaintenance(
 
 		pEntry->UAPSDQIdleCount ++;
 
-		if (pEntry->UAPSDQIdleCount > UAPSD_QUEUE_TIMEOUT)
+		if (pEntry->UAPSDQIdleCount > pAd->MacTab.MsduLifeTime)
         {
-#ifdef UAPSD_DEBUG
 			if (FlgUapsdPkt)
 			{
 				DBGPRINT(RT_DEBUG_TRACE,
@@ -825,7 +820,6 @@ VOID UAPSD_QueueMaintenance(
 				DBGPRINT(RT_DEBUG_TRACE,
 						("uapsd> UAPSD EOSP timeout! clean the EOSP frame!\n"));
 			} /* End of if */
-#endif // UAPSD_DEBUG //
 
             /* UAPSDQIdleCount will be 0 after trigger frame is received */
 
@@ -913,7 +907,7 @@ VOID UAPSD_SP_AUE_Handle(
 	{
 #ifdef UAPSD_DEBUG
 		DBGPRINT(RT_DEBUG_TRACE, ("uapsd> aux: Station actives! Close SP!\n"));
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
 		pEntry->bAPSDFlagSPStart = 0;
 		pEntry->bAPSDFlagEOSPOK = 0;
 		return;
@@ -934,7 +928,7 @@ VOID UAPSD_SP_AUE_Handle(
 
 #ifdef UAPSD_DEBUG
 		DBGPRINT(RT_DEBUG_TRACE, ("uapsd> aux: Tx Num = %d\n", pEntry->UAPSDTxNum));
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
 
 		FlgEosp = FALSE;
 
@@ -948,13 +942,13 @@ VOID UAPSD_SP_AUE_Handle(
 
 #ifdef UAPSD_DEBUG
 			DBGPRINT(RT_DEBUG_TRACE, ("uapsd> legacy PS packet is sent!\n"));
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
 		}
 		else
 		{
 #ifdef UAPSD_TIMING_RECORD_FUNC
 			UAPSD_TIMING_RECORD(pAd, UAPSD_TIMING_RECORD_TX2AIR);
-#endif // UAPSD_TIMING_RECORD_FUNC //
+#endif /* UAPSD_TIMING_RECORD_FUNC */
 		} /* End of if */
 
 		/* record current time */
@@ -976,7 +970,7 @@ VOID UAPSD_SP_AUE_Handle(
 
 #ifdef UAPSD_DEBUG
 					DBGPRINT(RT_DEBUG_TRACE, ("uapsd> aux: send EOSP frame...\n"));
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
 
 					pPkt = QUEUE_ENTRY_TO_PACKET(pEntry->pUAPSDEOSPFrame);
 					QueId = RTMP_GET_PACKET_UAPSD_QUE_ID(pPkt);
@@ -1026,7 +1020,11 @@ VOID UAPSD_SP_AUE_Handle(
 						DEQUEUE_LOCK() -->
 						RTMP_IRQ_LOCK() ERROR!
 						*/
-				tasklet_hi_schedule(&pCookie->uapsd_eosp_sent_task);
+#ifdef WORKQUEUE_BH	
+				RTMP_OS_TASKLET_SCHE(&pCookie->uapsd_eosp_sent_work);
+#else
+				RTMP_OS_TASKLET_SCHE(&pCookie->uapsd_eosp_sent_task);
+#endif /* WORKQUEUE_BH */
 			} /* End of if */
 
 			/* must return here; Or double unlock UAPSDEOSPLock */
@@ -1040,7 +1038,7 @@ VOID UAPSD_SP_AUE_Handle(
 			{
 #ifdef UAPSD_DEBUG
 				DBGPRINT(RT_DEBUG_TRACE, ("uapsd> aux: SP is suspend, keep SP if exists!\n"));
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
 
 				/* keep SP, not to close SP */
 				pEntry->bAPSDFlagEOSPOK = 1;
@@ -1054,13 +1052,13 @@ VOID UAPSD_SP_AUE_Handle(
 
 #ifdef UAPSD_DEBUG
 				DBGPRINT(RT_DEBUG_TRACE, ("uapsd> aux: close a SP.\n\n\n"));
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
             } /* End of if */
         } /* End of if */
 
 		RTMP_SEM_UNLOCK(&pAd->UAPSDEOSPLock);
 	} /* End of if (pEntry != NULL) */
-#endif // UAPSD_SP_ACCURATE //
+#endif /* UAPSD_SP_ACCURATE */
 } /* End of UAPSD_SP_AUE_Handle */
 
 
@@ -1089,7 +1087,7 @@ VOID UAPSD_SP_CloseInRVDone(
 	IN	PRTMP_ADAPTER		pAd)
 {
 	UINT32 IdEntry;
-
+	int		FirstWcid = 0;
 
     /* sanity check */
 	if (pAd->CommonCfg.bAPSDCapable != TRUE)
@@ -1100,8 +1098,12 @@ VOID UAPSD_SP_CloseInRVDone(
 		return; /* no any station is in power save mode */
 	/* End of if */
 
+#ifdef P2P_SUPPORT
+	FirstWcid = 2;
+#endif /* P2P_SUPPORT */
+
     /* check for all CLIENT's UAPSD Service Period */
-	for(IdEntry=0; IdEntry<MAX_LEN_OF_MAC_TABLE; IdEntry++)
+	for(IdEntry = FirstWcid; IdEntry < MAX_LEN_OF_MAC_TABLE; IdEntry++)
     {
 		MAC_TABLE_ENTRY *pEntry = &pAd->MacTab.Content[IdEntry];
 
@@ -1124,7 +1126,7 @@ VOID UAPSD_SP_CloseInRVDone(
 
 #ifdef UAPSD_DEBUG
 			DBGPRINT(RT_DEBUG_TRACE,("uapsd> close SP in UAPSD_SP_CloseInRVDone()!\n\n\n"));
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
 
 			pEntry->bAPSDFlagSPStart = 0;
 			pEntry->bAPSDFlagEOSPOK = 0;
@@ -1169,7 +1171,7 @@ VOID UAPSD_SP_PacketCheck(
 	if (ATE_ON(pAd))
 		return;
 	/* End of if */
-#endif // RALINK_ATE //
+#endif /* RALINK_ATE */
 
     /* sanity check */
 	if (pPacket == NULL)
@@ -1233,7 +1235,7 @@ VOID UAPSD_SP_PacketCheck(
 #ifdef UAPSD_DEBUG
 		DBGPRINT(RT_DEBUG_TRACE, ("uapsd> a qos data frame is DMA done (Num = %d)!\n",
 				pEntry->UAPSDTxNum));
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
 
 		if (pEntry->UAPSDTxNum > 0)
         {
@@ -1334,7 +1336,7 @@ VOID UAPSD_SP_PacketCheck(
 
 #ifdef UAPSD_DEBUG
 				DBGPRINT(RT_DEBUG_TRACE, ("uapsd> close SP in SP_PacketCheck()!\n"));
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
             } /* End of if */
         } /* End of if */
 	} /* End of if (pEntry != NULL) */
@@ -1368,7 +1370,11 @@ VOID UAPSD_SP_PacketCheck(
 				DEQUEUE_LOCK() -->
 				RTMP_IRQ_LOCK() ERROR!
 		*/
-		tasklet_hi_schedule(&pCookie->uapsd_eosp_sent_task);
+#ifdef WORKQUEUE_BH	
+		RTMP_OS_TASKLET_SCHE(&pCookie->uapsd_eosp_sent_work);
+#else
+		RTMP_OS_TASKLET_SCHE(&pCookie->uapsd_eosp_sent_task);
+#endif /* WORKQUEUE_BH */
 	} /* End of if */
 } /* End of UAPSD_SP_PacketCheck */
 
@@ -1541,7 +1547,7 @@ VOID UAPSD_TimeingRecordLoopIndex(
 	gUAPSD_TimingLoopIndex = LoopIndex;
 } /* End of UAPSD_TimeingRecordLoopIndex */
 
-#endif // UAPSD_TIMING_RECORD_FUNC //
+#endif /* UAPSD_TIMING_RECORD_FUNC */
 
 
 /*
@@ -1587,11 +1593,11 @@ VOID UAPSD_TriggerFrameHandle(
 	BOOLEAN	FlgMgmtFrame;
 	UINT32	Aid, QueId;
 	INT32	IdAc; /* must be signed, can not use unsigned */
-//	ULONG    FlgIrq;
+/*	ULONG    FlgIrq; */
 
 #ifdef UAPSD_SP_ACCURATE
 	ULONG	TimeNow;
-#endif // UAPSD_SP_ACCURATE //
+#endif /* UAPSD_SP_ACCURATE */
 
 
 	/* sanity check for Service Period of the STATION */
@@ -1600,7 +1606,7 @@ VOID UAPSD_TriggerFrameHandle(
 #ifdef UAPSD_DEBUG
 	DBGPRINT(RT_DEBUG_TRACE, ("\nuapsd> bAPSDFlagLegacySent = %d!\n",
 			pEntry->bAPSDFlagLegacySent));
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
 
 	if (pEntry->bAPSDFlagSPStart != 0)
 	{
@@ -1623,7 +1629,7 @@ VOID UAPSD_TriggerFrameHandle(
 
 #ifdef UAPSD_DEBUG
 		DBGPRINT(RT_DEBUG_TRACE, ("uapsd> sorry! SP is not yet closed!\n"));
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
 
 #ifdef UAPSD_SP_ACCURATE
 		/*
@@ -1647,7 +1653,7 @@ VOID UAPSD_TriggerFrameHandle(
 						(TimeNow - pEntry->UAPSDTimeStampLast)));
 
 			gUAPSD_SP_CloseAbnormalNum ++;
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
 
 			RTMP_SEM_UNLOCK(&pAd->UAPSDEOSPLock);
 			UAPSD_SP_Close(pAd, pEntry);
@@ -1655,19 +1661,19 @@ VOID UAPSD_TriggerFrameHandle(
 		}
 		else
 		{
-#endif // UAPSD_SP_ACCURATE //
+#endif /* UAPSD_SP_ACCURATE */
 
 			RTMP_SEM_UNLOCK(&pAd->UAPSDEOSPLock);
             return;
 
 #ifdef UAPSD_SP_ACCURATE
 		}
-#endif // UAPSD_SP_ACCURATE //
+#endif /* UAPSD_SP_ACCURATE */
 	} /* End of if */
 
 #ifdef UAPSD_TIMING_RECORD_FUNC
 	UAPSD_TIMING_RECORD(pAd, UAPSD_TIMING_RECORD_TRG_RCV);
-#endif // UAPSD_TIMING_RECORD_FUNC //
+#endif /* UAPSD_TIMING_RECORD_FUNC */
 
 #ifdef UAPSD_DEBUG
 	if (pEntry->pUAPSDEOSPFrame != NULL)
@@ -1676,7 +1682,7 @@ VOID UAPSD_TriggerFrameHandle(
 		RTMP_SEM_UNLOCK(&pAd->UAPSDEOSPLock);
 		return;
 	} /* End of if */
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
 
 	if (pEntry->MaxSPLength >= 4)
 	{
@@ -1720,12 +1726,12 @@ VOID UAPSD_TriggerFrameHandle(
 			pEntry->bAPSDFlagSpRoughUse = 0;
 		/* End of if */
 	} /* End of if */
-#endif // RTMP_MAC_PCI //
+#endif /* RTMP_MAC_PCI */
 
 #else
 
 	pEntry->bAPSDFlagSpRoughUse = 1;
-#endif // UAPSD_SP_ACCURATE //
+#endif /* UAPSD_SP_ACCURATE */
 
 
 	/* sanity Check for UAPSD condition */
@@ -1765,7 +1771,7 @@ VOID UAPSD_TriggerFrameHandle(
 		Protect TxSwQueue0 & McastPsQueue because use them in
 		interrupt context.
 	*/
-//	RTMP_IRQ_LOCK(FlgIrq);
+/*	RTMP_IRQ_LOCK(FlgIrq); */
 
 	/* init */
 	FlgQueEmpty = TRUE;
@@ -1919,7 +1925,7 @@ VOID UAPSD_TriggerFrameHandle(
 			TxPktNum, pEntry->bAPSDFlagSpRoughUse, FlgMgmtFrame,
 			gUAPSD_SP_CloseAbnormalNum, DebugTimeNow));
 }
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
 
 	if (TxPktNum <= 1)
 	{
@@ -1935,7 +1941,7 @@ VOID UAPSD_TriggerFrameHandle(
 			DBGPRINT(RT_DEBUG_TRACE,
 					 ("uapsd> No data, send a Qos-Null frame with ESOP bit on and "
 					  "UP=%d to end USP\n", UpOfFrame));
-#endif // RELEASE_EXCLUDE //
+#endif /* RELEASE_EXCLUDE */
 		}
 		else
         {
@@ -1947,7 +1953,7 @@ VOID UAPSD_TriggerFrameHandle(
 			DBGPRINT(RT_DEBUG_TRACE,
 					("uapsd> Only one packet with UP = %d\n",
 					RTMP_GET_PACKET_UP(pQuedPkt)));
-#endif // RELEASE_EXCLUDE //
+#endif /* RELEASE_EXCLUDE */
 		} /* End of if */
 
 		/*
@@ -1980,7 +1986,7 @@ VOID UAPSD_TriggerFrameHandle(
 	{
 		DBGPRINT(RT_DEBUG_TRACE, ("uapsd> The EOSP frame is a management frame.\n"));
 	} /* End of if */
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
 
 
 #ifdef UAPSD_SP_ACCURATE
@@ -2017,9 +2023,9 @@ VOID UAPSD_TriggerFrameHandle(
 #ifdef UAPSD_DEBUG
 		DBGPRINT(RT_DEBUG_TRACE, ("uapsd> A legacy PS is sent! UAPSDTxNum = %d\n",
 				pEntry->UAPSDTxNum));
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
 	} /* End of if */
-#endif // UAPSD_SP_ACCURATE //
+#endif /* UAPSD_SP_ACCURATE */
 
 
 	/* clear corresponding TIM bit */
@@ -2060,12 +2066,12 @@ VOID UAPSD_TriggerFrameHandle(
 
 #ifdef UAPSD_DEBUG
 		DBGPRINT(RT_DEBUG_TRACE, ("uapsd> end a SP by a QoS Null frame!\n"));
-#endif // UAPSD_DEBUG //
+#endif /* UAPSD_DEBUG */
 	} /* End of if */
 
 #ifdef UAPSD_TIMING_RECORD_FUNC
 	UAPSD_TIMING_RECORD(pAd, UAPSD_TIMING_RECORD_MOVE2TX);
-#endif // UAPSD_TIMING_RECORD_FUNC //
+#endif /* UAPSD_TIMING_RECORD_FUNC */
 
 	/* Dequeue outgoing frames from TxSwQueue0..3 queue and process it */
 	RTMPDeQueuePacket(pAd, FALSE, NUM_OF_TX_RING, MAX_TX_PROCESS);
@@ -2101,8 +2107,8 @@ static VOID UAPSD_InsertTailQueueAc(
 {
 	InsertTailQueueAc(pAd, pEntry, pQueueHeader, pQueueEntry);
 } /* End of InsertTailQueueAc */
-#endif // VENDOR_FEATURE3_SUPPORT //
+#endif /* VENDOR_FEATURE3_SUPPORT */
 
-#endif // UAPSD_AP_SUPPORT //
+#endif /* UAPSD_AP_SUPPORT */
 
 /* End of ap_uapsd.c */

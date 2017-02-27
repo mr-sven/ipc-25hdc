@@ -34,13 +34,12 @@
 
 #include "rtmp.h"
   
-#define AUTH_TIMEOUT	300         // unit: msec
-#define ASSOC_TIMEOUT	300         // unit: msec
-//#define JOIN_TIMEOUT	2000        // unit: msec // not used in Ap-client mode, remove it
-#define PROBE_TIMEOUT	1000        // unit: msec
+#define AUTH_TIMEOUT	300         /* unit: msec */
+#define ASSOC_TIMEOUT	300         /* unit: msec */
+/*#define JOIN_TIMEOUT	2000        // unit: msec // not used in Ap-client mode, remove it */
+#define PROBE_TIMEOUT	1000        /* unit: msec */
   
 #define APCLI_ROOT_BSSID_GET(pAd, wcid) ((pAd)->MacTab.Content[(wcid)].Addr)
-#define APCLI_IF_UP_CHECK(pAd, ifidx) ((pAd)->ApCfg.ApCliTab[(ifidx)].dev->flags & IFF_UP)
 
 /* sanity check for apidx */
 #define APCLI_MR_APIDX_SANITY_CHECK(idx) \
@@ -65,33 +64,33 @@ typedef struct _STA_CTRL_JOIN_REQ_STRUCT {
 BOOLEAN isValidApCliIf(
 	SHORT ifIndex);
 
-//
-// Private routines in apcli_ctrl.c
-//
+/* */
+/* Private routines in apcli_ctrl.c */
+/* */
 VOID ApCliCtrlStateMachineInit(
 	IN PRTMP_ADAPTER pAd,
 	IN STATE_MACHINE *Sm,
 	OUT STATE_MACHINE_FUNC Trans[]);
 
-//
-// Private routines in apcli_sync.c
-//
+/* */
+/* Private routines in apcli_sync.c */
+/* */
 VOID ApCliSyncStateMachineInit(
     IN PRTMP_ADAPTER pAd, 
     IN STATE_MACHINE *Sm, 
     OUT STATE_MACHINE_FUNC Trans[]);
 
-//
-// Private routines in apcli_auth.c
-//
+/* */
+/* Private routines in apcli_auth.c */
+/* */
 VOID ApCliAuthStateMachineInit(
     IN PRTMP_ADAPTER pAd, 
     IN STATE_MACHINE *Sm, 
     OUT STATE_MACHINE_FUNC Trans[]);
 
-//
-// Private routines in apcli_assoc.c
-//
+/* */
+/* Private routines in apcli_assoc.c */
+/* */
 VOID ApCliAssocStateMachineInit(
     IN PRTMP_ADAPTER pAd, 
     IN STATE_MACHINE *Sm, 
@@ -114,29 +113,19 @@ BOOLEAN 	ApCliValidateRSNIE(
 	IN		USHORT			eid_len,
 	IN		USHORT			idx);
 
-VOID RT28xx_ApCli_Init(
-	IN PRTMP_ADAPTER 	pAd,
-	IN PNET_DEV			pPhyNetDev);
+
+VOID ApCli_Remove(
+	IN PRTMP_ADAPTER 	pAd);
 
 VOID RT28xx_ApCli_Close(
 	IN PRTMP_ADAPTER 	pAd);
 
-VOID RT28xx_ApCli_Remove(
-	IN PRTMP_ADAPTER 	pAd);
 
-
-VOID RT28xx_ApCli_Remove(
-	IN PRTMP_ADAPTER ad_p);
 
 INT ApCliIfLookUp(
 	IN PRTMP_ADAPTER pAd,
 	IN PUCHAR pAddr);
 
-INT ApCli_VirtualIF_Open(
-	IN	PNET_DEV	dev_p);
-
-INT ApCli_VirtualIF_Close(
-	IN	PNET_DEV	dev_p);
 
 INT ApCli_VirtualIF_PacketSend(
 	IN PNDIS_PACKET		skb_p, 
@@ -144,7 +133,7 @@ INT ApCli_VirtualIF_PacketSend(
 
 INT ApCli_VirtualIF_Ioctl(
 	IN PNET_DEV				dev_p,
-	IN OUT struct ifreq 	*rq_p,
+	IN OUT VOID 			*rq_p,
 	IN INT cmd);
 
 	
@@ -163,7 +152,7 @@ BOOLEAN ApCliCheckHt(
 	IN		USHORT 				IfIndex,
 	IN OUT	HT_CAPABILITY_IE 	*pHtCapability,
 	IN OUT	ADD_HT_INFO_IE 		*pAddHtInfo);
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 
 BOOLEAN ApCliLinkUp(
 	IN PRTMP_ADAPTER pAd,
@@ -202,12 +191,16 @@ BOOLEAN ApCliPeerAssocRspSanity(
     OUT USHORT *pCapabilityInfo, 
     OUT USHORT *pStatus, 
     OUT USHORT *pAid, 
+#ifdef P2P_SUPPORT
+	OUT ULONG *P2PSubelementLen, 
+	OUT PUCHAR pP2pSubelement,
+#endif /* P2P_SUPPORT */
     OUT UCHAR SupRate[], 
     OUT UCHAR *pSupRateLen,
     OUT UCHAR ExtRate[], 
     OUT UCHAR *pExtRateLen,
     OUT HT_CAPABILITY_IE *pHtCapability,
-    OUT ADD_HT_INFO_IE *pAddHtInfo,	// AP might use this additional ht info IE 
+    OUT ADD_HT_INFO_IE *pAddHtInfo,	/* AP might use this additional ht info IE */
     OUT UCHAR *pHtCapabilityLen,
     OUT UCHAR *pAddHtInfoLen,
     OUT UCHAR *pNewExtChannelOffset,
@@ -261,19 +254,26 @@ BOOLEAN APCliInstallSharedKey(
 	IN	UCHAR			DefaultKeyIdx,
 	IN  MAC_TABLE_ENTRY *pEntry);
 
-#ifdef APCLI_AUTO_CONNECT_SUPPORT
-BOOLEAN ApCliAutoConnectExec(
-	IN  PRTMP_ADAPTER   pAd);
+VOID ApCliUpdateMlmeRate(
+	IN PRTMP_ADAPTER	pAd);
 
-BOOLEAN ApcliCompareAuthEncryp(
-	IN PAPCLI_STRUCT 					pApCliEntry,
-	IN NDIS_802_11_AUTHENTICATION_MODE AuthMode,
-	IN NDIS_802_11_AUTHENTICATION_MODE AuthModeAux,
-	IN NDIS_802_11_WEP_STATUS			WEPstatus,
-	IN CIPHER_SUITE 						WPA);
-#endif /* APCLI_AUTO_CONNECT_SUPPORT */
+VOID APCli_Init(
+	IN	PRTMP_ADAPTER				pAd,
+	IN	RTMP_OS_NETDEV_OP_HOOK		*pNetDevOps);
 
-#endif // APCLI_SUPPORT //
+BOOLEAN ApCli_Open(
+	IN	PRTMP_ADAPTER		pAd,
+	IN	PNET_DEV			dev_p);
+
+BOOLEAN ApCli_Close(
+	IN	PRTMP_ADAPTER	pAd,
+	IN	PNET_DEV		dev_p);
+
+BOOLEAN ApCliWaitProbRsp(
+	IN PRTMP_ADAPTER pAd,
+	IN USHORT ifIndex);
+
+#endif /* APCLI_SUPPORT */
 
 #endif /* _AP_APCLI_H_ */
 

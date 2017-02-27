@@ -26,53 +26,18 @@
 */
 #include "rt_config.h"
 
-// 2.4 Ghz channel plan index in the TxPower arrays.
-#define	BG_BAND_REGION_0_START	0			// 1,2,3,4,5,6,7,8,9,10,11	
-#define	BG_BAND_REGION_0_SIZE	11
-#define	BG_BAND_REGION_1_START	0			// 1,2,3,4,5,6,7,8,9,10,11,12,13
-#define	BG_BAND_REGION_1_SIZE	13
-#define	BG_BAND_REGION_2_START	9			// 10,11
-#define	BG_BAND_REGION_2_SIZE	2
-#define	BG_BAND_REGION_3_START	9			// 10,11,12,13
-#define	BG_BAND_REGION_3_SIZE	4
-#define	BG_BAND_REGION_4_START	13			// 14
-#define	BG_BAND_REGION_4_SIZE	1
-#define	BG_BAND_REGION_5_START	0			// 1,2,3,4,5,6,7,8,9,10,11,12,13,14 
-#define	BG_BAND_REGION_5_SIZE	14
-#define	BG_BAND_REGION_6_START	2			// 3,4,5,6,7,8,9
-#define	BG_BAND_REGION_6_SIZE	7
-#define	BG_BAND_REGION_7_START	4			// 5,6,7,8,9,10,11,12,13
-#define	BG_BAND_REGION_7_SIZE	9
-#define	BG_BAND_REGION_31_START	0			// 1,2,3,4,5,6,7,8,9,10,11,12,13,14 
-#define	BG_BAND_REGION_31_SIZE	14
-
-// 5 Ghz channel plan index in the TxPower arrays.
-UCHAR A_BAND_REGION_0_CHANNEL_LIST[]={36, 40, 44, 48, 52, 56, 60, 64, 149, 153, 157, 161, 165};
-UCHAR A_BAND_REGION_1_CHANNEL_LIST[]={36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140};
-UCHAR A_BAND_REGION_2_CHANNEL_LIST[]={36, 40, 44, 48, 52, 56, 60, 64};
-UCHAR A_BAND_REGION_3_CHANNEL_LIST[]={52, 56, 60, 64, 149, 153, 157, 161};
-UCHAR A_BAND_REGION_4_CHANNEL_LIST[]={149, 153, 157, 161, 165};
-UCHAR A_BAND_REGION_5_CHANNEL_LIST[]={149, 153, 157, 161};
-UCHAR A_BAND_REGION_6_CHANNEL_LIST[]={36, 40, 44, 48};
-UCHAR A_BAND_REGION_7_CHANNEL_LIST[]={36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 149, 153, 157, 161, 165, 169, 173};
-UCHAR A_BAND_REGION_8_CHANNEL_LIST[]={52, 56, 60, 64};
-UCHAR A_BAND_REGION_9_CHANNEL_LIST[]={36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 132, 136, 140, 149, 153, 157, 161, 165};
-UCHAR A_BAND_REGION_10_CHANNEL_LIST[]={36, 40, 44, 48, 149, 153, 157, 161, 165};
-UCHAR A_BAND_REGION_11_CHANNEL_LIST[]={36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 149, 153, 157, 161};
-UCHAR A_BAND_REGION_12_CHANNEL_LIST[]={36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140};
-UCHAR A_BAND_REGION_13_CHANNEL_LIST[]={52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 149, 153, 157, 161};
-UCHAR A_BAND_REGION_14_CHANNEL_LIST[]={36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 136, 140, 149, 153, 157, 161, 165};
-UCHAR A_BAND_REGION_15_CHANNEL_LIST[]={149, 153, 157, 161, 165, 169, 173};
-UCHAR A_BAND_REGION_16_CHANNEL_LIST[]={52, 56, 60, 64, 149, 153, 157, 161, 165};
-UCHAR A_BAND_REGION_17_CHANNEL_LIST[]={36, 40, 44, 48, 149, 153, 157, 161};
-UCHAR A_BAND_REGION_18_CHANNEL_LIST[]={36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 132, 136, 140};
-UCHAR A_BAND_REGION_19_CHANNEL_LIST[]={56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 149, 153, 157, 161};
-UCHAR A_BAND_REGION_20_CHANNEL_LIST[]={36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 149, 153, 157, 161};
-UCHAR A_BAND_REGION_21_CHANNEL_LIST[]={36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 149, 153, 157, 161};
-
-
-//BaSizeArray follows the 802.11n definition as MaxRxFactor.  2^(13+factor) bytes. When factor =0, it's about Ba buffer size =8.
+/*BaSizeArray follows the 802.11n definition as MaxRxFactor.  2^(13+factor) bytes. When factor =0, it's about Ba buffer size =8.*/
 UCHAR BaSizeArray[4] = {8,16,32,64};
+
+#ifdef P2P_SUPPORT
+extern UCHAR	WILDP2PSSID[];
+extern UCHAR	WILDP2PSSIDLEN;
+#endif /* P2P_SUPPORT */
+
+extern COUNTRY_REGION_CH_DESC Country_Region_ChDesc_2GHZ[];
+extern UINT16 const Country_Region_GroupNum_2GHZ;
+extern COUNTRY_REGION_CH_DESC Country_Region_ChDesc_5GHZ[];
+extern UINT16 const Country_Region_GroupNum_5GHZ;
 
 /* 
 	==========================================================================
@@ -90,206 +55,168 @@ VOID BuildChannelList(
 	IN PRTMP_ADAPTER pAd)
 {
 	UCHAR i, j, index=0, num=0;
-	PUCHAR	pChannelList = NULL;
+	PCH_DESC pChDesc = NULL;
+	BOOLEAN bRegionFound = FALSE;
+	PUCHAR pChannelList;
+	PUCHAR pChannelListFlag;
 
 	NdisZeroMemory(pAd->ChannelList, MAX_NUM_OF_CHANNELS * sizeof(CHANNEL_TX_POWER));
 
-	// if not 11a-only mode, channel list starts from 2.4Ghz band
+	/* if not 11a-only mode, channel list starts from 2.4Ghz band*/
 	if ((pAd->CommonCfg.PhyMode != PHY_11A) 
 #ifdef DOT11_N_SUPPORT
 		&& (pAd->CommonCfg.PhyMode != PHY_11AN_MIXED) && (pAd->CommonCfg.PhyMode != PHY_11N_5G)
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 	)
 	{
-		switch (pAd->CommonCfg.CountryRegion  & 0x7f)
+		for (i = 0; i < Country_Region_GroupNum_2GHZ; i++)
 		{
-			case REGION_0_BG_BAND:	// 1 -11
-				NdisMoveMemory(&pAd->ChannelList[index], &pAd->TxPower[BG_BAND_REGION_0_START], sizeof(CHANNEL_TX_POWER) * BG_BAND_REGION_0_SIZE);
-				index += BG_BAND_REGION_0_SIZE;
+			if ((pAd->CommonCfg.CountryRegion & 0x7f) ==
+				Country_Region_ChDesc_2GHZ[i].RegionIndex)
+			{
+				pChDesc = Country_Region_ChDesc_2GHZ[i].pChDesc;
+				num = TotalChNum(pChDesc);
+				bRegionFound = TRUE;
 				break;
-			case REGION_1_BG_BAND:	// 1 - 13
-				NdisMoveMemory(&pAd->ChannelList[index], &pAd->TxPower[BG_BAND_REGION_1_START], sizeof(CHANNEL_TX_POWER) * BG_BAND_REGION_1_SIZE);
-				index += BG_BAND_REGION_1_SIZE;
-				break;
-			case REGION_2_BG_BAND:	// 10 - 11
-				NdisMoveMemory(&pAd->ChannelList[index], &pAd->TxPower[BG_BAND_REGION_2_START], sizeof(CHANNEL_TX_POWER) * BG_BAND_REGION_2_SIZE);
-				index += BG_BAND_REGION_2_SIZE;
-				break;
-			case REGION_3_BG_BAND:	// 10 - 13
-				NdisMoveMemory(&pAd->ChannelList[index], &pAd->TxPower[BG_BAND_REGION_3_START], sizeof(CHANNEL_TX_POWER) * BG_BAND_REGION_3_SIZE);
-				index += BG_BAND_REGION_3_SIZE;
-				break;
-			case REGION_4_BG_BAND:	// 14
-				NdisMoveMemory(&pAd->ChannelList[index], &pAd->TxPower[BG_BAND_REGION_4_START], sizeof(CHANNEL_TX_POWER) * BG_BAND_REGION_4_SIZE);
-				index += BG_BAND_REGION_4_SIZE;
-				break;
-			case REGION_5_BG_BAND:	// 1 - 14
-				NdisMoveMemory(&pAd->ChannelList[index], &pAd->TxPower[BG_BAND_REGION_5_START], sizeof(CHANNEL_TX_POWER) * BG_BAND_REGION_5_SIZE);
-				index += BG_BAND_REGION_5_SIZE;
-				break;
-			case REGION_6_BG_BAND:	// 3 - 9
-				NdisMoveMemory(&pAd->ChannelList[index], &pAd->TxPower[BG_BAND_REGION_6_START], sizeof(CHANNEL_TX_POWER) * BG_BAND_REGION_6_SIZE);
-				index += BG_BAND_REGION_6_SIZE;
-				break;
-			case REGION_7_BG_BAND:  // 5 - 13
-				NdisMoveMemory(&pAd->ChannelList[index], &pAd->TxPower[BG_BAND_REGION_7_START], sizeof(CHANNEL_TX_POWER) * BG_BAND_REGION_7_SIZE);
-				index += BG_BAND_REGION_7_SIZE;
-				break;
-			case REGION_31_BG_BAND:	// 1 - 14
-				NdisMoveMemory(&pAd->ChannelList[index], &pAd->TxPower[BG_BAND_REGION_31_START], sizeof(CHANNEL_TX_POWER) * BG_BAND_REGION_31_SIZE);
-				index += BG_BAND_REGION_31_SIZE;
-				break;
-			default:            // Error. should never happen
-				break;
-		}   
-		for (i=0; i<index; i++)
-			pAd->ChannelList[i].MaxTxPwr = 20;
+			}
+		}
+
+		if (!bRegionFound)
+		{
+			DBGPRINT(RT_DEBUG_ERROR,("CountryRegion=%d not support", pAd->CommonCfg.CountryRegion));
+			return;		
+		}
+
+		if (num > 0)
+		{
+			os_alloc_mem(NULL, (UCHAR **)&pChannelList, num * sizeof(UCHAR));
+
+			if (!pChannelList)
+			{
+				DBGPRINT(RT_DEBUG_ERROR,("%s:Allocate memory for ChannelList failed\n", __FUNCTION__));
+				return;
+			}
+
+			os_alloc_mem(NULL, (UCHAR **)&pChannelListFlag, num * sizeof(UCHAR));
+
+			if (!pChannelListFlag)
+			{
+				DBGPRINT(RT_DEBUG_ERROR,("%s:Allocate memory for ChannelListFlag failed\n", __FUNCTION__));
+				os_free_mem(NULL, pChannelList);
+				return;	
+			}
+
+			for (i = 0; i < num; i++)
+			{
+				pChannelList[i] = GetChannel_2GHZ(pChDesc, i);
+				pChannelListFlag[i] = GetChannelFlag(pChDesc, i);
+			}
+
+			for (i = 0; i < num; i++)
+			{
+				for (j = 0; j < MAX_NUM_OF_CHANNELS; j++)
+				{
+					if (pChannelList[i] == pAd->TxPower[j].Channel)
+						NdisMoveMemory(&pAd->ChannelList[index+i], &pAd->TxPower[j], sizeof(CHANNEL_TX_POWER));
+						pAd->ChannelList[index + i].Flags = pChannelListFlag[i];
+				}
+
+				pAd->ChannelList[index+i].MaxTxPwr = 20;
+			}
+
+			index += num;
+
+			os_free_mem(NULL, pChannelList);
+			os_free_mem(NULL, pChannelListFlag);
+		}
+		bRegionFound = FALSE;
+		num = 0;
 	}
 
 	if ((pAd->CommonCfg.PhyMode == PHY_11A) || (pAd->CommonCfg.PhyMode == PHY_11ABG_MIXED) 
 #ifdef DOT11_N_SUPPORT
 		|| (pAd->CommonCfg.PhyMode == PHY_11ABGN_MIXED) || (pAd->CommonCfg.PhyMode == PHY_11AN_MIXED) 
 		|| (pAd->CommonCfg.PhyMode == PHY_11AGN_MIXED) || (pAd->CommonCfg.PhyMode == PHY_11N_5G)
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 	)
 	{
-		switch (pAd->CommonCfg.CountryRegionForABand & 0x7f)
+		for (i = 0; i < Country_Region_GroupNum_5GHZ; i++)
 		{
-			case REGION_0_A_BAND:
-				num = sizeof(A_BAND_REGION_0_CHANNEL_LIST)/sizeof(UCHAR);
-				pChannelList = A_BAND_REGION_0_CHANNEL_LIST;
+			if ((pAd->CommonCfg.CountryRegionForABand & 0x7f) ==
+				Country_Region_ChDesc_5GHZ[i].RegionIndex)
+			{
+				pChDesc = Country_Region_ChDesc_5GHZ[i].pChDesc;
+				num = TotalChNum(pChDesc);
+				bRegionFound = TRUE;
 				break;
-			case REGION_1_A_BAND:
-				num = sizeof(A_BAND_REGION_1_CHANNEL_LIST)/sizeof(UCHAR);
-				pChannelList = A_BAND_REGION_1_CHANNEL_LIST;
-				break;
-			case REGION_2_A_BAND:
-				num = sizeof(A_BAND_REGION_2_CHANNEL_LIST)/sizeof(UCHAR);
-				pChannelList = A_BAND_REGION_2_CHANNEL_LIST;
-				break;
-			case REGION_3_A_BAND:
-				num = sizeof(A_BAND_REGION_3_CHANNEL_LIST)/sizeof(UCHAR);
-				pChannelList = A_BAND_REGION_3_CHANNEL_LIST;
-				break;
-			case REGION_4_A_BAND:
-				num = sizeof(A_BAND_REGION_4_CHANNEL_LIST)/sizeof(UCHAR);
-				pChannelList = A_BAND_REGION_4_CHANNEL_LIST;
-				break;
-			case REGION_5_A_BAND:
-				num = sizeof(A_BAND_REGION_5_CHANNEL_LIST)/sizeof(UCHAR);
-				pChannelList = A_BAND_REGION_5_CHANNEL_LIST;
-				break;
-			case REGION_6_A_BAND:
-				num = sizeof(A_BAND_REGION_6_CHANNEL_LIST)/sizeof(UCHAR);
-				pChannelList = A_BAND_REGION_6_CHANNEL_LIST;
-				break;
-			case REGION_7_A_BAND:
-				num = sizeof(A_BAND_REGION_7_CHANNEL_LIST)/sizeof(UCHAR);
-				pChannelList = A_BAND_REGION_7_CHANNEL_LIST;
-				break;
-			case REGION_8_A_BAND:
-				num = sizeof(A_BAND_REGION_8_CHANNEL_LIST)/sizeof(UCHAR);
-				pChannelList = A_BAND_REGION_8_CHANNEL_LIST;
-				break;
-			case REGION_9_A_BAND:
-				num = sizeof(A_BAND_REGION_9_CHANNEL_LIST)/sizeof(UCHAR);
-				pChannelList = A_BAND_REGION_9_CHANNEL_LIST;
-				break;
-			case REGION_10_A_BAND:
-				num = sizeof(A_BAND_REGION_10_CHANNEL_LIST)/sizeof(UCHAR);
-				pChannelList = A_BAND_REGION_10_CHANNEL_LIST;
-				break;
-			case REGION_11_A_BAND:
-				num = sizeof(A_BAND_REGION_11_CHANNEL_LIST)/sizeof(UCHAR);
-				pChannelList = A_BAND_REGION_11_CHANNEL_LIST;
-				break;	
-			case REGION_12_A_BAND:
-				num = sizeof(A_BAND_REGION_12_CHANNEL_LIST)/sizeof(UCHAR);
-				pChannelList = A_BAND_REGION_12_CHANNEL_LIST;
-				break;
-			case REGION_13_A_BAND:
-				num = sizeof(A_BAND_REGION_13_CHANNEL_LIST)/sizeof(UCHAR);
-				pChannelList = A_BAND_REGION_13_CHANNEL_LIST;
-				break;
-			case REGION_14_A_BAND:
-				num = sizeof(A_BAND_REGION_14_CHANNEL_LIST)/sizeof(UCHAR);
-				pChannelList = A_BAND_REGION_14_CHANNEL_LIST;
-				break;
-			case REGION_15_A_BAND:
-				num = sizeof(A_BAND_REGION_15_CHANNEL_LIST)/sizeof(UCHAR);
-				pChannelList = A_BAND_REGION_15_CHANNEL_LIST;
-				break;
-			case REGION_16_A_BAND:
-				num = sizeof(A_BAND_REGION_16_CHANNEL_LIST)/sizeof(UCHAR);
-				pChannelList = A_BAND_REGION_16_CHANNEL_LIST;
-				break;
-			case REGION_17_A_BAND:
-				num = sizeof(A_BAND_REGION_17_CHANNEL_LIST)/sizeof(UCHAR);
-				pChannelList = A_BAND_REGION_17_CHANNEL_LIST;
-				break;
-			case REGION_18_A_BAND:
-				num = sizeof(A_BAND_REGION_18_CHANNEL_LIST)/sizeof(UCHAR);
-				pChannelList = A_BAND_REGION_18_CHANNEL_LIST;
-				break;
-			case REGION_19_A_BAND:
-				num = sizeof(A_BAND_REGION_19_CHANNEL_LIST)/sizeof(UCHAR);
-				pChannelList = A_BAND_REGION_19_CHANNEL_LIST;
-				break;
-			case REGION_20_A_BAND:
-				num = sizeof(A_BAND_REGION_20_CHANNEL_LIST)/sizeof(UCHAR);
-				pChannelList = A_BAND_REGION_20_CHANNEL_LIST;
-				break;
-			case REGION_21_A_BAND:
-				num = sizeof(A_BAND_REGION_21_CHANNEL_LIST)/sizeof(UCHAR);
-				pChannelList = A_BAND_REGION_21_CHANNEL_LIST;
-				break;
-			default:            // Error. should never happen
-				DBGPRINT(RT_DEBUG_WARN,("countryregion=%d not support", pAd->CommonCfg.CountryRegionForABand));
-				break;
+			}
 		}
 
-		if (num != 0)
+		if (!bRegionFound)
+		{
+			DBGPRINT(RT_DEBUG_ERROR,("CountryRegionABand=%d not support", pAd->CommonCfg.CountryRegionForABand));
+			return;
+		}
+
+		if (num > 0)
 		{
 			UCHAR RadarCh[15]={52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140};
-			PUCHAR ChannelList;
 #ifdef CONFIG_AP_SUPPORT
 #ifdef DFS_SUPPORT
 			UCHAR q=0;
-#endif // DFS_SUPPORT //
-#endif // CONFIG_AP_SUPPORT //
-			ChannelList=pChannelList;
-#ifdef CONFIG_AP_SUPPORT
-#ifdef DFS_SUPPORT
-			ChannelList=NULL;
-			ChannelList=(PUCHAR)kmalloc(20*sizeof(UCHAR),GFP_KERNEL);
-			if (ChannelList == NULL) 
+#endif /* DFS_SUPPORT */
+#endif /* CONFIG_AP_SUPPORT */
+			os_alloc_mem(NULL, (UCHAR **)&pChannelList, num * sizeof(UCHAR));
+
+			if (!pChannelList)
 			{
-				DBGPRINT(RT_DEBUG_ERROR,("BuildChannelList allocate memory for ChannelList failed\n"));
+				DBGPRINT(RT_DEBUG_ERROR,("%s:Allocate memory for ChannelList failed\n", __FUNCTION__));
 				return;
 			}
-			for (i=0; i<num; i++)
+
+			os_alloc_mem(NULL, (UCHAR **)&pChannelListFlag, num * sizeof(UCHAR));
+
+			if (!pChannelListFlag)
+			{
+				DBGPRINT(RT_DEBUG_ERROR,("%s:Allocate memory for ChannelListFlag failed\n", __FUNCTION__));
+				os_free_mem(NULL, pChannelList);
+				return;
+			}
+
+			for (i = 0; i < num; i++)
+			{
+				pChannelList[i] = GetChannel_5GHZ(pChDesc, i);
+				pChannelListFlag[i] = GetChannelFlag(pChDesc, i);
+			}
+
+#ifdef CONFIG_AP_SUPPORT
+#ifdef DFS_SUPPORT
+			for (i = 0; i < num; i++)
 			{
 
 				 if((pAd->CommonCfg.bIEEE80211H == 0)|| ((pAd->CommonCfg.bIEEE80211H == 1) && (pAd->CommonCfg.RadarDetect.RDDurRegion != FCC)))			 	
                                 {
-                                        ChannelList[q] = pChannelList[i];
+										pChannelList[q] = GetChannel_5GHZ(pChDesc, i);
+										pChannelListFlag[q] = GetChannelFlag(pChDesc, i);
                                         q++;
                                 }
 /*Based on the requiremnt of FCC, some channles could not be used anymore when test DFS function.*/
                                 else if ((pAd->CommonCfg.bIEEE80211H == 1) && (pAd->CommonCfg.RadarDetect.RDDurRegion == FCC) && (pAd->CommonCfg.bDFSIndoor == 1))
                                 {
-                                        if((pChannelList[i] < 116) || (pChannelList[i] > 128))
+                                        if((GetChannel_5GHZ(pChDesc, i) < 116) || (GetChannel_5GHZ(pChDesc, i) > 128))
                                         {
-                                                ChannelList[q] = pChannelList[i];
+												pChannelList[q] = GetChannel_5GHZ(pChDesc, i);
+												pChannelListFlag[q] = GetChannelFlag(pChDesc, i);
                                                 q++;
                                         }
                                 }
 
                                 else if ((pAd->CommonCfg.bIEEE80211H == 1) && (pAd->CommonCfg.RadarDetect.RDDurRegion == FCC) && (pAd->CommonCfg.bDFSIndoor == 0))
                                 {
-                                        if((pChannelList[i] < 100) || (pChannelList[i] > 140) )
+                                        if((GetChannel_5GHZ(pChDesc, i) < 100) || (GetChannel_5GHZ(pChDesc, i) > 140) )
                                         {
-                                                ChannelList[q] = pChannelList[i];
+												pChannelList[q] = GetChannel_5GHZ(pChDesc, i);
+												pChannelListFlag[q] = GetChannelFlag(pChDesc, i);
                                                 q++;
                                         }
                                 }
@@ -297,38 +224,44 @@ VOID BuildChannelList(
 			}
 
 			num = q;
-#endif // DFS_SUPPORT //
-#endif // CONFIG_AP_SUPPORT //
+#endif /* DFS_SUPPORT */
+#endif /* CONFIG_AP_SUPPORT */
 			for (i=0; i<num; i++)
 			{
 				for (j=0; j<MAX_NUM_OF_CHANNELS; j++)
 				{
-					if (ChannelList[i] == pAd->TxPower[j].Channel)
+					if (pChannelList[i] == pAd->TxPower[j].Channel)
 						NdisMoveMemory(&pAd->ChannelList[index+i], &pAd->TxPower[j], sizeof(CHANNEL_TX_POWER));
-					}
+						pAd->ChannelList[index + i].Flags = pChannelListFlag[i];
+				}
+
 				for (j=0; j<15; j++)
 				{
-					if (ChannelList[i] == RadarCh[j])
+					if (pChannelList[i] == RadarCh[j])
 						pAd->ChannelList[index+i].DfsReq = TRUE;
 				}
 				pAd->ChannelList[index+i].MaxTxPwr = 20;
 			}
 			index += num;
-#ifdef CONFIG_AP_SUPPORT
-#ifdef DFS_SUPPORT
-			kfree(ChannelList);
-#endif // DFS_SUPPORT //
-#endif // CONFIG_AP_SUPPORT //
+
+			os_free_mem(NULL, pChannelList);
+			os_free_mem(NULL, pChannelListFlag);
 		}
 	}
 
 	pAd->ChannelListNum = index;	
 	DBGPRINT(RT_DEBUG_TRACE,("country code=%d/%d, RFIC=%d, PHY mode=%d, support %d channels\n", 
 		pAd->CommonCfg.CountryRegion, pAd->CommonCfg.CountryRegionForABand, pAd->RfIcType, pAd->CommonCfg.PhyMode, pAd->ChannelListNum));
+
+
 #ifdef DBG	
 	for (i=0;i<pAd->ChannelListNum;i++)
 	{
-		DBGPRINT_RAW(RT_DEBUG_TRACE,("BuildChannel # %d :: Pwr0 = %d, Pwr1 =%d, \n ", pAd->ChannelList[i].Channel, pAd->ChannelList[i].Power, pAd->ChannelList[i].Power2));
+		DBGPRINT_RAW(RT_DEBUG_TRACE,("BuildChannel # %d :: Pwr0 = %d, Pwr1 =%d, Flags = %x\n ", 
+									 pAd->ChannelList[i].Channel, 
+									 pAd->ChannelList[i].Power, 
+									 pAd->ChannelList[i].Power2, 
+									 pAd->ChannelList[i].Flags));
 	}
 #endif
 }
@@ -369,6 +302,38 @@ UCHAR NextChannel(
 {
 	int i;
 	UCHAR next_channel = 0;
+#ifdef P2P_SUPPORT
+	UCHAR	CurrentChannel = channel;
+
+	if (pAd->MlmeAux.ScanType == SCAN_P2P_SEARCH)
+	{
+		if (IS_P2P_LISTEN(pAd))
+		{
+			DBGPRINT(RT_DEBUG_ERROR, ("Error !! P2P Discovery state machine has change to Listen state during scanning !\n"));
+			return next_channel;
+		}	
+
+		for (i = 0; i < (pAd->P2pCfg.P2pProprietary.ListenChanelCount - 1); i++)
+		{
+			if (CurrentChannel == pAd->P2pCfg.P2pProprietary.ListenChanel[i])
+				next_channel = pAd->P2pCfg.P2pProprietary.ListenChanel[i+1];				
+		}
+		P2P_INC_CHA_INDEX(pAd->P2pCfg.P2pProprietary.ListenChanelIndex, pAd->P2pCfg.P2pProprietary.ListenChanelCount);
+		if (next_channel == CurrentChannel)
+		{
+			DBGPRINT(RT_DEBUG_INFO, ("SYNC -  next_channel equals to CurrentChannel= %d\n", next_channel));
+			DBGPRINT(RT_DEBUG_INFO, ("SYNC -  ListenChannel List : %d  %d  %d\n", pAd->P2pCfg.P2pProprietary.ListenChanel[0], pAd->P2pCfg.P2pProprietary.ListenChanel[1], pAd->P2pCfg.P2pProprietary.ListenChanel[2]));
+
+			next_channel = 0;
+		}
+
+		if (!INFRA_ON(pAd) && (next_channel == 0))
+			pAd->CommonCfg.Channel = pAd->P2pCfg.ListenChannel;
+		DBGPRINT(RT_DEBUG_INFO, ("SYNC - P2P Scan return channel = %d.    Listen Channel = %d.\n", next_channel, pAd->CommonCfg.Channel));
+
+		return next_channel;
+	}
+#endif /* P2P_SUPPORT */
 			
 	for (i = 0; i < (pAd->ChannelListNum - 1); i++)
 	{
@@ -376,18 +341,18 @@ UCHAR NextChannel(
 		{
 #ifdef DOT11_N_SUPPORT
 #ifdef DOT11N_DRAFT3
-			// Only scan effected channel if this is a SCAN_2040_BSS_COEXIST
-			// 2009 PF#2: Nee to handle the second channel of AP fall into affected channel range.
+			/* Only scan effected channel if this is a SCAN_2040_BSS_COEXIST*/
+			/* 2009 PF#2: Nee to handle the second channel of AP fall into affected channel range.*/
 			if ((pAd->MlmeAux.ScanType == SCAN_2040_BSS_COEXIST) && (pAd->ChannelList[i+1].Channel >14))
 			{
 				channel = pAd->ChannelList[i+1].Channel;
 				continue;
 			}
 			else
-#endif // DOT11N_DRAFT3 //
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11N_DRAFT3 */
+#endif /* DOT11_N_SUPPORT */
 			{
-				// Record this channel's idx in ChannelList array.
+				/* Record this channel's idx in ChannelList array.*/
 			next_channel = pAd->ChannelList[i+1].Channel;
 			break;
 	}
@@ -421,12 +386,14 @@ VOID ChangeToCellPowerLimit(
 	IN PRTMP_ADAPTER pAd,
 	IN UCHAR         AironetCellPowerLimit)
 {
-	//valud 0xFF means that hasn't found power limit information 
-	//from the AP's Beacon/Probe response.
+	/*
+		valud 0xFF means that hasn't found power limit information
+		from the AP's Beacon/Probe response
+	*/
 	if (AironetCellPowerLimit == 0xFF)
 		return;  
 	
-	if (AironetCellPowerLimit < 6) //Used Lowest Power Percentage.
+	if (AironetCellPowerLimit < 6) /*Used Lowest Power Percentage.*/
 		pAd->CommonCfg.TxPowerPercentage = 6; 
 	else if (AironetCellPowerLimit < 9)
 		pAd->CommonCfg.TxPowerPercentage = 10;
@@ -437,7 +404,7 @@ VOID ChangeToCellPowerLimit(
 	else if (AironetCellPowerLimit < 15)
 		pAd->CommonCfg.TxPowerPercentage = 75;
 	else
-		pAd->CommonCfg.TxPowerPercentage = 100; //else used maximum
+		pAd->CommonCfg.TxPowerPercentage = 100; /*else used maximum*/
 
 	if (pAd->CommonCfg.TxPowerPercentage > pAd->CommonCfg.TxPowerDefault)
 		pAd->CommonCfg.TxPowerPercentage = pAd->CommonCfg.TxPowerDefault;
@@ -451,7 +418,7 @@ CHAR	ConvertToRssi(
 {
 	UCHAR	RssiOffset, LNAGain;
 
-	// Rssi equals to zero should be an invalid value
+	/* Rssi equals to zero should be an invalid value*/
 	if (Rssi == 0)
 		return -99;
 
@@ -480,7 +447,7 @@ CHAR	ConvertToRssi(
 
 CHAR	ConvertToSnr(
 	IN PRTMP_ADAPTER	pAd,
-	IN UCHAR			Snr)	
+	IN UCHAR				Snr)	
 {
 	return ((0xeb - Snr) * 3) / 16 ;
 
@@ -494,7 +461,8 @@ CHAR	ConvertToSnr(
 	==========================================================================
  */
 VOID ScanNextChannel(
-	IN PRTMP_ADAPTER pAd) 
+	IN PRTMP_ADAPTER pAd,
+	IN UCHAR OpMode) 
 {
 	HEADER_802_11   Hdr80211;
 	PUCHAR          pOutBuffer = NULL;
@@ -503,10 +471,11 @@ VOID ScanNextChannel(
 	UCHAR           SsidLen = 0, ScanType = pAd->MlmeAux.ScanType, BBPValue = 0;
 #ifdef CONFIG_STA_SUPPORT
 	USHORT          Status;
-	PHEADER_802_11  pHdr80211;
-#endif // CONFIG_STA_SUPPORT //
+/*	PHEADER_802_11  pHdr80211;  no use*/
+#endif /* CONFIG_STA_SUPPORT */
 	UINT			ScanTimeIn5gChannel = SHORT_CHANNEL_TIME;
 	BOOLEAN			ScanPending = FALSE;
+
 
 #ifdef CONFIG_STA_SUPPORT
 	IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
@@ -516,21 +485,25 @@ VOID ScanNextChannel(
 	}
 
 	ScanPending = ((pAd->StaCfg.bImprovedScan) && (pAd->StaCfg.ScanChannelCnt>=7));
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 
 #ifdef RALINK_ATE
-	// Nothing to do in ATE mode. 
+	/* Nothing to do in ATE mode. */
 	if (ATE_ON(pAd))
 		return;
-#endif // RALINK_ATE //
+#endif /* RALINK_ATE */
 
 	if ((pAd->MlmeAux.Channel == 0) || ScanPending) 
 	{
 		if ((pAd->CommonCfg.BBPCurrentBW == BW_40)
 #ifdef CONFIG_STA_SUPPORT
 			&& (INFRA_ON(pAd) || ADHOC_ON(pAd)
+#ifdef P2P_SUPPORT
+				|| (OpMode == OPMODE_AP))
+#else
 				|| (pAd->OpMode == OPMODE_AP))
-#endif // CONFIG_STA_SUPPORT //
+#endif /* P2P_SUPPORT */
+#endif /* CONFIG_STA_SUPPORT */
 			)
 		{
 			AsicSwitchChannel(pAd, pAd->CommonCfg.CentralChannel, FALSE);
@@ -549,7 +522,11 @@ VOID ScanNextChannel(
 		}
 		
 #ifdef CONFIG_STA_SUPPORT
+#ifdef P2P_SUPPORT
+		if (OpMode == OPMODE_STA)
+#else
 		IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
+#endif /* P2P_SUPPORT */
 		{
 
 			/*
@@ -564,27 +541,29 @@ VOID ScanNextChannel(
 				NdisMoveMemory(pAd->MlmeAux.Ssid, pAd->CommonCfg.Ssid, pAd->CommonCfg.SsidLen);
 			}
 		
-			//
-			// To prevent data lost.
-			// Send an NULL data with turned PSM bit on to current associated AP before SCAN progress.
-			// Now, we need to send an NULL data with turned PSM bit off to AP, when scan progress done 
-			//
+			
+			/*
+				To prevent data lost.
+				Send an NULL data with turned PSM bit on to current associated AP before SCAN progress.
+				Now, we need to send an NULL data with turned PSM bit off to AP, when scan progress done 
+			*/
 			if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_MEDIA_STATE_CONNECTED) && (INFRA_ON(pAd)))
 			{
 				RTMPSendNullFrame(pAd, 
 								  pAd->CommonCfg.TxRate, 
-								  (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_WMM_INUSED) ? TRUE:FALSE));
-				DBGPRINT(RT_DEBUG_TRACE, ("%s -- Send PSM Data frame\n", __FUNCTION__));
+								  (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_WMM_INUSED) ? TRUE:FALSE),
+								  pAd->CommonCfg.bAPSDForcePowerSave ? PWR_SAVE : pAd->StaCfg.Psm);
+				DBGPRINT(RT_DEBUG_TRACE, ("%s -- Send null frame\n", __FUNCTION__));
 			}
 
-			// keep the latest scan channel, could be 0 for scan complete, or other channel
+			/* keep the latest scan channel, could be 0 for scan complete, or other channel*/
 			pAd->StaCfg.LastScanChannel = pAd->MlmeAux.Channel;
 
 			pAd->StaCfg.ScanChannelCnt = 0;
 
-			// Suspend scanning and Resume TxData for Fast Scanning
+			/* Suspend scanning and Resume TxData for Fast Scanning*/
 			if ((pAd->MlmeAux.Channel != 0) &&
-				(pAd->StaCfg.bImprovedScan))	// it is scan pending
+				(pAd->StaCfg.bImprovedScan))	/* it is scan pending*/
 			{
 				pAd->Mlme.SyncMachine.CurrState = SCAN_PENDING;
 				Status = MLME_SUCCESS;
@@ -596,51 +575,49 @@ VOID ScanNextChannel(
 			{
 				pAd->StaCfg.BssNr = pAd->ScanTab.BssNr;
 				pAd->StaCfg.bImprovedScan = FALSE;
-				
+
 				pAd->Mlme.SyncMachine.CurrState = SYNC_IDLE;
 				Status = MLME_SUCCESS;
 				MlmeEnqueue(pAd, MLME_CNTL_STATE_MACHINE, MT2_SCAN_CONF, 2, &Status, 0);
 
-				RTMPSendWirelessEvent(pAd, IW_SCAN_COMPLETED_EVENT_FLAG, NULL, BSS0, 0);
+#ifdef P2P_SUPPORT
+				if (!((pAd->MlmeAux.ScanType == SCAN_P2P_SEARCH) || (pAd->MlmeAux.ScanType == SCAN_P2P)))
+#endif /* P2P_SUPPORT */
+				{
+					RTMPSendWirelessEvent(pAd, IW_SCAN_COMPLETED_EVENT_FLAG, NULL, BSS0, 0);
 #ifdef WPA_SUPPLICANT_SUPPORT
-				RtmpOSWirelessEventSend(pAd, SIOCGIWSCAN, -1, NULL, NULL, 0);
-#endif // WPA_SUPPLICANT_SUPPORT //
+					RtmpOSWrielessEventSend(pAd->net_dev, RT_WLAN_EVENT_SCAN, -1, NULL, NULL, 0);
+#endif /* WPA_SUPPLICANT_SUPPORT */
+				}
 			}
 
 #ifdef LINUX
 #ifdef RT_CFG80211_SUPPORT
 			RTEnqueueInternalCmd(pAd, CMDTHREAD_SCAN_END, NULL, 0);
-#endif // RT_CFG80211_SUPPORT //
-#endif // LINUX //
+#endif /* RT_CFG80211_SUPPORT */
+#endif /* LINUX */
 		}
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 
 #ifdef CONFIG_AP_SUPPORT
+#ifdef P2P_SUPPORT
+		if (OpMode == OPMODE_AP)
+#else
 		IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
+#endif /* P2P_SUPPORT */
 		{
-#ifdef APCLI_SUPPORT
-#ifdef APCLI_AUTO_CONNECT_SUPPORT
-			if (pAd->ApCfg.ApCliAutoConnectRunning == TRUE)
-			{
-				if (!ApCliAutoConnectExec(pAd))
-				{
-					DBGPRINT(RT_DEBUG_ERROR, ("Error in  %s\n", __FUNCTION__));
-				}
-			}			
-#endif /* APCLI_AUTO_CONNECT_SUPPORT */
-#endif /* APCLI_SUPPORT */
 			pAd->Mlme.ApSyncMachine.CurrState = AP_SYNC_IDLE;
 			RTMPResumeMsduTransmission(pAd);
 
-			// iwpriv set auto channel selection
-			// scanned all channels
+			/* iwpriv set auto channel selection*/
+			/* scanned all channels*/
 			if (pAd->ApCfg.bAutoChannelAtBootup==TRUE)
 			{
 			    pAd->CommonCfg.Channel = SelectBestChannel(pAd, pAd->ApCfg.AutoChannelAlg);
 				pAd->ApCfg.bAutoChannelAtBootup = FALSE;
 #ifdef DOT11_N_SUPPORT
 				N_ChannelCheck(pAd);
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 				APStop(pAd);
 				APStartUp(pAd);
 			}
@@ -650,30 +627,41 @@ VOID ScanNextChannel(
 				AsicEnableBssSync(pAd);
 			}
 		}
-#endif // CONFIG_AP_SUPPORT //
+#endif /* CONFIG_AP_SUPPORT */
 
-
+#ifdef P2P_SUPPORT
+			if ((ScanType == SCAN_P2P) || (ScanType == SCAN_P2P_SEARCH))
+				P2PSetListenTimer(pAd, 0);
+#endif /* P2P_SUPPORT */
 	} 
 	else 
 	{
 #ifdef CONFIG_STA_SUPPORT
+#ifdef P2P_SUPPORT
+		if (OpMode == OPMODE_STA)
+#else
 		IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
+#endif /* P2P_SUPPORT */
 		{
-		// BBP and RF are not accessible in PS mode, we has to wake them up first
-		if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_DOZE))
-			AsicForceWakeup(pAd, TRUE);
+			/* BBP and RF are not accessible in PS mode, we has to wake them up first*/
+			if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_DOZE))
+				AsicForceWakeup(pAd, TRUE);
 
-			// leave PSM during scanning. otherwise we may lost ProbeRsp & BEACON
+			/* leave PSM during scanning. otherwise we may lost ProbeRsp & BEACON*/
 			if (pAd->StaCfg.Psm == PWR_SAVE)
 				RTMP_SET_PSM_BIT(pAd, PWR_ACTIVE);
 		}
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 
 		AsicSwitchChannel(pAd, pAd->MlmeAux.Channel, TRUE);
 		AsicLockChannel(pAd, pAd->MlmeAux.Channel);
 
 #ifdef CONFIG_STA_SUPPORT
+#ifdef P2P_SUPPORT
+		if (OpMode == OPMODE_STA)
+#else
 		IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
+#endif /* P2P_SUPPORT */
 		{
 			if (pAd->MlmeAux.Channel > 14)
 			{
@@ -684,55 +672,69 @@ VOID ScanNextChannel(
 				}
 			}
 
-#ifdef CARRIER_DETECTION_SUPPORT // Roger sync Carrier
-			// carrier detection
+#ifdef CARRIER_DETECTION_SUPPORT /* Roger sync Carrier*/
+			/* carrier detection*/
 			if (pAd->CommonCfg.CarrierDetect.Enable == TRUE)
 			{
 				ScanType = SCAN_PASSIVE;
 				ScanTimeIn5gChannel = MIN_CHANNEL_TIME;
 			}
-#endif // CARRIER_DETECTION_SUPPORT // 
+#endif /* CARRIER_DETECTION_SUPPORT */ 
 		}
 
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 
-		//Global country domain(ch1-11:active scan, ch12-14 passive scan)
-		if (((pAd->MlmeAux.Channel <= 14) &&
-			(pAd->MlmeAux.Channel >= 12) &&
-			((pAd->CommonCfg.CountryRegion & 0x7f) == REGION_31_BG_BAND)) ||
-			(CHAN_PropertyCheck(pAd, pAd->MlmeAux.Channel, CHANNEL_PASSIVE_SCAN) == TRUE))
-		{
+		/* Check if channel if passive scan under current regulatory domain */
+		if (CHAN_PropertyCheck(pAd, pAd->MlmeAux.Channel, CHANNEL_PASSIVE_SCAN) == TRUE)
 			ScanType = SCAN_PASSIVE;
-		}
 
-		// We need to shorten active scan time in order for WZC connect issue
-		// Chnage the channel scan time for CISCO stuff based on its IAPP announcement
+		/* We need to shorten active scan time in order for WZC connect issue*/
+		/* Chnage the channel scan time for CISCO stuff based on its IAPP announcement*/
 		if (ScanType == FAST_SCAN_ACTIVE)
 			RTMPSetTimer(&pAd->MlmeAux.ScanTimer, FAST_ACTIVE_SCAN_TIME);
-		else // must be SCAN_PASSIVE or SCAN_ACTIVE
+		else /* must be SCAN_PASSIVE or SCAN_ACTIVE*/
 		{
 #ifdef CONFIG_STA_SUPPORT
 			pAd->StaCfg.ScanChannelCnt++;
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 			if ((pAd->CommonCfg.PhyMode == PHY_11ABG_MIXED) 
 #ifdef DOT11_N_SUPPORT
 				|| (pAd->CommonCfg.PhyMode == PHY_11ABGN_MIXED) || (pAd->CommonCfg.PhyMode == PHY_11AGN_MIXED)
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 			)
 			{
 #ifdef CONFIG_AP_SUPPORT
 				if (pAd->ApCfg.bAutoChannelAtBootup)
 				{
-					// wait 400 ms
-					RTMPSetTimer(&pAd->MlmeAux.ScanTimer, AUTO_CHANNEL_SEL_TIMEOUT);
+					/* wait 400 ms*/
+					if (OpMode == OPMODE_AP)
+					RTMPSetTimer(&pAd->MlmeAux.APScanTimer, AUTO_CHANNEL_SEL_TIMEOUT);
 				}
 				else
-#endif // CONFIG_AP_SUPPORT //
+#endif /* CONFIG_AP_SUPPORT */
 				{
 					if (pAd->MlmeAux.Channel > 14)
+					{
+#ifdef CONFIG_AP_SUPPORT
+						if (OpMode == OPMODE_AP)
+							RTMPSetTimer(&pAd->MlmeAux.APScanTimer, ScanTimeIn5gChannel);
+#endif /* CONFIG_AP_SUPPORT */
+#ifdef CONFIG_STA_SUPPORT
+						if (OpMode == OPMODE_STA)
 						RTMPSetTimer(&pAd->MlmeAux.ScanTimer, ScanTimeIn5gChannel);
-					else	
-					RTMPSetTimer(&pAd->MlmeAux.ScanTimer, MIN_CHANNEL_TIME);
+#endif /* CONFIG_STA_SUPPORT */
+					}
+					else
+					{
+#ifdef CONFIG_AP_SUPPORT
+						if (OpMode == OPMODE_AP)
+							RTMPSetTimer(&pAd->MlmeAux.APScanTimer, MIN_CHANNEL_TIME);
+#endif /* CONFIG_AP_SUPPORT */
+#ifdef CONFIG_STA_SUPPORT
+						if (OpMode == OPMODE_STA)
+						RTMPSetTimer(&pAd->MlmeAux.ScanTimer, MIN_CHANNEL_TIME);
+#endif /* CONFIG_STA_SUPPORT */
+					}
 				}
 			}
 			else
@@ -740,45 +742,74 @@ VOID ScanNextChannel(
 #ifdef CONFIG_AP_SUPPORT
 				if (pAd->ApCfg.bAutoChannelAtBootup)
 				{
-					// wait 400 ms
-					RTMPSetTimer(&pAd->MlmeAux.ScanTimer, AUTO_CHANNEL_SEL_TIMEOUT);
+					/* wait 400 ms*/
+					if (OpMode == OPMODE_AP)
+					RTMPSetTimer(&pAd->MlmeAux.APScanTimer, AUTO_CHANNEL_SEL_TIMEOUT);
 				}
 				else
-#endif // CONFIG_AP_SUPPORT //
+#endif /* CONFIG_AP_SUPPORT */
 				{
+#ifdef CONFIG_AP_SUPPORT
+					if (OpMode == OPMODE_AP)
+						RTMPSetTimer(&pAd->MlmeAux.APScanTimer, MAX_CHANNEL_TIME);
+#endif /* CONFIG_AP_SUPPORT */
+#ifdef CONFIG_STA_SUPPORT
+					if (OpMode == OPMODE_STA)
 					RTMPSetTimer(&pAd->MlmeAux.ScanTimer, MAX_CHANNEL_TIME);
+#endif /* CONFIG_STA_SUPPORT */
 				}
 			}
 		}
 		if ((ScanType == SCAN_ACTIVE)
 			|| (ScanType == FAST_SCAN_ACTIVE)
 #ifdef WSC_STA_SUPPORT
+#ifdef P2P_SUPPORT
+			|| ((ScanType == SCAN_WSC_ACTIVE) && (OpMode == OPMODE_STA))
+#else
 			|| ((ScanType == SCAN_WSC_ACTIVE) && (pAd->OpMode == OPMODE_STA))
-#endif // WSC_STA_SUPPORT //
+#endif /* P2P_SUPPORT */
+#endif /* WSC_STA_SUPPORT */
+#ifdef WSC_AP_SUPPORT
+#ifdef P2P_SUPPORT
+			|| ((ScanType == SCAN_WSC_ACTIVE) && (OpMode == OPMODE_AP))
+#endif /* P2P_SUPPORT */
+#endif /* WSC_AP_SUPPORT */
 #ifdef DOT11_N_SUPPORT
 #ifdef DOT11N_DRAFT3
 			|| (ScanType == SCAN_2040_BSS_COEXIST)
-#endif // DOT11N_DRAFT3 //
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11N_DRAFT3 */
+#endif /* DOT11_N_SUPPORT */
+#ifdef P2P_SUPPORT
+			|| (ScanType == SCAN_P2P) 
+			|| (ScanType == SCAN_P2P_SEARCH)
+#endif /* P2P_SUPPORT */
 			)
 		{
-			NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);  //Get an unused nonpaged memory
+			NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);  /*Get an unused nonpaged memory*/
 			if (NStatus != NDIS_STATUS_SUCCESS)
 			{
 				DBGPRINT(RT_DEBUG_TRACE, ("SYNC - ScanNextChannel() allocate memory fail\n"));
 #ifdef CONFIG_STA_SUPPORT
+#ifdef P2P_SUPPORT
+				if (OpMode == OPMODE_STA)
+#else
 				IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
+#endif /* P2P_SUPPORT */
 				{
 					pAd->Mlme.SyncMachine.CurrState = SYNC_IDLE;
 					Status = MLME_FAIL_NO_RESOURCE;
 					MlmeEnqueue(pAd, MLME_CNTL_STATE_MACHINE, MT2_SCAN_CONF, 2, &Status, 0);
 				}
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 
 #ifdef CONFIG_AP_SUPPORT
+#ifdef P2P_SUPPORT
+				if (OpMode == OPMODE_AP)
+#else
 				IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
+#endif /* P2P_SUPPORT */
 					pAd->Mlme.ApSyncMachine.CurrState = AP_SYNC_IDLE;
-#endif // CONFIG_AP_SUPPORT //
+#endif /* CONFIG_AP_SUPPORT */
 				return;
 			}
 
@@ -788,50 +819,105 @@ VOID ScanNextChannel(
 			{
 				DBGPRINT(RT_DEBUG_TRACE, ("SYNC - SCAN_2040_BSS_COEXIST !! Prepare to send Probe Request\n"));
 			}
-#endif // DOT11N_DRAFT3 //
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11N_DRAFT3 */
+#endif /* DOT11_N_SUPPORT */
 			
-			// There is no need to send broadcast probe request if active scan is in effect.
+			/* There is no need to send broadcast probe request if active scan is in effect.*/
+			SsidLen = 0;
 			if ((ScanType == SCAN_ACTIVE) || (ScanType == FAST_SCAN_ACTIVE)
 #ifdef WSC_STA_SUPPORT
+#ifdef P2P_SUPPORT
+				|| ((ScanType == SCAN_WSC_ACTIVE) && (OpMode == OPMODE_STA))
+#else
 				|| ((ScanType == SCAN_WSC_ACTIVE) && (pAd->OpMode == OPMODE_STA))
-#endif // WSC_STA_SUPPORT //
+#endif /* P2P_SUPPORT */
+#endif /* WSC_STA_SUPPORT */
 				)
 				SsidLen = pAd->MlmeAux.SsidLen;
-			else
-				SsidLen = 0;
 
-#ifdef CONFIG_AP_SUPPORT
-			IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
-				MgtMacHeaderInit(pAd, &Hdr80211, SUBTYPE_PROBE_REQ, 0, BROADCAST_ADDR, pAd->ApCfg.MBSSID[0].Bssid);
-#endif // CONFIG_AP_SUPPORT //
-#ifdef CONFIG_STA_SUPPORT
-			IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
-				MgtMacHeaderInit(pAd, &Hdr80211, SUBTYPE_PROBE_REQ, 0, BROADCAST_ADDR, BROADCAST_ADDR);
-#endif // CONFIG_STA_SUPPORT //
-
-
-			MakeOutgoingFrame(pOutBuffer,               &FrameLen,
-							  sizeof(HEADER_802_11),    &Hdr80211,
-							  1,                        &SsidIe,
-							  1,                        &SsidLen,
-							  SsidLen,			        pAd->MlmeAux.Ssid,
-							  1,                        &SupRateIe,
-							  1,                        &pAd->CommonCfg.SupRateLen,
-							  pAd->CommonCfg.SupRateLen,  pAd->CommonCfg.SupRate, 
-							  END_OF_ARGS);
-
-			if (pAd->CommonCfg.ExtRateLen)
+#ifdef P2P_SUPPORT
+			if ((pAd->MlmeAux.ScanType == SCAN_P2P) || (pAd->MlmeAux.ScanType == SCAN_P2P_SEARCH) ||
+				((pAd->MlmeAux.ScanType == SCAN_WSC_ACTIVE) && (OpMode == OPMODE_AP) && (P2P_CLI_ON(pAd))))
 			{
-				ULONG Tmp;
-				MakeOutgoingFrame(pOutBuffer + FrameLen,            &Tmp,
-								  1,                                &ExtRateIe,
-								  1,                                &pAd->CommonCfg.ExtRateLen,
-								  pAd->CommonCfg.ExtRateLen,          pAd->CommonCfg.ExtRate, 
-								  END_OF_ARGS);
-				FrameLen += Tmp;
-			}
+				PRT_P2P_CONFIG pP2PCtrl = &pAd->P2pCfg;
+				UCHAR		SupRate[MAX_LEN_OF_SUPPORTED_RATES];
+				/*UCHAR		SupRateIe = IE_SUPP_RATES;*/
+				UCHAR		SupRateLen = 0;
+				/* JANTEMP */
+				/* Use Wildword SSID */
 
+				SsidLen = WILDP2PSSIDLEN;
+				SupRate[0]	= 0x8C;    /* 6 mbps, in units of 0.5 Mbps, basic rate */
+				SupRate[1]	= 0x12;    /* 9 mbps, in units of 0.5 Mbps */
+				SupRate[2]	= 0x98;    /* 12 mbps, in units of 0.5 Mbps, basic rate */
+				SupRate[3]	= 0x24;    /* 18 mbps, in units of 0.5 Mbps */
+				SupRate[4]	= 0xb0;    /* 24 mbps, in units of 0.5 Mbps, basic rate */
+				SupRate[5]	= 0x48;    /* 36 mbps, in units of 0.5 Mbps */
+				SupRate[6]	= 0x60;    /* 48 mbps, in units of 0.5 Mbps */
+				SupRate[7]	= 0x6c;    /* 54 mbps, in units of 0.5 Mbps */
+				SupRateLen	= 8;
+				/* P2P scan must use P2P mac address. */
+				MgtMacHeaderInit(pAd, &Hdr80211, SUBTYPE_PROBE_REQ, 0, BROADCAST_ADDR,
+									pP2PCtrl->CurrentAddress,
+									BROADCAST_ADDR);
+
+				MakeOutgoingFrame(pOutBuffer,				&FrameLen,
+									sizeof(HEADER_802_11),	&Hdr80211,
+									1,						&SsidIe,
+									1,						&SsidLen,
+									SsidLen,					&WILDP2PSSID[0],
+									1,						&SupRateIe,
+									1,						&SupRateLen,
+									SupRateLen, 			SupRate, 
+									END_OF_ARGS);
+			}
+			else
+#endif /* P2P_SUPPORT */
+			{
+#ifdef CONFIG_AP_SUPPORT
+				/*IF_DEV_CONFIG_OPMODE_ON_AP(pAd) */
+				if (OpMode == OPMODE_AP)
+				{
+					MgtMacHeaderInit(pAd, &Hdr80211, SUBTYPE_PROBE_REQ, 0, BROADCAST_ADDR, 
+#ifdef P2P_SUPPORT
+										pAd->ApCfg.MBSSID[0].Bssid,
+#endif /* P2P_SUPPORT */
+										pAd->ApCfg.MBSSID[0].Bssid);
+				}
+#endif /* CONFIG_AP_SUPPORT */
+#ifdef CONFIG_STA_SUPPORT
+				/*IF_DEV_CONFIG_OPMODE_ON_STA(pAd) */
+				if (OpMode == OPMODE_STA)
+				{
+					MgtMacHeaderInit(pAd, &Hdr80211, SUBTYPE_PROBE_REQ, 0, BROADCAST_ADDR, 
+#ifdef P2P_SUPPORT
+										pAd->CurrentAddress,
+#endif /* P2P_SUPPORT */
+										BROADCAST_ADDR);
+				}
+#endif /* CONFIG_STA_SUPPORT */
+
+				MakeOutgoingFrame(pOutBuffer,               &FrameLen,
+								  sizeof(HEADER_802_11),    &Hdr80211,
+								  1,                        &SsidIe,
+								  1,                        &SsidLen,
+								  SsidLen,			        pAd->MlmeAux.Ssid,
+								  1,                        &SupRateIe,
+								  1,                        &pAd->CommonCfg.SupRateLen,
+								  pAd->CommonCfg.SupRateLen,  pAd->CommonCfg.SupRate, 
+								  END_OF_ARGS);
+
+				if (pAd->CommonCfg.ExtRateLen)
+				{
+					ULONG Tmp;
+					MakeOutgoingFrame(pOutBuffer + FrameLen,            &Tmp,
+									  1,                                &ExtRateIe,
+									  1,                                &pAd->CommonCfg.ExtRateLen,
+									  pAd->CommonCfg.ExtRateLen,          pAd->CommonCfg.ExtRate, 
+									  END_OF_ARGS);
+					FrameLen += Tmp;
+				}
+			}
 #ifdef DOT11_N_SUPPORT
 			if (pAd->CommonCfg.PhyMode >= PHY_11ABGN_MIXED)
 			{
@@ -857,7 +943,7 @@ VOID ScanNextChannel(
 					}
 #else				
 					*(USHORT *)(&HtCapabilityTmp.ExtHtCapInfo) = cpu2le16(*(USHORT *)(&HtCapabilityTmp.ExtHtCapInfo));
-#endif // UNALIGNMENT_SUPPORT //
+#endif /* UNALIGNMENT_SUPPORT */
 
 					MakeOutgoingFrame(pOutBuffer + FrameLen,          &Tmp,
 									1,                                &WpaIe,
@@ -872,11 +958,11 @@ VOID ScanNextChannel(
 									4,                                &BROADCOM[0],
 									pAd->MlmeAux.HtCapabilityLen,     &pAd->MlmeAux.HtCapability, 
 									END_OF_ARGS);
-#endif // RT_BIG_ENDIAN //
+#endif /* RT_BIG_ENDIAN */
 				}
 				else				
 				{
-					HtLen = pAd->MlmeAux.HtCapabilityLen;
+					HtLen = sizeof(HT_CAPABILITY_IE);
 #ifdef RT_BIG_ENDIAN
 					NdisMoveMemory(&HtCapabilityTmp, &pAd->CommonCfg.HtCapability, SIZE_HT_CAP_IE);
 					*(USHORT *)(&HtCapabilityTmp.HtCapInfo) = SWAP16(*(USHORT *)(&HtCapabilityTmp.HtCapInfo));
@@ -890,7 +976,7 @@ VOID ScanNextChannel(
 					}
 #else				
 					*(USHORT *)(&HtCapabilityTmp.ExtHtCapInfo) = cpu2le16(*(USHORT *)(&HtCapabilityTmp.ExtHtCapInfo));
-#endif // UNALIGNMENT_SUPPORT //
+#endif /* UNALIGNMENT_SUPPORT */
 
 					MakeOutgoingFrame(pOutBuffer + FrameLen,          &Tmp,
 									1,                                &HtCapIe,
@@ -903,7 +989,7 @@ VOID ScanNextChannel(
 									1,                                &HtLen,
 									HtLen,                            &pAd->CommonCfg.HtCapability, 
 									END_OF_ARGS);
-#endif // RT_BIG_ENDIAN //
+#endif /* RT_BIG_ENDIAN */
 				}
 				FrameLen += Tmp;
 
@@ -920,41 +1006,73 @@ VOID ScanNextChannel(
 
 					FrameLen += Tmp;
 				}
-#endif // DOT11N_DRAFT3 //
+#endif /* DOT11N_DRAFT3 */
 			}
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 
 #ifdef WSC_STA_SUPPORT
+#ifdef P2P_SUPPORT
+			if (OpMode == OPMODE_STA)
+#else
 			if (pAd->OpMode == OPMODE_STA)
+#endif /* P2P_SUPPORT */
 			{
-				// Append WSC information in probe request if WSC state is running
+				BOOLEAN bHasWscIe = FALSE;
+				/* 
+					Append WSC information in probe request if WSC state is running
+				*/
 				if ((pAd->StaCfg.WscControl.WscEnProbeReqIE) && 
 					(pAd->StaCfg.WscControl.WscConfMode != WSC_DISABLE) &&
 					(pAd->StaCfg.WscControl.bWscTrigger == TRUE))
+					bHasWscIe = TRUE;
+#ifdef WSC_V2_SUPPORT
+				else if ((pAd->StaCfg.WscControl.WscEnProbeReqIE) && 
+					(pAd->StaCfg.WscControl.WscV2Info.bEnableWpsV2))
+					bHasWscIe = TRUE;
+#endif /* WSC_V2_SUPPORT */
+
+#ifdef P2P_SUPPORT
+				/* 
+					P2pMakeProbeReqIE will build WSC IE for P2P, 
+					it is not good to append normal WSC IE into P2P probe request frame here.
+				*/
+				if ((pAd->MlmeAux.ScanType == SCAN_P2P) || (pAd->MlmeAux.ScanType == SCAN_P2P_SEARCH) ||
+					((pAd->MlmeAux.ScanType == SCAN_WSC_ACTIVE) && (OpMode == OPMODE_AP) && (P2P_CLI_ON(pAd))))
+					bHasWscIe = FALSE;
+#endif /* P2P_SUPPORT */
+
+				if (bHasWscIe)
 				{
 					UCHAR		*pWscBuf = NULL, WscIeLen = 0;
 					ULONG 		WscTmpLen = 0;
 
-					if( (pWscBuf = kmalloc(512, GFP_ATOMIC)) != NULL)
+					os_alloc_mem(NULL, (UCHAR **)&pWscBuf, 512);
+					if (pWscBuf != NULL)
 					{
 						NdisZeroMemory(pWscBuf, 512);
-						WscBuildProbeReqIE(pAd, pWscBuf, &WscIeLen);
+						WscBuildProbeReqIE(pAd, STA_MODE, pWscBuf, &WscIeLen);
 
 						MakeOutgoingFrame(pOutBuffer + FrameLen,              &WscTmpLen,
 										WscIeLen,                             pWscBuf,
 										END_OF_ARGS);
 
 						FrameLen += WscTmpLen;
-						kfree(pWscBuf);
+						os_free_mem(NULL, pWscBuf);
 					}
 					else
 						DBGPRINT(RT_DEBUG_WARN, ("%s:: WscBuf Allocate failed!\n", __FUNCTION__));
 				}
 			}
-#endif // WSC_STA_SUPPORT //
+
+#endif /* WSC_STA_SUPPORT */
 
 #ifdef WPA_SUPPLICANT_SUPPORT
-			if ((pAd->OpMode == OPMODE_STA) &&
+			if (
+#ifdef P2P_SUPPORT
+			(OpMode == OPMODE_STA) &&
+#else
+			(pAd->OpMode == OPMODE_STA) &&
+#endif /* P2P_SUPPORT */
 				(pAd->StaCfg.WpaSupplicantUP != WPA_SUPPLICANT_DISABLE) &&
 				(pAd->StaCfg.WpsProbeReqIeLen != 0))
 			{
@@ -966,47 +1084,80 @@ VOID ScanNextChannel(
 
 				FrameLen += WpsTmpLen;
 			}
-#endif // WPA_SUPPLICANT_SUPPORT //
+#endif /* WPA_SUPPLICANT_SUPPORT */
+
+#ifdef P2P_SUPPORT
+			if ((pAd->MlmeAux.ScanType == SCAN_P2P) || (pAd->MlmeAux.ScanType == SCAN_P2P_SEARCH) ||
+				((pAd->MlmeAux.ScanType == SCAN_WSC_ACTIVE) && (OpMode == OPMODE_AP) && (P2P_CLI_ON(pAd))))
+			{
+				ULONG	P2PIeLen;
+				PUCHAR	ptr;
+				ptr = pOutBuffer + FrameLen;
+				P2pMakeProbeReqIE(pAd, ptr, &BBPValue);
+				FrameLen += BBPValue;
+				
+				/* Put P2P IE to the last. */
+				ptr = pOutBuffer + FrameLen;
+				P2pMakeP2pIE(pAd, SUBTYPE_PROBE_REQ, ptr, &P2PIeLen);
+
+				FrameLen += P2PIeLen;
+			}
+#endif /* P2P_SUPPORT */
 
 			MiniportMMRequest(pAd, 0, pOutBuffer, FrameLen);
 
 #ifdef CONFIG_STA_SUPPORT
+#ifdef P2P_SUPPORT
+			if (OpMode == OPMODE_STA)
+#else
 			IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
+#endif /* P2P_SUPPORT */
 			{
-				//
-				// To prevent data lost.
-				// Send an NULL data with turned PSM bit on to current associated AP when SCAN in the channel where
-				//  associated AP located.
-				//
+				
+				/*
+					To prevent data lost.
+					Send an NULL data with turned PSM bit on to current associated AP when SCAN in the channel where
+					associated AP located.
+				*/
 				if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_MEDIA_STATE_CONNECTED) && 
 					(INFRA_ON(pAd)) &&
 					(pAd->CommonCfg.Channel == pAd->MlmeAux.Channel))
 				{
 					RTMPSendNullFrame(pAd, 
 								  pAd->CommonCfg.TxRate, 
-								  (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_WMM_INUSED) ? TRUE:FALSE));
+								  (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_WMM_INUSED) ? TRUE:FALSE),
+								  PWR_SAVE);
 					DBGPRINT(RT_DEBUG_TRACE, ("ScanNextChannel():Send PWA NullData frame to notify the associated AP!\n"));
 				}
 			}
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 
 			MlmeFreeMemory(pAd, pOutBuffer);
 		}
 
-		// For SCAN_CISCO_PASSIVE, do nothing and silently wait for beacon or other probe reponse
+		/* For SCAN_CISCO_PASSIVE, do nothing and silently wait for beacon or other probe reponse*/
 		
 #ifdef CONFIG_STA_SUPPORT
+#ifdef P2P_SUPPORT
+		if (OpMode == OPMODE_STA)
+#else
 		IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
+#endif /* P2P_SUPPORT */
 			pAd->Mlme.SyncMachine.CurrState = SCAN_LISTEN;
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 #ifdef CONFIG_AP_SUPPORT
+#ifdef P2P_SUPPORT
+				if (OpMode == OPMODE_AP)
+#else
 		IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
+#endif /* P2P_SUPPORT */
 			pAd->Mlme.ApSyncMachine.CurrState = AP_SCAN_LISTEN;
-#endif // CONFIG_AP_SUPPORT //
+#endif /* CONFIG_AP_SUPPORT */
 
 	}
 }
 #endif
+
 
 
 #ifdef CONFIG_AP_SUPPORT
@@ -1030,22 +1181,31 @@ VOID Handle_BSS_Width_Trigger_Events(
         DetectOverlappingPeriodicRound = 31;
 	}
 }
-#endif // DOT11_N_SUPPORT //
-#endif // CONFIG_AP_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
+#endif /* CONFIG_AP_SUPPORT */
 
 BOOLEAN ScanRunning(
 		IN PRTMP_ADAPTER pAd)
 {
 	BOOLEAN	rv = FALSE;
 
+#ifdef P2P_SUPPORT
+		rv = ((pAd->Mlme.ApSyncMachine.CurrState == AP_SCAN_LISTEN) ? TRUE : FALSE);
+
+		if (rv == FALSE)
+			rv = ((pAd->Mlme.SyncMachine.CurrState == SCAN_LISTEN) ? TRUE : FALSE);
+#else
 #ifdef CONFIG_STA_SUPPORT
 		IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
 			rv = ((pAd->Mlme.SyncMachine.CurrState == SCAN_LISTEN) ? TRUE : FALSE);
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 #ifdef CONFIG_AP_SUPPORT
+#ifdef AP_SCAN_SUPPORT
 		IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
 			rv = ((pAd->Mlme.ApSyncMachine.CurrState == AP_SCAN_LISTEN) ? TRUE : FALSE);
-#endif // CONFIG_AP_SUPPORT //
+#endif /* AP_SCAN_SUPPORT */
+#endif /* CONFIG_AP_SUPPORT */
+#endif /* P2P_SUPPORT */
 
 	return rv;
 }

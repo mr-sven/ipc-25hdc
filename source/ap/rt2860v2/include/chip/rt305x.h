@@ -28,6 +28,8 @@
 
 #ifdef RT305x
 
+struct _RTMP_ADAPTER;
+
 #include "chip/mac_pci.h"
 
 
@@ -43,25 +45,55 @@
 #error "For RT305x, you should define the compile flag -DRTMP_RF_RW_SUPPORT"
 #endif
 
-
+#define RTMP_SYS_CTL_ADDR 0xB0000000
+#define RTMP_INT_CTL_ADDR 0xB0000200
+#define RTMP_PIO_CTL_ADDR 0xB0000600
 #define RTMP_MAC_CSR_ADDR 0xB0180000
-#define RTMP_FLASH_BASE_ADDR	0xbfc00000
+#define RTMP_FLASH_BASE_ADDR 0xbfc00000
 
+/* System Control */
+#define RTMP_SYS_GPIOMODE_OFFSET 0x0060
+
+/* Programmable I/O */
+#define RTMP_PIO2100_DATA_OFFSET 0x0020
+#define RTMP_PIO2100_DIR_OFFSET 0x0024
+#define RTMP_PIO2100_POL_OFFSET 0x0028
 
 extern REG_PAIR   RT305x_RFRegTable[];
 
 extern REG_PAIR   RT305x_BBPRegTable[];
 extern UCHAR RT305x_NUM_BBP_REG_PARMS;
 
-#ifdef CARRIER_DETECTION_SUPPORT
-#define TONE_RADAR_DETECT_SUPPORT
-#define TONE_RADAR_DETECT_V1
-#endif
-
-
 //
 // Device ID & Vendor ID, these values should match EEPROM value
 //
+
+
+VOID RT305x_Init(
+	IN struct _RTMP_ADAPTER		*pAd);
+
+VOID NICInitRT305xMacRegisters(
+	IN struct _RTMP_ADAPTER		*pAd);
+
+VOID RT305x_VdrTuning1(
+	IN struct _RTMP_ADAPTER		*pAd);
+
+VOID RT305x_ChipSwitchChannel(
+	IN struct _RTMP_ADAPTER 	*pAd,
+	IN UCHAR					Channel,
+	IN BOOLEAN					bScan);
+
+#ifdef RTMP_INTERNAL_TX_ALC
+VOID RT305x_AsicInitDesiredTSSITable(
+	IN struct _RTMP_ADAPTER		*pAd);
+#endif /* RTMP_INTERNAL_TX_ALC */
+
+VOID RT305x_ChipSpecific(
+	IN struct _RTMP_ADAPTER 	*pAd,
+	IN UINT32					StateId,
+	IN UINT32					FuncId,
+	IN VOID						*pData,
+	IN ULONG					Data);
 
 #endif // RT305x //
 

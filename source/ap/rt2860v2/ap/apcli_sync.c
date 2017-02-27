@@ -83,16 +83,16 @@ VOID ApCliSyncStateMachineInit(
 		(STATE_MACHINE_FUNC)Drop, APCLI_SYNC_IDLE,
 		APCLI_SYNC_MACHINE_BASE);
 
-	// column 1
+	/* column 1 */
 	StateMachineSetAction(Sm, APCLI_SYNC_IDLE, APCLI_MT2_MLME_PROBE_REQ, (STATE_MACHINE_FUNC)ApCliMlmeProbeReqAction);
 
-	//column 2
+	/*column 2 */
 	StateMachineSetAction(Sm, APCLI_JOIN_WAIT_PROBE_RSP, APCLI_MT2_MLME_PROBE_REQ, (STATE_MACHINE_FUNC)ApCliInvalidStateWhenJoin);
 	StateMachineSetAction(Sm, APCLI_JOIN_WAIT_PROBE_RSP, APCLI_MT2_PEER_PROBE_RSP, (STATE_MACHINE_FUNC)ApCliPeerProbeRspAtJoinAction);
 	StateMachineSetAction(Sm, APCLI_JOIN_WAIT_PROBE_RSP, APCLI_MT2_PROBE_TIMEOUT, (STATE_MACHINE_FUNC)ApCliProbeTimeoutAtJoinAction);
 
-	// timer init
-	RTMPInitTimer(pAd, &pAd->MlmeAux.ProbeTimer, GET_TIMER_FUNCTION(ApCliProbeTimeout), pAd, FALSE);
+	/* timer init */
+	RTMPInitTimer(pAd, &pAd->ApCliMlmeAux.ProbeTimer, GET_TIMER_FUNCTION(ApCliProbeTimeout), pAd, FALSE);
 
 	for (i = 0; i < MAX_APCLI_NUM; i++)
 		pAd->ApCfg.ApCliTab[i].SyncCurrState = APCLI_SYNC_IDLE;
@@ -140,23 +140,23 @@ static VOID ApCliMlmeProbeReqAction(
 
 	DBGPRINT(RT_DEBUG_TRACE, ("ApCli SYNC - ApCliMlmeProbeReqAction(Ssid %s)\n", Info->Ssid));
 
-	// reset all the timers
-	RTMPCancelTimer(&pAd->MlmeAux.ProbeTimer, &Cancelled);
+	/* reset all the timers */
+	RTMPCancelTimer(&pAd->ApCliMlmeAux.ProbeTimer, &Cancelled);
 
-	pAd->MlmeAux.Rssi = -9999;
-	pAd->MlmeAux.Channel = pAd->CommonCfg.Channel;
-	pAd->MlmeAux.SupRateLen = pAd->CommonCfg.SupRateLen;
-	NdisMoveMemory(pAd->MlmeAux.SupRate, pAd->CommonCfg.SupRate, pAd->CommonCfg.SupRateLen);
+	pAd->ApCliMlmeAux.Rssi = -9999;
+	pAd->ApCliMlmeAux.Channel = pAd->CommonCfg.Channel;
+	pAd->ApCliMlmeAux.SupRateLen = pAd->CommonCfg.SupRateLen;
+	NdisMoveMemory(pAd->ApCliMlmeAux.SupRate, pAd->CommonCfg.SupRate, pAd->CommonCfg.SupRateLen);
 
 	/* Prepare the default value for extended rate */
-	pAd->MlmeAux.ExtRateLen = pAd->CommonCfg.ExtRateLen;
-	NdisMoveMemory(pAd->MlmeAux.ExtRate, pAd->CommonCfg.ExtRate, pAd->CommonCfg.ExtRateLen);
+	pAd->ApCliMlmeAux.ExtRateLen = pAd->CommonCfg.ExtRateLen;
+	NdisMoveMemory(pAd->ApCliMlmeAux.ExtRate, pAd->CommonCfg.ExtRate, pAd->CommonCfg.ExtRateLen);
 
-	RTMPSetTimer(&pAd->MlmeAux.ProbeTimer, PROBE_TIMEOUT);
+	RTMPSetTimer(&pAd->ApCliMlmeAux.ProbeTimer, PROBE_TIMEOUT);
 
 	ApCliEnqueueProbeRequest(pAd, Info->SsidLen, (PCHAR) Info->Ssid, ifIndex);
 
-	DBGPRINT(RT_DEBUG_TRACE, ("ApCli SYNC - Start Probe the SSID %s on channel =%d\n", pAd->MlmeAux.Ssid, pAd->MlmeAux.Channel));
+	DBGPRINT(RT_DEBUG_TRACE, ("ApCli SYNC - Start Probe the SSID %s on channel =%d\n", pAd->ApCliMlmeAux.Ssid, pAd->ApCliMlmeAux.Channel));
 
 	*pCurrState = APCLI_JOIN_WAIT_PROBE_RSP;
 
@@ -174,11 +174,12 @@ static VOID ApCliPeerProbeRspAtJoinAction(
 	IN MLME_QUEUE_ELEM *Elem) 
 {
 	UCHAR Bssid[MAC_ADDR_LEN], Addr2[MAC_ADDR_LEN];
-	UCHAR Ssid[MAX_LEN_OF_SSID], SsidLen, BssType, Channel, MessageToMe, 
+	UCHAR /* Ssid[MAX_LEN_OF_SSID], */ SsidLen=0, BssType, Channel=0, MessageToMe, 
 		DtimCount, DtimPeriod, BcastFlag; 
+	UCHAR *Ssid = NULL;
 	LARGE_INTEGER TimeStamp;
 	USHORT BeaconPeriod, AtimWin, CapabilityInfo;
-//	UINT FrameLen = 0;
+/*	UINT FrameLen = 0; */
 	CF_PARM Cf;
 	UCHAR Erp;
 	UCHAR SupRate[MAX_LEN_OF_SUPPORTED_RATES], ExtRate[MAX_LEN_OF_SUPPORTED_RATES];
@@ -189,12 +190,15 @@ static VOID ApCliPeerProbeRspAtJoinAction(
 	EDCA_PARM EdcaParm;
 	QBSS_LOAD_PARM QbssLoad;
 	QOS_CAPABILITY_PARM QosCapability;
-	UCHAR VarIE[MAX_VIE_LEN];		// Total VIE length = MAX_VIE_LEN - -5
+/*	UCHAR VarIE[MAX_VIE_LEN];		// Total VIE length = MAX_VIE_LEN - -5 */
+	UCHAR *VarIE = NULL;
 	NDIS_802_11_VARIABLE_IEs *pVIE = NULL;
 	ULONG RalinkIe;
 	APCLI_CTRL_MSG_STRUCT ApCliCtrlMsg;
-	HT_CAPABILITY_IE HtCapability;
-	ADD_HT_INFO_IE AddHtInfo;	// AP might use this additional ht info IE 
+/*	HT_CAPABILITY_IE HtCapability; */
+/*	ADD_HT_INFO_IE AddHtInfo;	// AP might use this additional ht info IE */
+	HT_CAPABILITY_IE *pHtCapability = NULL;
+	ADD_HT_INFO_IE *pAddHtInfo = NULL;	/* AP might use this additional ht info IE */
 	UCHAR HtCapabilityLen;
 	UCHAR AddHtInfoLen;
 	UCHAR NewChannel;
@@ -202,21 +206,47 @@ static VOID ApCliPeerProbeRspAtJoinAction(
 	PAPCLI_STRUCT pApCliEntry = NULL;
 #ifdef DOT11_N_SUPPORT
         UCHAR CentralChannel;
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 #ifdef CONFIG_STA_SUPPORT
 	UCHAR	pPreNHtCapabilityLen = 0;
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 	EXT_CAP_INFO_ELEMENT	ExtCapInfo;
 
 	USHORT ifIndex = (USHORT)(Elem->Priv);
 	PULONG pCurrState = &pAd->ApCfg.ApCliTab[ifIndex].SyncCurrState;
 
 
-	// Init Variable IE structure
+	/* allocate memory */
+	os_alloc_mem(NULL, (UCHAR **)&VarIE, MAX_VIE_LEN);
+	if (VarIE == NULL)
+	{
+		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n", __FUNCTION__));
+		goto LabelErr;
+	}
+	os_alloc_mem(NULL, (UCHAR **)&pHtCapability, sizeof(HT_CAPABILITY_IE));
+	if (pHtCapability == NULL)
+	{
+		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n", __FUNCTION__));
+		goto LabelErr;
+	}
+	os_alloc_mem(NULL, (UCHAR **)&pAddHtInfo, sizeof(ADD_HT_INFO_IE));
+	if (pAddHtInfo == NULL)
+	{
+		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n", __FUNCTION__));
+		goto LabelErr;
+	}
+	os_alloc_mem(NULL, (UCHAR **)&Ssid, MAX_LEN_OF_SSID);
+	if (Ssid == NULL)
+	{
+		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n", __FUNCTION__));
+		goto LabelErr;
+	}
+
+	/* Init Variable IE structure */
 	pVIE = (PNDIS_802_11_VARIABLE_IEs) VarIE;
 	pVIE->Length = 0;
-	RTMPZeroMemory(&HtCapability, sizeof(HT_CAPABILITY_IE));
-	RTMPZeroMemory(&AddHtInfo, sizeof(ADD_HT_INFO_IE));
+	RTMPZeroMemory(pHtCapability, sizeof(HT_CAPABILITY_IE));
+	RTMPZeroMemory(pAddHtInfo, sizeof(ADD_HT_INFO_IE));
 
 	if (PeerBeaconAndProbeRspSanity(pAd, 
 								Elem->Msg, 
@@ -252,21 +282,23 @@ static VOID ApCliPeerProbeRspAtJoinAction(
 								&HtCapabilityLen,
 #ifdef CONFIG_STA_SUPPORT
 								&pPreNHtCapabilityLen,
-#endif // CONFIG_STA_SUPPORT //
-								&HtCapability,
+#endif /* CONFIG_STA_SUPPORT */
+								pHtCapability,
 								&ExtCapInfo,
 								&AddHtInfoLen,
-								&AddHtInfo,
+								pAddHtInfo,
 								&NewExtChannelOffset,
 								&LenVIE,
 								pVIE))
 	{
-		// BEACON from desired BSS/IBSS found. We should be able to decide most
-		// BSS parameters here.
-		// Q. But what happen if this JOIN doesn't conclude a successful ASSOCIATEION?
-		//    Do we need to receover back all parameters belonging to previous BSS?
-		// A. Should be not. There's no back-door recover to previous AP. It still need
-		//    a new JOIN-AUTH-ASSOC sequence.
+		/*
+			BEACON from desired BSS/IBSS found. We should be able to decide most
+			BSS parameters here.
+			Q. But what happen if this JOIN doesn't conclude a successful ASSOCIATEION?
+				Do we need to receover back all parameters belonging to previous BSS?
+			A. Should be not. There's no back-door recover to previous AP. It still need
+				a new JOIN-AUTH-ASSOC sequence.
+		*/
 		INT ssidEqualFlag = FALSE;
 		INT ssidEmptyFlag = FALSE;
 		INT bssidEqualFlag = FALSE;
@@ -275,28 +307,28 @@ static VOID ApCliPeerProbeRspAtJoinAction(
 
 		pApCliEntry = &pAd->ApCfg.ApCliTab[ifIndex];
 
-		// Check the Probe-Rsp's Bssid.
+		/* Check the Probe-Rsp's Bssid. */
 		if(!MAC_ADDR_EQUAL(pApCliEntry->CfgApCliBssid, ZERO_MAC_ADDR))
 			bssidEqualFlag = MAC_ADDR_EQUAL(pApCliEntry->CfgApCliBssid, Bssid);
 		else
 			bssidEmptyFlag = TRUE;
 
-		// Check the Probe-Rsp's Ssid.
+		/* Check the Probe-Rsp's Ssid. */
 		if(pApCliEntry->CfgSsidLen != 0)
 			ssidEqualFlag = SSID_EQUAL(pApCliEntry->CfgSsid, pApCliEntry->CfgSsidLen, Ssid, SsidLen);
 		else
 			ssidEmptyFlag = TRUE;
 
 
-		// bssid and ssid, Both match.
+		/* bssid and ssid, Both match. */
 		if (bssidEqualFlag && ssidEqualFlag)
 			matchFlag = TRUE;
 
-		// ssid match but bssid doesn't be indicate.
+		/* ssid match but bssid doesn't be indicate. */
 		else if(ssidEqualFlag && bssidEmptyFlag)
 			matchFlag = TRUE;
 
-		// user doesn't indicate any bssid or ssid. AP-Clinet will auto pick a AP to join by most strong siganl strength.
+		/* user doesn't indicate any bssid or ssid. AP-Clinet will auto pick a AP to join by most strong siganl strength. */
 		else if (bssidEmptyFlag && ssidEmptyFlag)
 			matchFlag = TRUE;
 
@@ -304,23 +336,23 @@ static VOID ApCliPeerProbeRspAtJoinAction(
 		DBGPRINT(RT_DEBUG_TRACE, ("SYNC - bssidEqualFlag=%d, ssidEqualFlag=%d, matchFlag=%d\n", bssidEqualFlag, ssidEqualFlag, matchFlag));
 		if (matchFlag)
 		{
-			// Validate RSN IE if necessary, then copy store this information
+			/* Validate RSN IE if necessary, then copy store this information */
 			if ((LenVIE > 0) 
 #ifdef WSC_AP_SUPPORT
                 && ((pAd->ApCfg.ApCliTab[ifIndex].WscControl.WscConfMode == WSC_DISABLE) || 
                 	(pAd->ApCfg.ApCliTab[ifIndex].WscControl.bWscTrigger == FALSE))
-#endif // WSC_AP_SUPPORT //
+#endif /* WSC_AP_SUPPORT */
                 )
 			{
 				if (ApCliValidateRSNIE(pAd, (PEID_STRUCT)pVIE, LenVIE, ifIndex))
 				{
-					pAd->MlmeAux.VarIELen = LenVIE;
-					NdisMoveMemory(pAd->MlmeAux.VarIEs, pVIE, pAd->MlmeAux.VarIELen);
+					pAd->ApCliMlmeAux.VarIELen = LenVIE;
+					NdisMoveMemory(pAd->ApCliMlmeAux.VarIEs, pVIE, pAd->ApCliMlmeAux.VarIELen);
 				}
 				else
 				{
-					// ignore this response
-					pAd->MlmeAux.VarIELen = 0;
+					/* ignore this response */
+					pAd->ApCliMlmeAux.VarIELen = 0;
 					DBGPRINT(RT_DEBUG_ERROR, ("ERROR: The RSN IE of this received Probe-resp is dis-match !!!!!!!!!! \n"));
 					return;
 				}
@@ -331,124 +363,124 @@ static VOID ApCliPeerProbeRspAtJoinAction(
 #ifdef WSC_AP_SUPPORT
                     && ((pAd->ApCfg.ApCliTab[ifIndex].WscControl.WscConfMode == WSC_DISABLE) || 
                 		(pAd->ApCfg.ApCliTab[ifIndex].WscControl.bWscTrigger == FALSE))
-#endif // WSC_AP_SUPPORT //
+#endif /* WSC_AP_SUPPORT */
                     )
 				{
-					// ignore this response
+					/* ignore this response */
 					DBGPRINT(RT_DEBUG_ERROR, ("ERROR: The received Probe-resp has empty RSN IE !!!!!!!!!! \n"));
 					return;
 				}	
 				
-				pAd->MlmeAux.VarIELen = 0;
+				pAd->ApCliMlmeAux.VarIELen = 0;
 			}
 
 			DBGPRINT(RT_DEBUG_TRACE, ("SYNC - receive desired PROBE_RSP at JoinWaitProbeRsp... Channel = %d\n", Channel));
 
-			// if the Bssid doesn't be indicated then you need to decide which AP to connect by most strong Rssi signal strength.
+			/* if the Bssid doesn't be indicated then you need to decide which AP to connect by most strong Rssi signal strength. */
 			if (bssidEqualFlag == FALSE)
 			{
-				// caculate real rssi value.
+				/* caculate real rssi value. */
 				CHAR Rssi0 = ConvertToRssi(pAd, Elem->Rssi0, RSSI_0);
 				CHAR Rssi1 = ConvertToRssi(pAd, Elem->Rssi1, RSSI_1);
 				CHAR Rssi2 = ConvertToRssi(pAd, Elem->Rssi2, RSSI_2);
 				LONG RealRssi = (LONG)(RTMPMaxRssi(pAd, Rssi0, Rssi1, Rssi2));
 
-				DBGPRINT(RT_DEBUG_TRACE, ("SYNC - previous Rssi = %ld current Rssi=%ld\n", pAd->MlmeAux.Rssi, (LONG)RealRssi));
-				if (pAd->MlmeAux.Rssi > (LONG)RealRssi)
+				DBGPRINT(RT_DEBUG_TRACE, ("SYNC - previous Rssi = %ld current Rssi=%ld\n", pAd->ApCliMlmeAux.Rssi, (LONG)RealRssi));
+				if (pAd->ApCliMlmeAux.Rssi > (LONG)RealRssi)
 					return;
 				else
-					pAd->MlmeAux.Rssi = RealRssi;
+					pAd->ApCliMlmeAux.Rssi = RealRssi;
 			} else
 			{
 				BOOLEAN Cancelled;
-				RTMPCancelTimer(&pAd->MlmeAux.ProbeTimer, &Cancelled);
+				RTMPCancelTimer(&pAd->ApCliMlmeAux.ProbeTimer, &Cancelled);
 			}
 
-			NdisMoveMemory(pAd->MlmeAux.Ssid, Ssid, SsidLen);
-			pAd->MlmeAux.SsidLen = SsidLen;
+			NdisMoveMemory(pAd->ApCliMlmeAux.Ssid, Ssid, SsidLen);
+			pAd->ApCliMlmeAux.SsidLen = SsidLen;
 
-			NdisMoveMemory(pAd->MlmeAux.Bssid, Bssid, MAC_ADDR_LEN);			
-			pAd->MlmeAux.CapabilityInfo = CapabilityInfo & SUPPORTED_CAPABILITY_INFO;
-			pAd->MlmeAux.BssType = BssType;
-			pAd->MlmeAux.BeaconPeriod = BeaconPeriod;
-			pAd->MlmeAux.Channel = Channel;
-			pAd->MlmeAux.AtimWin = AtimWin;
-			pAd->MlmeAux.CfpPeriod = Cf.CfpPeriod;
-			pAd->MlmeAux.CfpMaxDuration = Cf.CfpMaxDuration;
-			pAd->MlmeAux.APRalinkIe = RalinkIe;
+			NdisMoveMemory(pAd->ApCliMlmeAux.Bssid, Bssid, MAC_ADDR_LEN);			
+			pAd->ApCliMlmeAux.CapabilityInfo = CapabilityInfo & SUPPORTED_CAPABILITY_INFO;
+			pAd->ApCliMlmeAux.BssType = BssType;
+			pAd->ApCliMlmeAux.BeaconPeriod = BeaconPeriod;
+			pAd->ApCliMlmeAux.Channel = Channel;
+			pAd->ApCliMlmeAux.AtimWin = AtimWin;
+			pAd->ApCliMlmeAux.CfpPeriod = Cf.CfpPeriod;
+			pAd->ApCliMlmeAux.CfpMaxDuration = Cf.CfpMaxDuration;
+			pAd->ApCliMlmeAux.APRalinkIe = RalinkIe;
 
-			// Copy AP's supported rate to MlmeAux for creating assoication request
-			// Also filter out not supported rate
-			pAd->MlmeAux.SupRateLen = SupRateLen;
-			NdisMoveMemory(pAd->MlmeAux.SupRate, SupRate, SupRateLen);
-			RTMPCheckRates(pAd, pAd->MlmeAux.SupRate, &pAd->MlmeAux.SupRateLen);
-			pAd->MlmeAux.ExtRateLen = ExtRateLen;
-			NdisMoveMemory(pAd->MlmeAux.ExtRate, ExtRate, ExtRateLen);
-			RTMPCheckRates(pAd, pAd->MlmeAux.ExtRate, &pAd->MlmeAux.ExtRateLen);
+			/* Copy AP's supported rate to ApCliMlmeAux for creating assoication request */
+			/* Also filter out not supported rate */
+			pAd->ApCliMlmeAux.SupRateLen = SupRateLen;
+			NdisMoveMemory(pAd->ApCliMlmeAux.SupRate, SupRate, SupRateLen);
+			RTMPCheckRates(pAd, pAd->ApCliMlmeAux.SupRate, &pAd->ApCliMlmeAux.SupRateLen);
+			pAd->ApCliMlmeAux.ExtRateLen = ExtRateLen;
+			NdisMoveMemory(pAd->ApCliMlmeAux.ExtRate, ExtRate, ExtRateLen);
+			RTMPCheckRates(pAd, pAd->ApCliMlmeAux.ExtRate, &pAd->ApCliMlmeAux.ExtRateLen);
 
 #ifdef DOT11_N_SUPPORT
 			NdisZeroMemory(pAd->ApCfg.ApCliTab[ifIndex].RxMcsSet,sizeof(pAd->ApCfg.ApCliTab[ifIndex].RxMcsSet));
-			// filter out un-supported ht rates
+			/* filter out un-supported ht rates */
 			if ((HtCapabilityLen > 0) && 
 				(pApCliEntry->DesiredHtPhyInfo.bHtEnable) &&
 				(pAd->CommonCfg.PhyMode >= PHY_11ABGN_MIXED))
 			{
-				RTMPZeroMemory(&pAd->MlmeAux.HtCapability, SIZE_HT_CAP_IE);
-				pAd->MlmeAux.NewExtChannelOffset = NewExtChannelOffset;
-				pAd->MlmeAux.HtCapabilityLen = HtCapabilityLen;
-				ApCliCheckHt(pAd, ifIndex, &HtCapability, &AddHtInfo);
+				RTMPZeroMemory(&pAd->ApCliMlmeAux.HtCapability, SIZE_HT_CAP_IE);
+				pAd->ApCliMlmeAux.NewExtChannelOffset = NewExtChannelOffset;
+				pAd->ApCliMlmeAux.HtCapabilityLen = HtCapabilityLen;
+				ApCliCheckHt(pAd, ifIndex, pHtCapability, pAddHtInfo);
 
 				if (AddHtInfoLen > 0)
 				{
-					CentralChannel = AddHtInfo.ControlChan;
-		 			// Check again the Bandwidth capability of this AP.
-		 			if ((AddHtInfo.ControlChan > 2)&& (AddHtInfo.AddHtInfo.ExtChanOffset == EXTCHA_BELOW) && (HtCapability.HtCapInfo.ChannelWidth == BW_40))
+					CentralChannel = pAddHtInfo->ControlChan;
+		 			/* Check again the Bandwidth capability of this AP. */
+		 			if ((pAddHtInfo->ControlChan > 2)&& (pAddHtInfo->AddHtInfo.ExtChanOffset == EXTCHA_BELOW) && (pHtCapability->HtCapInfo.ChannelWidth == BW_40))
 		 			{
-		 				CentralChannel = AddHtInfo.ControlChan - 2;
+		 				CentralChannel = pAddHtInfo->ControlChan - 2;
 		 			}
-		 			else if ((AddHtInfo.AddHtInfo.ExtChanOffset == EXTCHA_ABOVE) && (HtCapability.HtCapInfo.ChannelWidth == BW_40))
+		 			else if ((pAddHtInfo->AddHtInfo.ExtChanOffset == EXTCHA_ABOVE) && (pHtCapability->HtCapInfo.ChannelWidth == BW_40))
 		 			{
-		 				CentralChannel = AddHtInfo.ControlChan + 2;
+		 				CentralChannel = pAddHtInfo->ControlChan + 2;
 		 			}
-		 			DBGPRINT(RT_DEBUG_TRACE, ("PeerBeaconAtJoinAction HT===>Central Channel = %d, Control Channel = %d,  .\n", CentralChannel, AddHtInfo.ControlChan));
+		 			DBGPRINT(RT_DEBUG_TRACE, ("PeerBeaconAtJoinAction HT===>Central Channel = %d, Control Channel = %d,  .\n", CentralChannel, pAddHtInfo->ControlChan));
 
 				}
 				
 			}
 			else
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 			{
-				RTMPZeroMemory(&pAd->MlmeAux.HtCapability, SIZE_HT_CAP_IE);
-				RTMPZeroMemory(&pAd->MlmeAux.AddHtInfo, SIZE_ADD_HT_INFO_IE);
-				pAd->MlmeAux.HtCapabilityLen = 0;
+				RTMPZeroMemory(&pAd->ApCliMlmeAux.HtCapability, SIZE_HT_CAP_IE);
+				RTMPZeroMemory(&pAd->ApCliMlmeAux.AddHtInfo, SIZE_ADD_HT_INFO_IE);
+				pAd->ApCliMlmeAux.HtCapabilityLen = 0;
 			}
-			RTMPUpdateMlmeRate(pAd);
+			ApCliUpdateMlmeRate(pAd);
 
 #ifdef DOT11_N_SUPPORT
-			// copy QOS related information
+			/* copy QOS related information */
 			if (pAd->CommonCfg.PhyMode >= PHY_11ABGN_MIXED)
 			{
-				NdisMoveMemory(&pAd->MlmeAux.APEdcaParm, &EdcaParm, sizeof(EDCA_PARM));
-				NdisMoveMemory(&pAd->MlmeAux.APQbssLoad, &QbssLoad, sizeof(QBSS_LOAD_PARM));
-				NdisMoveMemory(&pAd->MlmeAux.APQosCapability, &QosCapability, sizeof(QOS_CAPABILITY_PARM));
+				NdisMoveMemory(&pAd->ApCliMlmeAux.APEdcaParm, &EdcaParm, sizeof(EDCA_PARM));
+				NdisMoveMemory(&pAd->ApCliMlmeAux.APQbssLoad, &QbssLoad, sizeof(QBSS_LOAD_PARM));
+				NdisMoveMemory(&pAd->ApCliMlmeAux.APQosCapability, &QosCapability, sizeof(QOS_CAPABILITY_PARM));
 			}
 			else
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 			{
-				NdisZeroMemory(&pAd->MlmeAux.APEdcaParm, sizeof(EDCA_PARM));
-				NdisZeroMemory(&pAd->MlmeAux.APQbssLoad, sizeof(QBSS_LOAD_PARM));
-				NdisZeroMemory(&pAd->MlmeAux.APQosCapability, sizeof(QOS_CAPABILITY_PARM));
+				NdisZeroMemory(&pAd->ApCliMlmeAux.APEdcaParm, sizeof(EDCA_PARM));
+				NdisZeroMemory(&pAd->ApCliMlmeAux.APQbssLoad, sizeof(QBSS_LOAD_PARM));
+				NdisZeroMemory(&pAd->ApCliMlmeAux.APQosCapability, sizeof(QOS_CAPABILITY_PARM));
 			}
 
 			DBGPRINT(RT_DEBUG_TRACE, ("APCLI SYNC - after JOIN, SupRateLen=%d, ExtRateLen=%d\n", 
-				pAd->MlmeAux.SupRateLen, pAd->MlmeAux.ExtRateLen));
+				pAd->ApCliMlmeAux.SupRateLen, pAd->ApCliMlmeAux.ExtRateLen));
 
 			if (AironetCellPowerLimit != 0xFF)
 			{
-				//We need to change our TxPower for CCX 2.0 AP Control of Client Transmit Power
+				/*We need to change our TxPower for CCX 2.0 AP Control of Client Transmit Power */
 				ChangeToCellPowerLimit(pAd, AironetCellPowerLimit);
 			}
-			else  //Used the default TX Power Percentage.
+			else  /*Used the default TX Power Percentage. */
 				pAd->CommonCfg.TxPowerPercentage = pAd->CommonCfg.TxPowerDefault;
 
 #ifdef WSC_AP_SUPPORT
@@ -458,12 +490,12 @@ static VOID ApCliPeerProbeRspAtJoinAction(
 			{
 				ADD_HTINFO	RootApHtInfo, ApHtInfo;
 				ApHtInfo = pAd->CommonCfg.AddHTInfo.AddHtInfo;
-				RootApHtInfo = AddHtInfo.AddHtInfo;
+				RootApHtInfo = pAddHtInfo->AddHtInfo;
 				if ((pAd->CommonCfg.HtCapability.HtCapInfo.ChannelWidth  == BW_40) &&
 					(RootApHtInfo.RecomWidth) &&
 					(RootApHtInfo.ExtChanOffset != ApHtInfo.ExtChanOffset))
 				{
-					//STRING	ChStr[5] = {0};
+					/*STRING	ChStr[5] = {0}; */
 					
 					if (RootApHtInfo.ExtChanOffset == EXTCHA_ABOVE)
 						Set_HtExtcha_Proc(pAd, "1");
@@ -473,8 +505,8 @@ static VOID ApCliPeerProbeRspAtJoinAction(
 					return;
 				}				
 			}
-#endif // DOT11_N_SUPPORT //
-#endif // WSC_AP_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
+#endif /* WSC_AP_SUPPORT */
 			if(bssidEqualFlag == TRUE)
 			{
 				*pCurrState = APCLI_SYNC_IDLE;
@@ -484,10 +516,19 @@ static VOID ApCliPeerProbeRspAtJoinAction(
 					sizeof(APCLI_CTRL_MSG_STRUCT), &ApCliCtrlMsg, ifIndex);
 			}
 		}
-		// not to me BEACON, ignored
+		/* not to me BEACON, ignored */
 	}
-	// sanity check fail, ignore this frame
+	/* sanity check fail, ignore this frame */
 
+LabelErr:
+	if (VarIE != NULL)
+		os_free_mem(NULL, VarIE);
+	if (pHtCapability != NULL)
+		os_free_mem(NULL, pHtCapability);
+	if (pAddHtInfo != NULL)
+		os_free_mem(NULL, pAddHtInfo);
+	if (Ssid != NULL)
+		os_free_mem(NULL, Ssid);
 	return;
 }
 
@@ -503,10 +544,10 @@ static VOID ApCliProbeTimeoutAtJoinAction(
 	DBGPRINT(RT_DEBUG_TRACE, ("APCLI_SYNC - ProbeTimeoutAtJoinAction\n"));
 	*pCurrState = SYNC_IDLE;
 
-	DBGPRINT(RT_DEBUG_TRACE, ("APCLI_SYNC - MlmeAux.Bssid=%02x:%02x:%02x:%02x:%02x:%02x\n",
-		pAd->MlmeAux.Bssid[0], pAd->MlmeAux.Bssid[1], pAd->MlmeAux.Bssid[2], pAd->MlmeAux.Bssid[3], pAd->MlmeAux.Bssid[4], pAd->MlmeAux.Bssid[5]));
+	DBGPRINT(RT_DEBUG_TRACE, ("APCLI_SYNC - ApCliMlmeAux.Bssid=%02x:%02x:%02x:%02x:%02x:%02x\n",
+		pAd->ApCliMlmeAux.Bssid[0], pAd->ApCliMlmeAux.Bssid[1], pAd->ApCliMlmeAux.Bssid[2], pAd->ApCliMlmeAux.Bssid[3], pAd->ApCliMlmeAux.Bssid[4], pAd->ApCliMlmeAux.Bssid[5]));
 
-	if(!MAC_ADDR_EQUAL(pAd->MlmeAux.Bssid, ZERO_MAC_ADDR))
+	if(!MAC_ADDR_EQUAL(pAd->ApCliMlmeAux.Bssid, ZERO_MAC_ADDR))
 	{
 		ApCliCtrlMsg.Status = MLME_SUCCESS;
 		MlmeEnqueue(pAd, APCLI_CTRL_STATE_MACHINE, APCLI_CTRL_PROBE_RSP,
@@ -565,7 +606,7 @@ static VOID ApCliEnqueueProbeRequest(
 	DBGPRINT(RT_DEBUG_TRACE, ("force out a ProbeRequest ...\n"));
 
 	
-	NState = MlmeAllocateMemory(pAd, &pOutBuffer);  //Get an unused nonpaged memory
+	NState = MlmeAllocateMemory(pAd, &pOutBuffer);  /*Get an unused nonpaged memory */
 	if(NState != NDIS_STATUS_SUCCESS)
 	{
 		DBGPRINT(RT_DEBUG_TRACE, ("EnqueueProbeRequest() allocate memory fail\n"));
@@ -583,26 +624,26 @@ static VOID ApCliEnqueueProbeRequest(
 		NdisZeroMemory(ssid, MAX_LEN_OF_SSID);
 		NdisMoveMemory(ssid, Ssid, ssidLen);
 
-		// this ProbeRequest explicitly specify SSID to reduce unwanted ProbeResponse
+		/* this ProbeRequest explicitly specify SSID to reduce unwanted ProbeResponse */
 		MakeOutgoingFrame(pOutBuffer,		&FrameLen,
 			sizeof(HEADER_802_11),			&Hdr80211,
 			1,								&SsidIe,
 			1,								&ssidLen,
 			ssidLen,						ssid,
 			1,								&SupRateIe,
-			1,								&pAd->MlmeAux.SupRateLen,
-			pAd->MlmeAux.SupRateLen,		pAd->MlmeAux.SupRate,
+			1,								&pAd->ApCliMlmeAux.SupRateLen,
+			pAd->ApCliMlmeAux.SupRateLen,		pAd->ApCliMlmeAux.SupRate,
 			END_OF_ARGS);
 
 		/* Add the extended rate IE */
-		if (pAd->MlmeAux.ExtRateLen != 0)
+		if (pAd->ApCliMlmeAux.ExtRateLen != 0)
 		{
 			ULONG            tmp;
 		
 			MakeOutgoingFrame(pOutBuffer + FrameLen,    &tmp,
 				1,                        &ExtRateIe,
-				1,                        &pAd->MlmeAux.ExtRateLen,
-				pAd->MlmeAux.ExtRateLen,  pAd->MlmeAux.ExtRate,                           
+				1,                        &pAd->ApCliMlmeAux.ExtRateLen,
+				pAd->ApCliMlmeAux.ExtRateLen,  pAd->ApCliMlmeAux.ExtRate,                           
 				END_OF_ARGS);
 			FrameLen += tmp;
 		}
@@ -613,5 +654,5 @@ static VOID ApCliEnqueueProbeRequest(
 	return;
 }
 
-#endif // APCLI_SUPPORT //
+#endif /* APCLI_SUPPORT */
 

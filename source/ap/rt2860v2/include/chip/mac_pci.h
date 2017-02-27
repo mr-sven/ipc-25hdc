@@ -33,11 +33,11 @@
 #include "rtmp_dot11.h"
 
 
-//
-// Device ID & Vendor ID related definitions, 
-// NOTE: you should not add the new VendorID/DeviceID here unless you not sure it belongs to what chip.
-//
-#define NIC_PCI_VENDOR_ID		0x1814
+/* */
+/* Device ID & Vendor ID related definitions, */
+/* NOTE: you should not add the new VendorID/DeviceID here unless you not sure it belongs to what chip. */
+/* */
+
 #define PCIBUS_INTEL_VENDOR	0x8086
 
 #if !defined(PCI_CAP_ID_EXP)
@@ -55,92 +55,92 @@
 
 
 #define TXINFO_SIZE						0
-#define RTMP_PKT_TAIL_PADDING 			0
+/*#define RTMP_PKT_TAIL_PADDING 			0 // os abl move */
 #define fRTMP_ADAPTER_NEED_STOP_TX	0
 
 #define AUX_CTRL           0x10c
 
-//
-// TX descriptor format, Tx	ring, Mgmt Ring
-//
+/* */
+/* TX descriptor format, Tx	ring, Mgmt Ring */
+/* */
 #ifdef RT_BIG_ENDIAN
 typedef	struct	GNU_PACKED _TXD_STRUC {
-	// Word 0
+	/* Word 0 */
 	UINT32		SDPtr0;
-	// Word 1
+	/* Word 1 */
 	UINT32		DMADONE:1;
 	UINT32		LastSec0:1;
 	UINT32		SDLen0:14;
 	UINT32		Burst:1;
 	UINT32		LastSec1:1;
 	UINT32		SDLen1:14;
-	// Word 2
+	/* Word 2 */
 	UINT32		SDPtr1;
-	// Word 3
+	/* Word 3 */
 	UINT32		ICO:1;	
 	UINT32		UCO:1;	
 	UINT32		TCO:1;	
 	UINT32		rsv:2;
-	UINT32		QSEL:2;	// select on-chip FIFO ID for 2nd-stage output scheduler.0:MGMT, 1:HCCA 2:EDCA
-	UINT32		WIV:1;	// Wireless Info Valid. 1 if Driver already fill WI,  o if DMA needs to copy WI to correctposition
+	UINT32		QSEL:2;	/* select on-chip FIFO ID for 2nd-stage output scheduler.0:MGMT, 1:HCCA 2:EDCA */
+	UINT32		WIV:1;	/* Wireless Info Valid. 1 if Driver already fill WI,  o if DMA needs to copy WI to correctposition */
 	UINT32		rsv2:24;
 }	TXD_STRUC, *PTXD_STRUC;
 #else
 typedef	struct	GNU_PACKED _TXD_STRUC {
-	// Word	0
+	/* Word	0 */
 	UINT32		SDPtr0;
-	// Word	1
+	/* Word	1 */
 	UINT32		SDLen1:14;
 	UINT32		LastSec1:1;
 	UINT32		Burst:1;
 	UINT32		SDLen0:14;
 	UINT32		LastSec0:1;
 	UINT32		DMADONE:1;
-	//Word2
+	/*Word2 */
 	UINT32		SDPtr1;
-	//Word3
+	/*Word3 */
 	UINT32		rsv2:24;
-	UINT32		WIV:1;	// Wireless Info Valid. 1 if Driver already fill WI,  o if DMA needs to copy WI to correctposition
-	UINT32		QSEL:2;	// select on-chip FIFO ID for 2nd-stage output scheduler.0:MGMT, 1:HCCA 2:EDCA
+	UINT32		WIV:1;	/* Wireless Info Valid. 1 if Driver already fill WI,  o if DMA needs to copy WI to correctposition */
+	UINT32		QSEL:2;	/* select on-chip FIFO ID for 2nd-stage output scheduler.0:MGMT, 1:HCCA 2:EDCA */
 	UINT32		rsv:2;
-	UINT32		TCO:1;	//  
-	UINT32		UCO:1;	//  
-	UINT32		ICO:1;	//
+	UINT32		TCO:1;	/* */
+	UINT32		UCO:1;	/* */
+	UINT32		ICO:1;	/* */
 }	TXD_STRUC, *PTXD_STRUC;
 #endif
 
 
-//
-// Rx descriptor format, Rx Ring
-//
+/* */
+/* Rx descriptor format, Rx Ring */
+/* */
 #ifdef RT_BIG_ENDIAN
 typedef	struct	GNU_PACKED _RXD_STRUC{
-	// Word 0
+	/* Word 0 */
 	UINT32		SDP0;
-	// Word 1
+	/* Word 1 */
 	UINT32		DDONE:1;
 	UINT32		LS0:1;
 	UINT32		SDL0:14;
 	UINT32		Rsv:2;
 	UINT32		SDL1:14;
-	// Word 2
+	/* Word 2 */
 	UINT32		SDP1;
-	// Word 3
+	/* Word 3 */
 	UINT32		Rsv1:13;
-	UINT32		PlcpRssil:1;// To be moved
-	UINT32		PlcpSignal:1;		// To be moved
-	UINT32		Decrypted:1;	// this frame is being decrypted.
+	UINT32		PlcpRssil:1;/* To be moved */
+	UINT32		PlcpSignal:1;		/* To be moved */
+	UINT32		Decrypted:1;	/* this frame is being decrypted. */
 	UINT32		AMPDU:1;
 	UINT32		L2PAD:1;
 	UINT32		RSSI:1;
 	UINT32		HTC:1;
-	UINT32		AMSDU:1;		// rx with 802.3 header, not 802.11 header. obsolete.
-	UINT32		CipherErr:2;        // 0: decryption okay, 1:ICV error, 2:MIC error, 3:KEY not valid	
-	UINT32		Crc:1;              // 1: CRC error
-	UINT32		MyBss:1;  	// 1: this frame belongs to the same BSSID
-	UINT32		Bcast:1;            // 1: this is a broadcast frame	
-	UINT32		Mcast:1;            // 1: this is a multicast frame
-	UINT32		U2M:1;              // 1: this RX frame is unicast to me
+	UINT32		AMSDU:1;		/* rx with 802.3 header, not 802.11 header. obsolete. */
+	UINT32		CipherErr:2;        /* 0: decryption okay, 1:ICV error, 2:MIC error, 3:KEY not valid */
+	UINT32		Crc:1;              /* 1: CRC error */
+	UINT32		MyBss:1;  	/* 1: this frame belongs to the same BSSID */
+	UINT32		Bcast:1;            /* 1: this is a broadcast frame */
+	UINT32		Mcast:1;            /* 1: this is a multicast frame */
+	UINT32		U2M:1;              /* 1: this RX frame is unicast to me */
 	UINT32		FRAG:1;
 	UINT32		NULLDATA:1;
 	UINT32		DATA:1;
@@ -149,35 +149,35 @@ typedef	struct	GNU_PACKED _RXD_STRUC{
 }	RXD_STRUC, *PRXD_STRUC, RT28XX_RXD_STRUC, *PRT28XX_RXD_STRUC;
 #else
 typedef	struct	GNU_PACKED _RXD_STRUC{
-	// Word	0
+	/* Word	0 */
 	UINT32		SDP0;
-	// Word	1
+	/* Word	1 */
 	UINT32		SDL1:14;
 	UINT32		Rsv:2;
 	UINT32		SDL0:14;
 	UINT32		LS0:1;
 	UINT32		DDONE:1;
-	// Word	2
+	/* Word	2 */
 	UINT32		SDP1;
-	// Word	3
+	/* Word	3 */
 	UINT32		BA:1;
 	UINT32		DATA:1;
 	UINT32		NULLDATA:1;
 	UINT32		FRAG:1;
-	UINT32		U2M:1;              // 1: this RX frame is unicast to me
-	UINT32		Mcast:1;            // 1: this is a multicast frame
-	UINT32		Bcast:1;            // 1: this is a broadcast frame	
-	UINT32		MyBss:1;  	// 1: this frame belongs to the same BSSID	
-	UINT32		Crc:1;              // 1: CRC error
-	UINT32		CipherErr:2;        // 0: decryption okay, 1:ICV error, 2:MIC error, 3:KEY not valid
-	UINT32		AMSDU:1;		// rx with 802.3 header, not 802.11 header.
+	UINT32		U2M:1;              /* 1: this RX frame is unicast to me */
+	UINT32		Mcast:1;            /* 1: this is a multicast frame */
+	UINT32		Bcast:1;            /* 1: this is a broadcast frame */
+	UINT32		MyBss:1;  	/* 1: this frame belongs to the same BSSID */
+	UINT32		Crc:1;              /* 1: CRC error */
+	UINT32		CipherErr:2;        /* 0: decryption okay, 1:ICV error, 2:MIC error, 3:KEY not valid */
+	UINT32		AMSDU:1;		/* rx with 802.3 header, not 802.11 header. */
 	UINT32		HTC:1;
 	UINT32		RSSI:1;
 	UINT32		L2PAD:1;
 	UINT32		AMPDU:1;	
-	UINT32		Decrypted:1;	// this frame is being decrypted.
-	UINT32		PlcpSignal:1;		// To be moved
-	UINT32		PlcpRssil:1;// To be moved
+	UINT32		Decrypted:1;	/* this frame is being decrypted. */
+	UINT32		PlcpSignal:1;		/* To be moved */
+	UINT32		PlcpRssil:1;/* To be moved */
 	UINT32		Rsv1:13;
 }	RXD_STRUC, *PRXD_STRUC, RT28XX_RXD_STRUC, *PRT28XX_RXD_STRUC;
 #endif
@@ -212,9 +212,9 @@ typedef union _TX_ATTENUATION_CTRL_STRUC {
 #endif
 /* ----------------- EEPROM Related MACRO ----------------- */
 
-// 8051 firmware image for RT2860 - base address = 0x4000
+/* 8051 firmware image for RT2860 - base address = 0x4000 */
 #define FIRMWARE_IMAGE_BASE     0x2000
-#define MAX_FIRMWARE_IMAGE_SIZE 0x2000    // 8kbyte
+#define MAX_FIRMWARE_IMAGE_SIZE 0x2000    /* 8kbyte */
 
 
 /* ----------------- Frimware Related MACRO ----------------- */
@@ -254,7 +254,7 @@ typedef union _TX_ATTENUATION_CTRL_STRUC {
 
 #define NEED_QUEUE_BACK_FOR_AGG(pAd, QueIdx, freeNum, _TxFrameType) \
 		(((freeNum != (TX_RING_SIZE-1)) && (pAd->TxSwQueue[QueIdx].Number == 0)) || (freeNum<3))
-		//(((freeNum) != (TX_RING_SIZE-1)) && (pAd->TxSwQueue[QueIdx].Number == 1 /*0*/))
+		/*(((freeNum) != (TX_RING_SIZE-1)) && (pAd->TxSwQueue[QueIdx].Number == 1)) */
 		
 
 #define HAL_KickOutMgmtTx(_pAd, _QueIdx, _pPacket, _pSrcBufVA, _SrcBufLen)	\
@@ -303,25 +303,25 @@ typedef union _TX_ATTENUATION_CTRL_STRUC {
 
 
 /* ----------------- ASIC Related MACRO ----------------- */
-// reset MAC of a station entry to 0x000000000000
+/* reset MAC of a station entry to 0x000000000000 */
 #define RTMP_STA_ENTRY_MAC_RESET(pAd, Wcid)	\
 	AsicDelWcidTab(pAd, Wcid);
 
-// add this entry into ASIC RX WCID search table
+/* add this entry into ASIC RX WCID search table */
 #define RTMP_STA_ENTRY_ADD(pAd, pEntry)		\
 	AsicUpdateRxWCIDTable(pAd, pEntry->Aid, pEntry->Addr);
 
-// add by johnli, fix "in_interrupt" error when call "MacTableDeleteEntry" in Rx tasklet
-// Set MAC register value according operation mode
+/* add by johnli, fix "in_interrupt" error when call "MacTableDeleteEntry" in Rx tasklet */
+/* Set MAC register value according operation mode */
 #define RTMP_UPDATE_PROTECT(pAd)	\
 	AsicUpdateProtect(pAd, 0, (ALLN_SETPROTECT), TRUE, 0);
 #ifdef CONFIG_AP_SUPPORT
 #define RTMP_AP_UPDATE_CAPABILITY_AND_ERPIE(pAd)	\
 	APUpdateCapabilityAndErpIe(pAd);
-#endif // CONFIG_AP_SUPPORT //
-// end johnli
+#endif /* CONFIG_AP_SUPPORT */
+/* end johnli */
 
-// Insert the BA bitmap to ASIC for the Wcid entry
+/* Insert the BA bitmap to ASIC for the Wcid entry */
 #define RTMP_ADD_BA_SESSION_TO_ASIC(_pAd, _Aid, _TID)	\
 		do{					\
 			UINT32	_Value = 0, _Offset;					\
@@ -332,8 +332,8 @@ typedef union _TX_ATTENUATION_CTRL_STRUC {
 		}while(0)
 
 
-// Remove the BA bitmap from ASIC for the Wcid entry
-//		bitmap field starts at 0x10000 in ASIC WCID table
+/* Remove the BA bitmap from ASIC for the Wcid entry */
+/*		bitmap field starts at 0x10000 in ASIC WCID table */
 #define RTMP_DEL_BA_SESSION_FROM_ASIC(_pAd, _Wcid, _TID)				\
 		do{								\
 			UINT32	_Value = 0, _Offset;				\
@@ -346,10 +346,10 @@ typedef union _TX_ATTENUATION_CTRL_STRUC {
 
 /* ----------------- Interface Related MACRO ----------------- */
 
-//
-// Enable & Disable NIC interrupt via writing interrupt mask register
-// Since it use ADAPTER structure, it have to be put after structure definition.
-//
+/* */
+/* Enable & Disable NIC interrupt via writing interrupt mask register */
+/* Since it use ADAPTER structure, it have to be put after structure definition. */
+/* */
 #define RTMP_ASIC_INTERRUPT_DISABLE(_pAd)		\
 	do{			\
 		RTMP_IO_WRITE32((_pAd), INT_MASK_CSR, 0x0);     /* 0: disable */	\
@@ -364,16 +364,25 @@ typedef union _TX_ATTENUATION_CTRL_STRUC {
 
 
 #define RTMP_IRQ_INIT(pAd)	\
-	{	pAd->int_enable_reg = ((DELAYINTMASK) |		\
+	{	unsigned long _irqFlags;\
+		RTMP_INT_LOCK(&pAd->irq_lock, _irqFlags);\
+		pAd->int_enable_reg = ((DELAYINTMASK) |		\
 					(RxINT|TxDataInt|TxMgmtInt)) & ~(0x03);	\
 		pAd->int_disable_mask = 0;						\
-		pAd->int_pending = 0; }
+		pAd->int_pending = 0; \
+		RTMP_INT_UNLOCK(&pAd->irq_lock, _irqFlags);\
+	}
 
 #define RTMP_IRQ_ENABLE(pAd)					\
 	{	/* clear garbage ints */			\
+		unsigned long _irqFlags;\
 		RTMP_IO_WRITE32(pAd, INT_SOURCE_CSR, 0xffffffff);\
-		RTMP_ASIC_INTERRUPT_ENABLE(pAd); }
+		RTMP_INT_LOCK(&pAd->irq_lock, _irqFlags);\
+		RTMP_ASIC_INTERRUPT_ENABLE(pAd); \
+		RTMP_INT_UNLOCK(&pAd->irq_lock, _irqFlags);\
+}
 
+			
 
 /* ----------------- MLME Related MACRO ----------------- */
 #define RTMP_MLME_HANDLER(pAd)			MlmeHandler(pAd)
@@ -393,7 +402,7 @@ typedef union _TX_ATTENUATION_CTRL_STRUC {
 #define RTMP_PS_POLL_ENQUEUE(pAd)				EnqueuePsPoll(pAd)
 
 
-// For RTMPPCIePowerLinkCtrlRestore () function
+/* For RTMPPCIePowerLinkCtrlRestore () function */
 #define RESTORE_HALT		1
 #define RESTORE_WAKEUP		2
 #define RESTORE_CLOSE           3
@@ -416,7 +425,7 @@ typedef union _TX_ATTENUATION_CTRL_STRUC {
 
 #define RTMP_SET_PSM_BIT(_pAd, _val) \
 	MlmeSetPsmBit(_pAd, _val);
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 
 #define RTMP_MLME_RADIO_ON(pAd) \
     RT28xxPciMlmeRadioOn(pAd);
@@ -450,11 +459,25 @@ typedef union _TX_ATTENUATION_CTRL_STRUC {
 /* Set Port Secured */
 #define RTMP_SET_PORT_SECURED(_pAd) 										\
 	STA_PORT_SECURED(_pAd);
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 
 /* Remove Pairwise Key table */
 #define RTMP_REMOVE_PAIRWISE_KEY_ENTRY(_pAd, _Wcid)\
 	AsicRemovePairwiseKeyEntry(_pAd, _Wcid)
 
-#endif //__MAC_PCI_H__ //
+#ifdef PCI_MSI_SUPPORT
+#define RTMP_OS_IRQ_RELEASE(_pAd, _NetDev)									\
+{																			\
+	POS_COOKIE pObj = (POS_COOKIE)(_pAd->OS_Cookie);						\
+	RtmpOSIRQRelease(_NetDev, pAd->infType, pObj->pci_dev, &_pAd->HaveMsi);	\
+}
+#else
+#define RTMP_OS_IRQ_RELEASE(_pAd, _NetDev)									\
+{																			\
+	POS_COOKIE pObj = (POS_COOKIE)(_pAd->OS_Cookie);						\
+	RtmpOSIRQRelease(_NetDev, pAd->infType, pObj->pci_dev, NULL);			\
+}
+#endif /* PCI_MSI_SUPPORT */
+
+#endif /*__MAC_PCI_H__ */
 

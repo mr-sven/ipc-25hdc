@@ -23,77 +23,15 @@ OBJ := $(MOD_NAME).o
 #ifdef CONFIG_AP_SUPPORT
 
 RT28XX_AP_OBJ := \
+	../../common/rt_os_util.o\
+	../../os/linux/rt_linux_symb.o\
+	../../os/linux/rt_rbus_pci_util.o\
+	../../os/linux/rt_usb_util.o\
 	../../os/linux/rt_linux.o
 
 ifeq ($(HAS_BGFP_SUPPORT),y)
 RT28XX_AP_OBJ += \
 	$(RT28xx_DIR)/os/linux/br_ftph.o
-endif
-
-#ifdef RT2860
-ifeq ($(CHIPSET),2860)
-RT28XX_AP_OBJ += \
-	../../os/linux/rt_rbus_pci_util.o
-endif
-
-#ifdef RT3090
-ifeq ($(CHIPSET),3090)
-RT28XX_AP_OBJ += \
-	../../os/linux/rt_rbus_pci_util.o
-endif
-
-#ifdef RT2870
-ifeq ($(CHIPSET),2870)
-RT28XX_AP_OBJ += \
-	../../os/linux/rt_usb_util.o
-endif
-
-#ifdef RT2070
-ifeq ($(CHIPSET),2070)
-RT28XX_AP_OBJ += \
-	../../os/linux/rt_usb_util.o
-endif
-
-#ifdef RT3070
-ifeq ($(CHIPSET),3070)
-RT28XX_AP_OBJ += \
-	../../os/linux/rt_usb_util.o
-endif
-
-#ifdef RT2880
-ifeq ($(CHIPSET),2880)
-RT28XX_AP_OBJ += \
-	../../os/linux/rt_rbus_pci_util.o
-endif
-
-#ifdef RT3572
-ifeq ($(CHIPSET),3572)
-RT28XX_AP_OBJ += \
-	../../os/linux/rt_usb_util.o
-endif
-
-#ifdef RT3062
-ifeq ($(CHIPSET),3062)
-RT28XX_AP_OBJ += \
-	../../os/linux/rt_rbus_pci_util.o
-endif
-
-#ifdef RT3562
-ifeq ($(CHIPSET),3562)
-RT28XX_AP_OBJ += \
-	../../os/linux/rt_rbus_pci_util.o
-endif
-
-#ifdef RT3390
-ifeq ($(CHIPSET),3390)
-RT28XX_AP_OBJ += \
-	../../os/linux/rt_rbus_pci_util.o
-endif
-
-#ifdef RT3370
-ifeq ($(CHIPSET),3370)
-RT28XX_AP_OBJ += \
-	../../os/linux/rt_usb_util.o
 endif
 
 #endif // CONFIG_AP_SUPPORT //
@@ -102,122 +40,21 @@ endif
 #ifdef CONFIG_STA_SUPPORT
 
 RT28XX_STA_OBJ := \
+	../../common/rt_os_util.o\
+	../../os/linux/rt_linux_symb.o\
+	../../os/linux/rt_rbus_pci_util.o\
+	../../os/linux/rt_usb_util.o\
 	../../os/linux/rt_linux.o
-
-#ifdef RT2860
-ifeq ($(CHIPSET),2860)
-RT28XX_STA_OBJ += \
-	../../os/linux/rt_rbus_pci_util.o
-endif
-
-#ifdef RT3090
-ifeq ($(CHIPSET),3090)
-RT28XX_STA_OBJ += \
-	../../os/linux/rt_rbus_pci_util.o
-endif
-
-#ifdef RT2870
-ifeq ($(CHIPSET),2870)
-RT28XX_STA_OBJ += \
-	../../os/linux/rt_usb_util.o
-endif
-
-#ifdef RT2070
-ifeq ($(CHIPSET),2070)
-RT28XX_STA_OBJ += \
-	../../os/linux/rt_usb_util.o
-endif
-
-#ifdef RT3070
-ifeq ($(CHIPSET),3070)
-RT28XX_STA_OBJ += \
-	../../os/linux/rt_usb_util.o
-endif
-
-#ifdef RT2880
-ifeq ($(CHIPSET),2880)
-RT28XX_STA_OBJ += \
-	../../os/linux/rt_rbus_pci_util.o
-endif
-
-#ifdef RT3572
-ifeq ($(CHIPSET),3572)
-RT28XX_STA_OBJ += \
-	../../os/linux/rt_usb_util.o
-endif
-
-#ifdef RT3062
-ifeq ($(CHIPSET),3062)
-RT28XX_STA_OBJ += \
-	../../os/linux/rt_rbus_pci_util.o
-endif
-
-#ifdef RT3562
-ifeq ($(CHIPSET),3562)
-RT28XX_STA_OBJ += \
-	../../os/linux/rt_rbus_pci_util.o
-endif
-
-#ifdef RT3390
-ifeq ($(CHIPSET),3390)
-RT28XX_STA_OBJ += \
-	../../os/linux/rt_rbus_pci_util.o
-endif
-
-#ifdef RT3370
-ifeq ($(CHIPSET),3370)
-RT28XX_STA_OBJ += \
-	../../os/linux/rt_usb_util.o
-endif
-
 #endif // CONFIG_STA_SUPPORT //
 
 
 #ifdef CONFIG_APSTA_SUPPORT
 RT28XX_APSTA_OBJ := \
+	../../common/rt_os_util.o\
+	../../os/linux/rt_linux_symb.o\
+	../../os/linux/rt_rbus_pci_util.o\
+	../../os/linux/rt_usb_util.o\
 	../../os/linux/rt_linux.o
-
-#ifdef RT2860
-ifeq ($(CHIPSET),2860)
-RT28XX_APSTA_OBJ += \
-	../../os/linux/rt_rbus_pci_util.o
-endif
-
-#ifdef RT3090
-ifeq ($(CHIPSET),3090)
-RT28XX_APSTA_OBJ += \
-	../../os/linux/rt_rbus_pci_util.o
-endif
-
-#ifdef RT2870
-ifeq ($(CHIPSET),2870)
-RT28XX_APSTA_OBJ += \
-	../../os/linux/rt_usb_util.o
-endif
-
-#ifdef RT2070
-ifeq ($(CHIPSET),2070)
-RT28XX_APSTA_OBJ += \
-	../../os/linux/rt_usb_util.o
-endif
-
-#ifdef RT3070
-ifeq ($(CHIPSET),3070)
-RT28XX_APSTA_OBJ += \
-	../../os/linux/rt_usb_util.o
-endif
-
-#ifdef RT3390
-ifeq ($(CHIPSET),3390)
-RT28XX_APSTA_OBJ += \
-	../../os/linux/rt_rbus_pci_util.o
-endif
-
-#ifdef RT3370
-ifeq ($(CHIPSET),3370)
-RT28XX_APSTA_OBJ += \
-	../../os/linux/rt_usb_util.o
-endif
 
 #endif // CONFIG_APSTA_SUPPORT //
 

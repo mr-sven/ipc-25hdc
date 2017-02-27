@@ -30,7 +30,7 @@ endif
 endif
 
 ifeq ($(CONFIG_RT2860V2_AP_LED),y)
-RT2860_OBJ += led.o
+RT2860_OBJ += rt_led.o
 endif
 
 ifeq ($(CONFIG_RT2860V2_AP_WSC),y)

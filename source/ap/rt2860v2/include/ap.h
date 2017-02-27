@@ -32,11 +32,11 @@
 #define __AP_H__
 
 
-// =============================================================
-//      Function Prototypes
-// =============================================================
+/* ============================================================= */
+/*      Function Prototypes */
+/* ============================================================= */
 
-// ap_data.c
+/* ap_data.c */
 
 BOOLEAN APBridgeToWirelessSta(
     IN  PRTMP_ADAPTER   pAd,
@@ -103,7 +103,7 @@ VOID    RTMPFrameEndianChange(
     IN  ULONG           Dir,
     IN  BOOLEAN         FromRxDoneInt);
 
-// ap_assoc.c
+/* ap_assoc.c */
 
 VOID APAssocStateMachineInit(
     IN  PRTMP_ADAPTER   pAd, 
@@ -169,7 +169,7 @@ VOID	RTMPAddClientSec(
 	IN MAC_TABLE_ENTRY *pEntry);
 */
 
-// ap_auth.c
+/* ap_auth.c */
 
 void APAuthStateMachineInit(
     IN PRTMP_ADAPTER pAd, 
@@ -181,14 +181,14 @@ VOID APCls2errAction(
 	IN 	ULONG Wcid,
     IN	PHEADER_802_11	pHeader);
 
-// ap_connect.c
+/* ap_connect.c */
 
 #ifdef CONFIG_AP_SUPPORT
 BOOLEAN BeaconTransmitRequired(
 	IN PRTMP_ADAPTER	pAd,
 	IN INT				apidx,
 	IN MULTISSID_STRUCT *pMbss);
-#endif // CONFIG_AP_SUPPORT //
+#endif /* CONFIG_AP_SUPPORT */
 
 VOID APMakeBssBeacon(
     IN  PRTMP_ADAPTER   pAd,
@@ -205,7 +205,7 @@ VOID  APUpdateAllBeaconFrame(
     IN  PRTMP_ADAPTER   pAd);
 
 
-// ap_sync.c
+/* ap_sync.c */
 
 VOID APSyncStateMachineInit(
     IN PRTMP_ADAPTER pAd,
@@ -273,15 +273,15 @@ INT GetBssCoexEffectedChRange(
 	IN RTMP_ADAPTER *pAd,
 	IN BSS_COEX_CH_RANGE *pCoexChRange);
 
-#endif // DOT11N_DRAFT3 //
+#endif /* DOT11N_DRAFT3 */
 
-// ap_wpa.c
+/* ap_wpa.c */
 VOID WpaStateMachineInit(
     IN  PRTMP_ADAPTER   pAd, 
     IN  STATE_MACHINE *Sm, 
     OUT STATE_MACHINE_FUNC Trans[]);
 
-// ap_mlme.c
+/* ap_mlme.c */
 VOID APMlmePeriodicExec(
     IN  PRTMP_ADAPTER   pAd);
 
@@ -301,7 +301,7 @@ VOID APMlmeSelectRateSwitchTable11N3SReplacement(
 	IN PUCHAR	*ppTable);
 
 #ifdef RTMP_RBUS_SUPPORT
-#endif // RTMP_RBUS_SUPPORT //
+#endif /* RTMP_RBUS_SUPPORT */
 
 VOID APMlmeDynamicTxRateSwitching(
     IN PRTMP_ADAPTER pAd);
@@ -332,7 +332,7 @@ VOID APMlmeDynamicTxRateSwitchingAdapt(
 VOID APQuickResponeForRateUpExecAdapt(
     IN PRTMP_ADAPTER pAd,
     IN ULONG idx);
-#endif //NEW_RATE_ADAPT_SUPPORT //
+#endif /*NEW_RATE_ADAPT_SUPPORT */
 
 
 VOID RTMPSetPiggyBack(
@@ -345,7 +345,7 @@ VOID APAsicEvaluateRxAnt(
 VOID APAsicRxAntEvalTimeout(
 	IN PRTMP_ADAPTER	pAd);
 
-// ap.c
+/* ap.c */
 NDIS_STATUS APInitialize(
     IN  PRTMP_ADAPTER   pAd);
 
@@ -369,6 +369,7 @@ MAC_TABLE_ENTRY *MacTableInsertEntry(
     IN  PRTMP_ADAPTER   pAd, 
     IN  PUCHAR          pAddr,
 	IN	UCHAR			apidx,
+	IN	UCHAR           OpMode,
 	IN BOOLEAN	CleanAll); 
 
 BOOLEAN MacTableDeleteEntry(
@@ -407,12 +408,12 @@ VOID ApLogEvent(
     IN USHORT           Event);
 #else
 #define ApLogEvent(_pAd, _pAddr, _Event)
-#endif // SYSTEM_LOG_SUPPORT //
+#endif /* SYSTEM_LOG_SUPPORT */
 
 #ifdef DOT11_N_SUPPORT
 VOID APUpdateOperationMode(
     IN PRTMP_ADAPTER pAd);
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 
 VOID APUpdateCapabilityAndErpIe(
 	IN PRTMP_ADAPTER pAd);
@@ -436,7 +437,7 @@ VOID ApEnqueueNullFrame(
     IN BOOLEAN       bEOSP,
     IN UCHAR         OldUP);
 
-// ap_sanity.c
+/* ap_sanity.c */
 
 
 BOOLEAN PeerAssocReqCmmSanity(
@@ -457,9 +458,13 @@ BOOLEAN PeerAssocReqCmmSanity(
     OUT BOOLEAN *pbWmmCapable,
 #ifdef WSC_AP_SUPPORT
     OUT BOOLEAN *pWscCapable,
-#endif // WSC_AP_SUPPORT //    
+#endif /* WSC_AP_SUPPORT */    
     OUT ULONG  *pRalinkIe,
     OUT EXT_CAP_INFO_ELEMENT	*pExtCapInfo,
+#ifdef P2P_SUPPORT
+	OUT ULONG *P2PSubelementLen, 
+	OUT PUCHAR pP2pSubelement, 
+#endif /* P2P_SUPPORT */
     OUT UCHAR		 *pHtCapabilityLen,
     OUT HT_CAPABILITY_IE *pHtCapability);
 
@@ -516,16 +521,14 @@ BOOLEAN DOT1X_InternalCmdAction(
 BOOLEAN DOT1X_EapTriggerAction(
     IN  PRTMP_ADAPTER	pAd,
     IN  MAC_TABLE_ENTRY *pEntry);
-#endif // DOT1X_SUPPORT //
+#endif /* DOT1X_SUPPORT */
+#endif  /* __AP_H__ */
 
-#ifdef DOT11_N_SUPPORT
-#ifdef GREENAP_SUPPORT
-VOID EnableAPMIMOPS(
-    IN PRTMP_ADAPTER pAd, IN BOOLEAN ReduceCorePower);
+VOID AP_E2PROM_IOCTL_PostCtrl(
+	IN	RTMP_IOCTL_INPUT_STRUCT	*wrq,
+	IN	PSTRING					msg);
 
-VOID DisableAPMIMOPS(
-    IN PRTMP_ADAPTER pAd);
-#endif // GREENAP_SUPPORT //
-#endif // DOT11_N_SUPPORT //
-#endif  // __AP_H__
-
+VOID IAPP_L2_UpdatePostCtrl(
+	IN PRTMP_ADAPTER	pAd,
+    IN UINT8 *mac_p,
+    IN INT  bssid);

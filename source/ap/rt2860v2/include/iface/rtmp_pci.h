@@ -31,33 +31,12 @@
 
 
 #ifdef LINUX
-// set driver data
+/* set driver data */
 #define RT28XX_DRVDATA_SET(_a)			pci_set_drvdata(_a, net_dev);
 
 #define RT28XX_PUT_DEVICE(dev_p)
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24)
-#ifndef SA_SHIRQ
-#define SA_SHIRQ IRQF_SHARED
-#endif
-#endif
 
-#ifdef PCI_MSI_SUPPORT
-#define RTMP_MSI_ENABLE(_pAd) \
-	{     POS_COOKIE _pObj = (POS_COOKIE)(_pAd->OS_Cookie); \
-		(_pAd)->HaveMsi = pci_enable_msi(_pObj->pci_dev) == 0 ? TRUE : FALSE; \
-	}
-
-#define RTMP_MSI_DISABLE(_pAd) \
-	{     POS_COOKIE _pObj = (POS_COOKIE)(_pAd->OS_Cookie); \
-		if (_pAd->HaveMsi == TRUE) \
-			pci_disable_msi(_pObj->pci_dev); \
-		_pAd->HaveMsi = FALSE;  \
-	}
-#else
-#define RTMP_MSI_ENABLE(_pAd)		do{}while(0)
-#define RTMP_MSI_DISABLE(_pAd)		do{}while(0)
-#endif // PCI_MSI_SUPPORT //
 
 #define RTMP_PCI_DEV_UNMAP()										\
 {	if (net_dev->base_addr)	{								\
@@ -77,12 +56,7 @@
     reg16 = cpu2le16(Configuration);                        \
     pci_write_config_word(pci_dev, offset, reg16);
 
-#endif // LINUX //
+#endif /* LINUX */
 
-#define CMDTHREAD_CHAN_RESCAN					0x0D730101
-#define CMDTHREAD_REG_HINT						0x0D730102
-#define CMDTHREAD_REG_HINT_11D					0x0D730103
-#define CMDTHREAD_SCAN_END						0x0D730104
-#define CMDTHREAD_CONNECT_RESULT_INFORM			0x0D730105
 
-#endif // __RTMP_PCI_H__ //
+#endif /* __RTMP_PCI_H__ */

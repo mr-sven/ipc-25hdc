@@ -65,10 +65,14 @@ BOOLEAN PeerAssocReqCmmSanity(
     OUT UCHAR *pRSNLen,
     OUT BOOLEAN *pbWmmCapable,
 #ifdef WSC_AP_SUPPORT
-    OUT BOOLEAN *pWscCapable,
-#endif // WSC_AP_SUPPORT //
-    OUT ULONG  *pRalinkIe,
-    OUT EXT_CAP_INFO_ELEMENT *pExtCapInfo,
+	OUT BOOLEAN *pWscCapable,
+#endif /* WSC_AP_SUPPORT */
+	OUT ULONG  *pRalinkIe,
+	OUT EXT_CAP_INFO_ELEMENT *pExtCapInfo,
+#ifdef P2P_SUPPORT
+	OUT ULONG *P2PSubelementLen, 
+	OUT PUCHAR pP2pSubelement, 
+#endif /* P2P_SUPPORT */
     OUT UCHAR		 *pHtCapabilityLen,
     OUT HT_CAPABILITY_IE *pHtCapability)
 {
@@ -79,9 +83,12 @@ BOOLEAN PeerAssocReqCmmSanity(
     UCHAR			WPA1_OUI[4] = { 0x00, 0x50, 0xF2, 0x01 };
     UCHAR			WPA2_OUI[3] = { 0x00, 0x0F, 0xAC };
     MAC_TABLE_ENTRY *pEntry = (MAC_TABLE_ENTRY *)NULL;
+#ifdef P2P_SUPPORT
+	PRT_P2P_CONFIG	pP2PCtrl = &pAd->P2pCfg;
+	UCHAR	P2POUIBYTE[4] = {0x50, 0x6f, 0x9a, 0x9};
+#endif /* P2P_SUPPORT */
 
-
-    // to prevent caller from using garbage output value
+    /* to prevent caller from using garbage output value */
 	*pSsidLen     = 0;
     *pRatesLen    = 0;
     *pRSNLen      = 0;
@@ -114,7 +121,7 @@ BOOLEAN PeerAssocReqCmmSanity(
 	}
 
 
-    // get variable fields from payload and advance the pointer
+    /* get variable fields from payload and advance the pointer */
     while (((UCHAR *)eid_ptr + eid_ptr->Len + 1) < ((UCHAR *)Fr + MsgLen))
     {
         switch(eid_ptr->Eid)
@@ -162,8 +169,8 @@ BOOLEAN PeerAssocReqCmmSanity(
 					UCHAR RateDefault[8] = \
 							{ 0x82, 0x84, 0x8b, 0x96, 0x12, 0x24, 0x48, 0x6c };
 
-                	// HT rate not ready yet. return true temporarily. rt2860c
-                    //DBGPRINT(RT_DEBUG_TRACE, ("PeerAssocReqSanity - wrong IE_SUPP_RATES\n"));
+                	/* HT rate not ready yet. return true temporarily. rt2860c */
+                    /*DBGPRINT(RT_DEBUG_TRACE, ("PeerAssocReqSanity - wrong IE_SUPP_RATES\n")); */
                     Sanity |= 0x02;
                     *pRatesLen = 8;
 					NdisMoveMemory(Rates, RateDefault, 8);
@@ -208,7 +215,7 @@ BOOLEAN PeerAssocReqCmmSanity(
 #else				
 				*(USHORT *)(&pHtCapability->ExtHtCapInfo) = \
 							cpu2le16(*(USHORT *)(&pHtCapability->ExtHtCapInfo));
-#endif // UNALIGNMENT_SUPPORT //
+#endif /* UNALIGNMENT_SUPPORT */
 
 				*pHtCapabilityLen = SIZE_HT_CAP_IE;
 				Sanity |= 0x10;
@@ -229,14 +236,36 @@ BOOLEAN PeerAssocReqCmmSanity(
 
 			break;
 
-            case IE_WPA:    // same as IE_VENDOR_SPECIFIC
+            case IE_WPA:    /* same as IE_VENDOR_SPECIFIC */
             case IE_WPA2:
 
+#ifdef P2P_SUPPORT
+				if (NdisEqualMemory(eid_ptr->Octet, P2POUIBYTE, sizeof(P2POUIBYTE)) && (eid_ptr->Len >= 4))
+				{
+					if (*P2PSubelementLen == 0)
+					{
+						RTMPMoveMemory(pP2pSubelement, &eid_ptr->Eid, (eid_ptr->Len+2));
+						*P2PSubelementLen = (eid_ptr->Len+2);
+					}
+					else if (*P2PSubelementLen > 0)
+					{
+						RTMPMoveMemory(pP2pSubelement + *P2PSubelementLen, &eid_ptr->Eid, (eid_ptr->Len+2));
+						*P2PSubelementLen += (eid_ptr->Len+2);
+					}
+
+					DBGPRINT(RT_DEBUG_TRACE, (" ! ===>P2P - PeerAssocReqSanity  P2P IE Len becomes = %d.   %s\n", *P2PSubelementLen, decodeP2PState(pP2PCtrl->P2PConnectState)));
+					break;
+				}
+#endif /* P2P_SUPPORT */
 				if (NdisEqualMemory(eid_ptr->Octet, WPS_OUI, 4))
 				{
 #ifdef WSC_AP_SUPPORT
+#ifdef WSC_V2_SUPPORT
+					if ((pAd->ApCfg.MBSSID[pEntry->apidx].WscControl.WscV2Info.bWpsEnable) ||
+						(pAd->ApCfg.MBSSID[pEntry->apidx].WscControl.WscV2Info.bEnableWpsV2 == FALSE))
+#endif /* WSC_V2_SUPPORT */
 				    *pWscCapable = TRUE;
-#endif // WSC_AP_SUPPORT //
+#endif /* WSC_AP_SUPPORT */
 				    break;
 				}
 
@@ -261,36 +290,36 @@ BOOLEAN PeerAssocReqCmmSanity(
 								}
 #else				
 								*(USHORT *)(&pHtCapability->ExtHtCapInfo) = cpu2le16(*(USHORT *)(&pHtCapability->ExtHtCapInfo));
-#endif // UNALIGNMENT_SUPPORT //
+#endif /* UNALIGNMENT_SUPPORT */
 
 								*pHtCapabilityLen = SIZE_HT_CAP_IE;
 							}
 							break;
 						
 						default:
-							// ignore other cases 
+							/* ignore other cases */
 							break;
 					}
 				}
 
                 if (NdisEqualMemory(eid_ptr->Octet, RALINK_OUI, 3) && (eid_ptr->Len == 7))
                 {
-                    //*pRalinkIe = eid_ptr->Octet[3];
+                    /**pRalinkIe = eid_ptr->Octet[3]; */
 					if (eid_ptr->Octet[3] != 0)
                     	*pRalinkIe = eid_ptr->Octet[3];
         			else
-        				*pRalinkIe = 0xf0000000; // Set to non-zero value (can't set bit0-2) to represent this is Ralink Chip. So at linkup, we will set ralinkchip flag.
+        				*pRalinkIe = 0xf0000000; /* Set to non-zero value (can't set bit0-2) to represent this is Ralink Chip. So at linkup, we will set ralinkchip flag. */
                     break;
                 }
                 
-                // WMM_IE
+                /* WMM_IE */
                 if (NdisEqualMemory(eid_ptr->Octet, WME_INFO_ELEM, 6) && (eid_ptr->Len == 7))
                 {
                     *pbWmmCapable = TRUE;
 
 #ifdef UAPSD_AP_SUPPORT
                     UAPSD_AssocParse(pAd, pEntry, (UINT8 *)&eid_ptr->Octet[6]);
-#endif // UAPSD_AP_SUPPORT //
+#endif /* UAPSD_AP_SUPPORT */
 
                     break;
                 }
@@ -309,12 +338,9 @@ BOOLEAN PeerAssocReqCmmSanity(
                 
                 if (/*(eid_ptr->Len <= MAX_LEN_OF_RSNIE) &&*/ (eid_ptr->Len >= MIN_LEN_OF_RSNIE))
                 {
-                    if (!pEntry)
-                        return FALSE;
-
 					hex_dump("Received RSNIE in Assoc-Req", (UCHAR *)eid_ptr, eid_ptr->Len + 2);
                     
-					// Copy whole RSNIE context
+					/* Copy whole RSNIE context */
                     NdisMoveMemory(RSN, eid_ptr, eid_ptr->Len + 2);
 					*pRSNLen=eid_ptr->Len + 2;
 
@@ -333,15 +359,15 @@ BOOLEAN PeerAssocReqCmmSanity(
 					(pAd->ApCfg.MBSSID[pEntry->apidx].AuthMode != Ndis802_11AuthModeWAIPSK))
                     break;				
 
-				// Sanity check the validity of WIE
-				// Todo - AlbertY
+				/* Sanity check the validity of WIE */
+				/* Todo - AlbertY */
 				
-				// Copy whole WAPI-IE context                    
+				/* Copy whole WAPI-IE context */
                 NdisMoveMemory(RSN, eid_ptr, eid_ptr->Len + 2);
 				*pRSNLen=eid_ptr->Len + 2;		
 				DBGPRINT(RT_DEBUG_TRACE, ("PeerAssocReqSanity - IE_WAPI(%d)\n",eid_ptr->Len));
 				break;
-#endif // WAPI_SUPPORT //				
+#endif /* WAPI_SUPPORT */				
 
 
 
@@ -441,8 +467,8 @@ BOOLEAN APPeerAuthSanity(
 {
     PFRAME_802_11 Fr = (PFRAME_802_11)Msg;
 
-	COPY_MAC_ADDR(pAddr1,  &Fr->Hdr.Addr1);		// BSSID 
-    COPY_MAC_ADDR(pAddr2,  &Fr->Hdr.Addr2);		// SA
+	COPY_MAC_ADDR(pAddr1,  &Fr->Hdr.Addr1);		/* BSSID */
+    COPY_MAC_ADDR(pAddr2,  &Fr->Hdr.Addr2);		/* SA */
     NdisMoveMemory(Alg,    &Fr->Octet[0], 2);
     NdisMoveMemory(Seq,    &Fr->Octet[2], 2);
     NdisMoveMemory(Status, &Fr->Octet[4], 2);

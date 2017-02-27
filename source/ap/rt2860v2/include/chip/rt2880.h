@@ -46,37 +46,37 @@
 #ifdef CONFIG_RALINK_RT2880_SHUTTLE
 #undef RTMP_MAC_CSR_ADDR
 #define RTMP_MAC_CSR_ADDR 0xA0600000
-#endif // CONFIG_RALINK_RT2880_SHUTTLE //
+#endif /* CONFIG_RALINK_RT2880_SHUTTLE */
 
 #ifdef CONFIG_RALINK_RT2880_MP
 #undef RTMP_MAC_CSR_ADDR
 #define RTMP_MAC_CSR_ADDR 0xA0480000
-#endif // CONFIG_RALINK_RT2880_MP //
+#endif /* CONFIG_RALINK_RT2880_MP */
 
 #ifndef RTMP_MAC_CSR_ADDR  
 #error Please Choice Chip Version (Shuttle/MP)
 #endif
 
-#endif // LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21) //
+#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21) */
 
 #else
 
 #ifdef CONFIG_RALINK_RT2880_SHUTTLE
 #undef RTMP_MAC_CSR_ADDR
 #define RTMP_MAC_CSR_ADDR 0xA0600000
-#endif // CONFIG_RALINK_RT2880_SHUTTLE //
+#endif /* CONFIG_RALINK_RT2880_SHUTTLE */
 
 #ifdef CONFIG_RALINK_RT2880_MP
 #undef RTMP_MAC_CSR_ADDR
 #define RTMP_MAC_CSR_ADDR 0xA0480000
-#endif // CONFIG_RALINK_RT2880_MP //
+#endif /* CONFIG_RALINK_RT2880_MP */
 
 #ifndef RTMP_MAC_CSR_ADDR  
 #error Please Choice Chip Version (Shuttle/MP)
 #endif
-#endif // LINUX //
+#endif /* LINUX */
 
-#define RT2860_CSR_ADDR_PCI		0xC0000000 // RT2880 PCI
+#define RT2860_CSR_ADDR_PCI		0xC0000000 /* RT2880 PCI */
 
 #define RTMP_FLASH_BASE_ADDR	0xbfc00000
 
@@ -84,10 +84,10 @@
 #define DFS_1_SUPPORT
 #endif
 
-//
-// Device ID & Vendor ID, these values should match EEPROM value
-//
+/* */
+/* Device ID & Vendor ID, these values should match EEPROM value */
+/* */
 
 
-#endif //__RT2880_H__ //
+#endif /*__RT2880_H__ */
 

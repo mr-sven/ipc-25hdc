@@ -55,5 +55,5 @@ VOID CliWds_ProxyTabUpdate(
 VOID CliWds_ProxyTabMaintain(
 	IN PRTMP_ADAPTER pAd);
 
-#endif // __CLIENT_WDS_H__ //
+#endif /* __CLIENT_WDS_H__ */
 

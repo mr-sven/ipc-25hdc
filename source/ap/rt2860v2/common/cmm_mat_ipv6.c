@@ -32,8 +32,8 @@
 #include "rt_config.h"
 #include "ipv6.h"
 
-//#include <asm/checksum.h>
-//#include <net/ip6_checksum.h>
+/*#include <asm/checksum.h> */
+/*#include <net/ip6_checksum.h> */
 
 const UCHAR IPV6_LOOPBACKADDR[] ={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1};
 
@@ -46,7 +46,7 @@ static PUCHAR MATProto_IPv6_Tx(MAT_STRUCT *pMatCfg, PNDIS_PACKET pSkb, PUCHAR pL
 
 typedef struct _IPv6MacMappingEntry
 {
-	UCHAR ipv6Addr[16];	// In network order
+	UCHAR ipv6Addr[16];	/* In network order */
 	UCHAR macAddr[MAC_ADDR_LEN];
 	ULONG lastTime;
 	struct _IPv6MacMappingEntry *pNext;
@@ -56,8 +56,8 @@ typedef struct _IPv6MacMappingEntry
 typedef struct _IPv6MacMappingTable
 {
 	BOOLEAN			valid;
-	IPv6MacMappingEntry *hash[MAT_MAX_HASH_ENTRY_SUPPORT+1]; //0~63 for specific station, 64 for broadcast MacAddress
-	UCHAR			curMcastAddr[MAC_ADDR_LEN];	// The multicast mac addr for currecnt received packet destined to ipv6 multicast addr
+	IPv6MacMappingEntry *hash[MAT_MAX_HASH_ENTRY_SUPPORT+1]; /*0~63 for specific station, 64 for broadcast MacAddress */
+	UCHAR			curMcastAddr[MAC_ADDR_LEN];	/* The multicast mac addr for currecnt received packet destined to ipv6 multicast addr */
 }IPv6MacMappingTable;
 
 
@@ -78,15 +78,15 @@ static inline BOOLEAN needUpdateIPv6MacTB(
 	if (isMcastEtherAddr(pMac) || isZeroEtherAddr(pMac))
 		return FALSE;
 	
-	// IPv6 multicast address
+	/* IPv6 multicast address */
 	if (IS_MULTICAST_IPV6_ADDR(*pIPv6Addr))
 		return FALSE;
 	
-	// unspecified address
+	/* unspecified address */
 	if(IS_UNSPECIFIED_IPV6_ADDR(*pIPv6Addr))
 		return FALSE;
 
-	// loopback address
+	/* loopback address */
 	if (IS_LOOPBACK_IPV6_ADDR(*pIPv6Addr)) 
 		return FALSE;
 
@@ -156,12 +156,12 @@ NDIS_STATUS  dumpIPv6MacTb(
 	
 	
 	if(index < 0)
-	{	// dump all.
+	{	/* dump all. */
 		startIdx = 0;
 		endIdx = MAT_MAX_HASH_ENTRY_SUPPORT;
 	}
 	else
-	{	// dump specific hash index.
+	{	/* dump specific hash index. */
 		startIdx = endIdx = index;
 	}
 
@@ -206,21 +206,21 @@ static NDIS_STATUS IPv6MacTableUpdate(
 	{
 		NdisGetSystemUpTime(&now);
 		
-		// Find a existed IP-MAC Mapping entry
+		/* Find a existed IP-MAC Mapping entry */
 		if (NdisEqualMemory(pIPv6Addr, pEntry->ipv6Addr, IPV6_ADDR_LEN))
     	{
 			
-			// comparison is useless. So we directly copy it into the entry.
+			/* comparison is useless. So we directly copy it into the entry. */
 			NdisMoveMemory(pEntry->macAddr, pMacAddr, 6);
 			NdisGetSystemUpTime(&pEntry->lastTime);
 			
 	        return TRUE;
 		}
         else
-        {	// handle the aging-out situation
+        {	/* handle the aging-out situation */
 			if (RTMP_TIME_AFTER(now, (pEntry->lastTime + MAT_TB_ENTRY_AGEOUT_TIME)))
         	{
-        		// Remove the aged entry
+        		/* Remove the aged entry */
 				if (pEntry == pIPv6MacTable->hash[hashIdx])
 				{
 					pIPv6MacTable->hash[hashIdx]= pEntry->pNext;
@@ -244,7 +244,7 @@ static NDIS_STATUS IPv6MacTableUpdate(
 	}
 
 
-	// Allocate a new IPv6MacMapping entry and insert into the hash
+	/* Allocate a new IPv6MacMapping entry and insert into the hash */
 	pNewEntry = (IPv6MacMappingEntry *)MATDBEntryAlloc(pMatCfg, sizeof(IPv6MacMappingEntry));
 	if (pNewEntry != NULL)
 	{		
@@ -254,16 +254,16 @@ static NDIS_STATUS IPv6MacTableUpdate(
 		NdisGetSystemUpTime(&pNewEntry->lastTime);
 
 		if (pIPv6MacTable->hash[hashIdx] == NULL)
-		{	// Hash list is empty, directly assign it.
+		{	/* Hash list is empty, directly assign it. */
 			pIPv6MacTable->hash[hashIdx] = pNewEntry;
 		} 
 		else 
 		{
-			// Ok, we insert the new entry into the root of hash[hashIdx]
+			/* Ok, we insert the new entry into the root of hash[hashIdx] */
 			pNewEntry->pNext = pIPv6MacTable->hash[hashIdx];
 			pIPv6MacTable->hash[hashIdx] = pNewEntry;
 		}
-		//dumpIPv6MacTb(pMatCfg, hashIdx); //for debug
+		/*dumpIPv6MacTb(pMatCfg, hashIdx); //for debug */
 		
 		pMatCfg->nodeCount++;
 
@@ -290,7 +290,7 @@ static PUCHAR IPv6MacTableLookUp(
 	if ((!pIPv6MacTable) ||(!pIPv6MacTable->valid))
         return NULL;
 	
-	//if IPV6 multicast address, need converting multicast group address to ethernet address.
+	/*if IPV6 multicast address, need converting multicast group address to ethernet address. */
 	if (IS_MULTICAST_IPV6_ADDR(*(RT_IPV6_ADDR *)pIPv6Addr))
 	{
 		pGroupMacAddr = (PUCHAR)&pIPv6MacTable->curMcastAddr;
@@ -298,20 +298,20 @@ static PUCHAR IPv6MacTableLookUp(
 		return pIPv6MacTable->curMcastAddr;
 	}
     
-	// Use hash to find out the location of that entry and get the Mac address.
+	/* Use hash to find out the location of that entry and get the Mac address. */
 	hashIdx = MAT_IPV6_ADDR_HASH_INDEX(pIPv6Addr);
 
-//	spin_lock_irqsave(&IPMacTabLock, irqFlag);
+/*	spin_lock_irqsave(&IPMacTabLock, irqFlag); */
 	pEntry = pIPv6MacTable->hash[hashIdx];
 	while(pEntry)
 	{
 		if (NdisEqualMemory(pEntry->ipv6Addr, pIPv6Addr, IPV6_ADDR_LEN))
         {
-			DBGPRINT(RT_DEBUG_ERROR, ("%s(): dstMac=%02x:%02x:%02x:%02x:%02x:%02x for mapped dstIPv6(%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x)\n", 
+			DBGPRINT(RT_DEBUG_INFO, ("%s(): dstMac=%02x:%02x:%02x:%02x:%02x:%02x for mapped dstIPv6(%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x)\n", 
 					__FUNCTION__, pEntry->macAddr[0],pEntry->macAddr[1],pEntry->macAddr[2], pEntry->macAddr[3], 
 					pEntry->macAddr[4],pEntry->macAddr[5],PRINT_IPV6_ADDR(*((RT_IPV6_ADDR *)&pIPv6Addr)))); 
 			
-			//Update the lastTime to prevent the aging before pDA processed!
+			/*Update the lastTime to prevent the aging before pDA processed! */
 			NdisGetSystemUpTime(&pEntry->lastTime);
 			
 			return pEntry->macAddr;
@@ -322,8 +322,10 @@ static PUCHAR IPv6MacTableLookUp(
 		}
 	}
 	
-	// We didn't find any matched Mac address, our policy is treat it as 
-	// broadcast packet and send to all.
+	/*
+		We didn't find any matched Mac address, our policy is treat it as
+		broadcast packet and send to all.
+	*/
 	return pIPv6MacTable->hash[IPV6MAC_TB_HASH_INDEX_OF_BCAST]->macAddr;
 	
 }
@@ -372,8 +374,8 @@ static inline unsigned short int icmpv6_csum(
 	
 	for (i = 0; i < len; i += 4)
 	{
-		csum += get_unaligned(((UINT32 *)&pICMPMsg[i]));
-		carry = (csum < get_unaligned(((UINT32 *)&pICMPMsg[i])));
+		csum += get_unaligned32(((UINT32 *)&pICMPMsg[i]));
+		carry = (csum < get_unaligned32(((UINT32 *)&pICMPMsg[i])));
 		csum += carry;	
 	}
 
@@ -397,7 +399,7 @@ static PUCHAR MATProto_IPv6_Rx(
 	PUCHAR pMacAddr;
 	PUCHAR pDstIPv6Addr;
 	
-	// Fetch the IPv6 addres from the packet header.
+	/* Fetch the IPv6 addres from the packet header. */
 	pDstIPv6Addr = (UCHAR *)(&((RT_IPV6_HDR *)pLayerHdr)->dstAddr);
 	
 	pMacAddr = IPv6MacTableLookUp(pMatCfg, pDstIPv6Addr);
@@ -438,24 +440,24 @@ static PNDIS_PACKET ICMPv6_Handle_Tx(
 	{
 		case ICMPV6_MSG_TYPE_ROUTER_SOLICITATION:
 			offset += ROUTER_SOLICITATION_FIXED_LEN;
-			// for unspecified source address, it should not include the option about link-layer address.
+			/* for unspecified source address, it should not include the option about link-layer address. */
 			if (!(IS_UNSPECIFIED_IPV6_ADDR(pIPv6Hdr->srcAddr)))
 			{
 				while(leftLen > sizeof(RT_ICMPV6_OPTION_HDR))
 				{
 					pOptHdr = (RT_ICMPV6_OPTION_HDR *)(pLayerHdr + offset);					
 					if (pOptHdr->len == 0)
-						break;  // discard it, because it's invalid.
+						break;  /* discard it, because it's invalid. */
 					
 					if (pOptHdr->type == TYPE_SRC_LL_ADDR)
 					{
-						//replace the src link-layer address as ours.
+						/*replace the src link-layer address as ours. */
 						needModify = TRUE;
-						offset += 2;	// 2 = "type, len" fields. Here indicate to the place of src mac.
+						offset += 2;	/* 2 = "type, len" fields. Here indicate to the place of src mac. */
 						
 						break;
 					} else {
-						offset += (pOptHdr->len * 8);  // in unit of 8 octets.
+						offset += (pOptHdr->len * 8);  /* in unit of 8 octets. */
 						leftLen -= (pOptHdr->len * 8);
 					}
 				}
@@ -464,24 +466,24 @@ static PNDIS_PACKET ICMPv6_Handle_Tx(
 
 		case ICMPV6_MSG_TYPE_ROUTER_ADVERTISEMENT:
 			offset += ROUTER_ADVERTISEMENT_FIXED_LEN;
-			// for unspecified source address, it should not include the option about link-layer address.
+			/* for unspecified source address, it should not include the option about link-layer address. */
 			if (!(IS_UNSPECIFIED_IPV6_ADDR(pIPv6Hdr->srcAddr)))
 			{
 				while(leftLen > sizeof(RT_ICMPV6_OPTION_HDR))
 				{
 					pOptHdr = (RT_ICMPV6_OPTION_HDR *)(pLayerHdr + offset);
 					if (pOptHdr->len == 0)
-						break;  // discard it, because it's invalid.
+						break;  /* discard it, because it's invalid. */
 						
 					if (pOptHdr->type == TYPE_SRC_LL_ADDR)
 					{
-						//replace the src link-layer address as ours.
+						/*replace the src link-layer address as ours. */
 						needModify = TRUE;
-						offset += 2;	// 2 = "type, len" fields. Here indicate to the place of src mac.
+						offset += 2;	/* 2 = "type, len" fields. Here indicate to the place of src mac. */
 						
 						break;
 					} else {
-						offset += (pOptHdr->len * 8);  // in unit of 8 octets.
+						offset += (pOptHdr->len * 8);  /* in unit of 8 octets. */
 						leftLen -= (pOptHdr->len * 8);
 					}
 				}
@@ -490,24 +492,24 @@ static PNDIS_PACKET ICMPv6_Handle_Tx(
 			
 		case ICMPV6_MSG_TYPE_NEIGHBOR_SOLICITATION:
 			offset += NEIGHBOR_SOLICITATION_FIXED_LEN;
-			// for unspecified source address, it should not include the option about link-layer address.
+			/* for unspecified source address, it should not include the option about link-layer address. */
 			if (!(IS_UNSPECIFIED_IPV6_ADDR(pIPv6Hdr->srcAddr)))
 			{
 				while(leftLen > sizeof(RT_ICMPV6_OPTION_HDR))
 				{
 					pOptHdr = (RT_ICMPV6_OPTION_HDR *)(pLayerHdr + offset);
 					if (pOptHdr->len == 0)
-						break;  // discard it, because it's invalid.
+						break;  /* discard it, because it's invalid. */
 						
 					if (pOptHdr->type == TYPE_SRC_LL_ADDR)
 					{
-						//replace the src link-layer address as ours.
+						/*replace the src link-layer address as ours. */
 						needModify = TRUE;
-						offset += 2;	// 2 = "type, len" fields. Here indicate to the place of src mac.
+						offset += 2;	/* 2 = "type, len" fields. Here indicate to the place of src mac. */
 						
 						break;
 					} else {
-						offset += (pOptHdr->len * 8);  // in unit of 8 octets.
+						offset += (pOptHdr->len * 8);  /* in unit of 8 octets. */
 						leftLen -= (pOptHdr->len * 8);
 					}
 				}
@@ -516,24 +518,24 @@ static PNDIS_PACKET ICMPv6_Handle_Tx(
 			
 		case ICMPV6_MSG_TYPE_NEIGHBOR_ADVERTISEMENT:
 			offset += NEIGHBOR_ADVERTISEMENT_FIXED_LEN;
-			// for unspecified source address, it should not include the option about link-layer address.
+			/* for unspecified source address, it should not include the option about link-layer address. */
 			if (!(IS_UNSPECIFIED_IPV6_ADDR(pIPv6Hdr->srcAddr)))
 			{
 				while(leftLen > sizeof(RT_ICMPV6_OPTION_HDR))
 				{
 					pOptHdr = (RT_ICMPV6_OPTION_HDR *)(pLayerHdr + offset);
 					if (pOptHdr->len == 0)
-						break;  // discard it, because it's invalid.
+						break;  /* discard it, because it's invalid. */
 						
 					if (pOptHdr->type == TYPE_TGT_LL_ADDR)
 					{
-						//replace the src link-layer address as ours.
+						/*replace the src link-layer address as ours. */
 						needModify = TRUE;
-						offset += 2;	// 2 = "type, len" fields.
+						offset += 2;	/* 2 = "type, len" fields. */
 						
 						break;
 					}else {
-						offset += (pOptHdr->len * 8);  // in unit of 8 octets.
+						offset += (pOptHdr->len * 8);  /* in unit of 8 octets. */
 						leftLen -= (pOptHdr->len * 8);
 					}
 				}
@@ -541,25 +543,25 @@ static PNDIS_PACKET ICMPv6_Handle_Tx(
 			break;
 		case ICMPV6_MSG_TYPE_REDIRECT:
 			offset += REDIRECT_FIXED_LEN;
-			// for unspecified source address, it should not include the options about link-layer address.
+			/* for unspecified source address, it should not include the options about link-layer address. */
 			if (!(IS_UNSPECIFIED_IPV6_ADDR(pIPv6Hdr->srcAddr)))
 			{
 				while(leftLen > sizeof(RT_ICMPV6_OPTION_HDR))
 				{
 					pOptHdr = (RT_ICMPV6_OPTION_HDR *)(pLayerHdr + offset);
 					if (pOptHdr->len == 0)
-						break;  // discard it, because it's invalid.
+						break;  /* discard it, because it's invalid. */
 
 					if (pOptHdr->type == TYPE_TGT_LL_ADDR)
 					{
-						// TODO: Need to check if the TGT_LL_ADDR is the inner MAC.
-						//replace the src link-layer address as ours.
+						/* TODO: Need to check if the TGT_LL_ADDR is the inner MAC. */
+						/*replace the src link-layer address as ours. */
 						needModify = TRUE;
-						offset += 2;	// 2 = "type, len" fields.
+						offset += 2;	/* 2 = "type, len" fields. */
 						
 						break;
 					}else {
-						offset += (pOptHdr->len * 8);  // in unit of 8 octets.
+						offset += (pOptHdr->len * 8);  /* in unit of 8 octets. */
 						leftLen -= (pOptHdr->len * 8);
 					}
 				}
@@ -571,12 +573,12 @@ static PNDIS_PACKET ICMPv6_Handle_Tx(
 			break;
 	}
 	
-	// We need to handle about the solicitation/Advertisement packets.
+	/* We need to handle about the solicitation/Advertisement packets. */
 	if (needModify)
 	{	
 		if(OS_PKT_CLONED(pSkb)) 
 		{
-			newSkb = (PNDIS_PACKET)skb_copy(RTPKT_TO_OSPKT(pSkb), GFP_ATOMIC);
+			newSkb = (PNDIS_PACKET)OS_PKT_COPY(RTPKT_TO_OSPKT(pSkb));
 			if(newSkb) {
 				if (IS_VLAN_PACKET(GET_OS_PKT_DATAPTR(newSkb)))
 					pIPv6Hdr = (RT_IPV6_HDR *)(GET_OS_PKT_DATAPTR(newSkb) + MAT_VLAN_ETH_HDR_LEN); 
@@ -587,10 +589,9 @@ static PNDIS_PACKET ICMPv6_Handle_Tx(
 
 		pICMPv6Hdr = (RT_ICMPV6_HDR *)((PUCHAR)pIPv6Hdr + ICMPOffset);
 		pSrcMac = (PUCHAR)((PUCHAR)pIPv6Hdr + offset);
-		
 		NdisMoveMemory(pSrcMac, pDevMacAdr, MAC_ADDR_LEN);
 		
-		// Now re-calculate the Checksum.
+		/* Now re-calculate the Checksum. */
 		pICMPv6Hdr->chksum = 0;
 		pICMPv6Hdr->chksum = icmpv6_csum(&pIPv6Hdr->srcAddr, &pIPv6Hdr->dstAddr, ICMPMsgLen , 
 											IPV6_NEXT_HEADER_ICMPV6, (PUCHAR)pICMPv6Hdr);
@@ -628,11 +629,11 @@ static PUCHAR MATProto_IPv6_Tx(
 		IPv6MacTableUpdate(pMatCfg, pSrcMac, (CHAR *)(&pIPv6Hdr->srcAddr));
 
 
-	// We need to traverse the whole IPv6 Header and extend headers to check about the ICMPv6 pacekt.
+	/* We need to traverse the whole IPv6 Header and extend headers to check about the ICMPv6 pacekt. */
 	
 	nextProtocol = pIPv6Hdr->nextHdr;
 	offset = IPV6_HDR_LEN;
-	//DBGPRINT(RT_DEBUG_INFO, ("NextProtocol=0x%x! payloadLen=%d! offset=%d!\n", nextProtocol, payloadLen, offset));
+	/*DBGPRINT(RT_DEBUG_INFO, ("NextProtocol=0x%x! payloadLen=%d! offset=%d!\n", nextProtocol, payloadLen, offset)); */
 	while(nextProtocol != IPV6_NEXT_HEADER_ICMPV6 && 
 		  nextProtocol != IPV6_NEXT_HEADER_UDP && 
 		  nextProtocol != IPV6_NEXT_HEADER_TCP && 
@@ -652,7 +653,7 @@ static PUCHAR MATProto_IPv6_Tx(
 			break;
 			
 		case IPV6_NEXT_HEADER_UDP:
-			//newSkb = DHCPv6_Handle_Tx(pMatStrcut, pSkb, pLayerHdr, pMacAddr, offset);
+			/*newSkb = DHCPv6_Handle_Tx(pMatStrcut, pSkb, pLayerHdr, pMacAddr, offset); */
 			break;
 			
 		case IPV6_NEXT_HEADER_TCP:
@@ -692,7 +693,8 @@ static NDIS_STATUS IPv6MacTable_RemoveAll(
 		}
 	}
 
-	kfree(pIPv6MacTable);
+/*	kfree(pIPv6MacTable); */
+	os_free_mem(NULL, pIPv6MacTable);
 	pMatCfg->MatTableSet.IPv6MacTable = NULL;
 
 	return TRUE;
@@ -713,7 +715,8 @@ static NDIS_STATUS IPv6MacTable_init(
 	}
 	else
 	{
-		pMatCfg->MatTableSet.IPv6MacTable = kmalloc(sizeof(IPv6MacMappingTable), GFP_KERNEL);
+/*		pMatCfg->MatTableSet.IPv6MacTable = kmalloc(sizeof(IPv6MacMappingTable), GFP_KERNEL); */
+		os_alloc_mem_suspend(NULL, (UCHAR **)&(pMatCfg->MatTableSet.IPv6MacTable), sizeof(IPv6MacMappingTable));
 		if (pMatCfg->MatTableSet.IPv6MacTable)
 		{
 			pIPv6MacTable = (IPv6MacMappingTable *)pMatCfg->MatTableSet.IPv6MacTable;
@@ -728,7 +731,7 @@ static NDIS_STATUS IPv6MacTable_init(
 
 	if (pIPv6MacTable->valid == FALSE)
 	{
-	//Set the last hash entry (hash[64]) as our default broadcast Mac address
+	/*Set the last hash entry (hash[64]) as our default broadcast Mac address */
 		pEntry = (IPv6MacMappingEntry *)MATDBEntryAlloc(pMatCfg, sizeof(IPv6MacMappingEntry));
 	if (!pEntry)
 		{
@@ -778,7 +781,8 @@ static NDIS_STATUS MATProto_IPv6_Init(
 
 VOID getIPv6MacTbInfo(
 	IN MAT_STRUCT *pMatCfg, 
-	IN char *pOutBuf)
+	IN char *pOutBuf,
+	IN ULONG BufLen)
 {
 	IPv6MacMappingTable *pIPv6MacTable;
 	IPv6MacMappingEntry *pHead;
@@ -794,7 +798,7 @@ VOID getIPv6MacTbInfo(
 	}
 	
 	
-	// dump all.
+	/* dump all. */
 	startIdx = 0;
 	endIdx = MAT_MAX_HASH_ENTRY_SUPPORT;
 
@@ -806,7 +810,8 @@ VOID getIPv6MacTbInfo(
 
         while(pHead)
     	{
-    	    if (strlen(pOutBuf) > (IW_PRIV_SIZE_MASK - 30))
+/*    	    if (strlen(pOutBuf) > (IW_PRIV_SIZE_MASK - 30)) */
+			if (RtmpOsCmdDisplayLenCheck(strlen(pOutBuf), 30) == FALSE)
                 break;
 			NdisZeroMemory(Ipv6str, 40);
 			sprintf(Ipv6str, "%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x", PRINT_IPV6_ADDR(*((RT_IPV6_ADDR *)(&pHead->ipv6Addr[0]))));
@@ -818,5 +823,5 @@ VOID getIPv6MacTbInfo(
 	}
 }
 
-#endif // MAT_SUPPORT //
+#endif /* MAT_SUPPORT */
 

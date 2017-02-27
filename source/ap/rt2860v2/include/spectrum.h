@@ -116,7 +116,7 @@ VOID EnqueueChSwAnn(
 	IN PUCHAR pDA, 
 	IN UINT8 ChSwMode,
 	IN UINT8 NewCh);
-#endif // WDS_SUPPORT //
+#endif /* WDS_SUPPORT */
 
 /*
 	==========================================================================
@@ -211,5 +211,5 @@ VOID RguClass_BuildBcnChList(
 	IN PRTMP_ADAPTER pAd,
 	OUT PUCHAR pBuf,
 	OUT	PULONG pBufLen);
-#endif // __SPECTRUM_H__ //
+#endif /* __SPECTRUM_H__ */
 

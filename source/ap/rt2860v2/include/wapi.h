@@ -31,8 +31,8 @@
 
 #include "wpa_cmm.h"
 
-// Increase TxIV value for next transmission
-// Todo - When overflow occurred, do re-key mechanism
+/* Increase TxIV value for next transmission */
+/* Todo - When overflow occurred, do re-key mechanism */
 #define	INC_TX_IV(_V, NUM)					\
 {											\
 	UCHAR	cnt = LEN_WAPI_TSC;				\
@@ -51,7 +51,7 @@
 #define IS_WAPI_CAPABILITY(a)       (((a) >= Ndis802_11AuthModeWAICERT) && ((a) <= Ndis802_11AuthModeWAIPSK))
 
 /* The underlying chip supports hardware-based WPI-SMS4 encryption and de-encryption. */
-#define IS_HW_WAPI_SUPPORT(a)			(IS_RT3883(a) || IS_RT3593(a))
+#define IS_HW_WAPI_SUPPORT(__pAd)		(__pAd->chipCap.FlgIsHwWapiSup)
 /* 
  =====================================	
  	function prototype in wapi_crypt.c
@@ -117,7 +117,7 @@ extern INT	RTMPSoftDecryptSMS4(
 		IN 		PCIPHER_KEY		pKey,
 		INOUT 	PUCHAR			pData,
 		INOUT 	UINT16			*DataByteCnt);
-#endif // RTMP_RBUS_SUPPORT //
+#endif /* RTMP_RBUS_SUPPORT */
 
 VOID RTMPDeriveWapiGTK(
 	IN	PUCHAR			nmk,
@@ -140,7 +140,7 @@ BOOLEAN RTMPIsWapiCipher(
 
 VOID RTMPIoctlQueryWapiConf(
 	IN PRTMP_ADAPTER pAd, 
-	IN struct iwreq *wrq);
+	IN RTMP_IOCTL_INPUT_STRUCT *wrq);
 
 void rtmp_read_wapi_parms_from_file(
 		IN  PRTMP_ADAPTER pAd, 
@@ -196,5 +196,5 @@ BOOLEAN WAPI_InternalCmdAction(
 		IN	PUCHAR				pAddr,
 		IN	UCHAR				flag);
 
-#endif // __WAPI_H__ //
+#endif /* __WAPI_H__ */
 

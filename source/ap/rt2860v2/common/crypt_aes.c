@@ -349,7 +349,9 @@ VOID RT_AES_Encrypt (
     OUT UINT8 CipherBlock[],
     INOUT UINT *CipherBlockSize)
 {
-    AES_CTX_STRUC aes_ctx;
+/*    AES_CTX_STRUC aes_ctx;
+*/
+	AES_CTX_STRUC *paes_ctx = NULL;
     UINT RowIndex, ColumnIndex;
     UINT RoundIndex, NumberOfRound = 0;
     UINT8 Temp, Row0, Row1, Row2, Row3;
@@ -373,103 +375,114 @@ VOID RT_AES_Encrypt (
         return;
     } /* End of if */
 
+	/* allocate memory */
+	os_alloc_mem(NULL, (UCHAR **)&paes_ctx, sizeof(AES_CTX_STRUC));
+	if (paes_ctx == NULL)
+	{
+		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n", __FUNCTION__));
+		return;
+	}
+
     /* 
      * 2. Transfer the plain block to state block 
      */
     for (RowIndex = 0; RowIndex < AES_STATE_ROWS;RowIndex++)
         for (ColumnIndex = 0; ColumnIndex < AES_STATE_COLUMNS;ColumnIndex++)
-            aes_ctx.State[RowIndex][ColumnIndex] = PlainBlock[RowIndex + 4*ColumnIndex];
+            paes_ctx->State[RowIndex][ColumnIndex] = PlainBlock[RowIndex + 4*ColumnIndex];
 
     /* 
      *  3. Main encryption rounds
      */
-    RT_AES_KeyExpansion(Key, KeyLength, &aes_ctx);
+    RT_AES_KeyExpansion(Key, KeyLength, paes_ctx);
     NumberOfRound = (KeyLength >> 2) + 6;
 
     /* AES_AddRoundKey */
     RoundIndex = 0;
     for (RowIndex = 0; RowIndex < AES_STATE_ROWS;RowIndex++)
         for (ColumnIndex = 0; ColumnIndex < AES_STATE_COLUMNS;ColumnIndex++)
-            aes_ctx.State[RowIndex][ColumnIndex] ^= aes_ctx.KeyWordExpansion[RowIndex][(RoundIndex*((UINT) AES_STATE_COLUMNS)) + ColumnIndex];
+            paes_ctx->State[RowIndex][ColumnIndex] ^= paes_ctx->KeyWordExpansion[RowIndex][(RoundIndex*((UINT) AES_STATE_COLUMNS)) + ColumnIndex];
 
     for (RoundIndex = 1; RoundIndex < NumberOfRound;RoundIndex++)
     {
         /* AES_SubBytes */
         for (RowIndex = 0; RowIndex < AES_STATE_ROWS;RowIndex++)
             for (ColumnIndex = 0; ColumnIndex < AES_STATE_COLUMNS;ColumnIndex++)
-                aes_ctx.State[RowIndex][ColumnIndex] = aes_sbox_enc[aes_ctx.State[RowIndex][ColumnIndex]];
+                paes_ctx->State[RowIndex][ColumnIndex] = aes_sbox_enc[paes_ctx->State[RowIndex][ColumnIndex]];
 
         /* AES_ShiftRows */
-        Temp = aes_ctx.State[1][0];
-        aes_ctx.State[1][0] = aes_ctx.State[1][1];
-        aes_ctx.State[1][1] = aes_ctx.State[1][2];
-        aes_ctx.State[1][2] = aes_ctx.State[1][3];
-        aes_ctx.State[1][3] = Temp;
-        Temp = aes_ctx.State[2][0];
-        aes_ctx.State[2][0] = aes_ctx.State[2][2];
-        aes_ctx.State[2][2] = Temp;
-        Temp = aes_ctx.State[2][1];
-        aes_ctx.State[2][1] = aes_ctx.State[2][3];
-        aes_ctx.State[2][3] = Temp;
-        Temp = aes_ctx.State[3][3];
-        aes_ctx.State[3][3] = aes_ctx.State[3][2];
-        aes_ctx.State[3][2] = aes_ctx.State[3][1];
-        aes_ctx.State[3][1] = aes_ctx.State[3][0];
-        aes_ctx.State[3][0] = Temp;
+        Temp = paes_ctx->State[1][0];
+        paes_ctx->State[1][0] = paes_ctx->State[1][1];
+        paes_ctx->State[1][1] = paes_ctx->State[1][2];
+        paes_ctx->State[1][2] = paes_ctx->State[1][3];
+        paes_ctx->State[1][3] = Temp;
+        Temp = paes_ctx->State[2][0];
+        paes_ctx->State[2][0] = paes_ctx->State[2][2];
+        paes_ctx->State[2][2] = Temp;
+        Temp = paes_ctx->State[2][1];
+        paes_ctx->State[2][1] = paes_ctx->State[2][3];
+        paes_ctx->State[2][3] = Temp;
+        Temp = paes_ctx->State[3][3];
+        paes_ctx->State[3][3] = paes_ctx->State[3][2];
+        paes_ctx->State[3][2] = paes_ctx->State[3][1];
+        paes_ctx->State[3][1] = paes_ctx->State[3][0];
+        paes_ctx->State[3][0] = Temp;
 
         /* AES_MixColumns */
         for (ColumnIndex = 0; ColumnIndex < AES_STATE_COLUMNS;ColumnIndex++)
         {
-            Row0 = aes_ctx.State[0][ColumnIndex];
-            Row1 = aes_ctx.State[1][ColumnIndex];
-            Row2 = aes_ctx.State[2][ColumnIndex];
-            Row3 = aes_ctx.State[3][ColumnIndex];
-            aes_ctx.State[0][ColumnIndex] = aes_mul_2[Row0]^aes_mul_3[Row1]^Row2^Row3;
-            aes_ctx.State[1][ColumnIndex] = Row0^aes_mul_2[Row1]^aes_mul_3[Row2]^Row3;
-            aes_ctx.State[2][ColumnIndex] = Row0^Row1^aes_mul_2[Row2]^aes_mul_3[Row3];
-            aes_ctx.State[3][ColumnIndex] = aes_mul_3[Row0]^Row1^Row2^aes_mul_2[Row3];
+            Row0 = paes_ctx->State[0][ColumnIndex];
+            Row1 = paes_ctx->State[1][ColumnIndex];
+            Row2 = paes_ctx->State[2][ColumnIndex];
+            Row3 = paes_ctx->State[3][ColumnIndex];
+            paes_ctx->State[0][ColumnIndex] = aes_mul_2[Row0]^aes_mul_3[Row1]^Row2^Row3;
+            paes_ctx->State[1][ColumnIndex] = Row0^aes_mul_2[Row1]^aes_mul_3[Row2]^Row3;
+            paes_ctx->State[2][ColumnIndex] = Row0^Row1^aes_mul_2[Row2]^aes_mul_3[Row3];
+            paes_ctx->State[3][ColumnIndex] = aes_mul_3[Row0]^Row1^Row2^aes_mul_2[Row3];
         }
 
         /* AES_AddRoundKey */
         for (RowIndex = 0; RowIndex < AES_STATE_ROWS;RowIndex++)
             for (ColumnIndex = 0; ColumnIndex < AES_STATE_COLUMNS;ColumnIndex++)
-                aes_ctx.State[RowIndex][ColumnIndex] ^= aes_ctx.KeyWordExpansion[RowIndex][(RoundIndex*((UINT) AES_STATE_COLUMNS)) + ColumnIndex];
+                paes_ctx->State[RowIndex][ColumnIndex] ^= paes_ctx->KeyWordExpansion[RowIndex][(RoundIndex*((UINT) AES_STATE_COLUMNS)) + ColumnIndex];
     } /* End of for */
 
     /* AES_SubBytes */
     for (RowIndex = 0; RowIndex < AES_STATE_ROWS;RowIndex++)
         for (ColumnIndex = 0; ColumnIndex < AES_STATE_COLUMNS;ColumnIndex++)
-            aes_ctx.State[RowIndex][ColumnIndex] = aes_sbox_enc[aes_ctx.State[RowIndex][ColumnIndex]];
+            paes_ctx->State[RowIndex][ColumnIndex] = aes_sbox_enc[paes_ctx->State[RowIndex][ColumnIndex]];
     /* AES_ShiftRows */
-    Temp = aes_ctx.State[1][0];
-    aes_ctx.State[1][0] = aes_ctx.State[1][1];
-    aes_ctx.State[1][1] = aes_ctx.State[1][2];
-    aes_ctx.State[1][2] = aes_ctx.State[1][3];
-    aes_ctx.State[1][3] = Temp;
-    Temp = aes_ctx.State[2][0];
-    aes_ctx.State[2][0] = aes_ctx.State[2][2];
-    aes_ctx.State[2][2] = Temp;
-    Temp = aes_ctx.State[2][1];
-    aes_ctx.State[2][1] = aes_ctx.State[2][3];
-    aes_ctx.State[2][3] = Temp;
-    Temp = aes_ctx.State[3][3];
-    aes_ctx.State[3][3] = aes_ctx.State[3][2];
-    aes_ctx.State[3][2] = aes_ctx.State[3][1];
-    aes_ctx.State[3][1] = aes_ctx.State[3][0];
-    aes_ctx.State[3][0] = Temp;
+    Temp = paes_ctx->State[1][0];
+    paes_ctx->State[1][0] = paes_ctx->State[1][1];
+    paes_ctx->State[1][1] = paes_ctx->State[1][2];
+    paes_ctx->State[1][2] = paes_ctx->State[1][3];
+    paes_ctx->State[1][3] = Temp;
+    Temp = paes_ctx->State[2][0];
+    paes_ctx->State[2][0] = paes_ctx->State[2][2];
+    paes_ctx->State[2][2] = Temp;
+    Temp = paes_ctx->State[2][1];
+    paes_ctx->State[2][1] = paes_ctx->State[2][3];
+    paes_ctx->State[2][3] = Temp;
+    Temp = paes_ctx->State[3][3];
+    paes_ctx->State[3][3] = paes_ctx->State[3][2];
+    paes_ctx->State[3][2] = paes_ctx->State[3][1];
+    paes_ctx->State[3][1] = paes_ctx->State[3][0];
+    paes_ctx->State[3][0] = Temp;
     /* AES_AddRoundKey */
     for (RowIndex = 0; RowIndex < AES_STATE_ROWS;RowIndex++)
         for (ColumnIndex = 0; ColumnIndex < AES_STATE_COLUMNS;ColumnIndex++)
-            aes_ctx.State[RowIndex][ColumnIndex] ^= aes_ctx.KeyWordExpansion[RowIndex][(RoundIndex*((UINT) AES_STATE_COLUMNS)) + ColumnIndex];
+            paes_ctx->State[RowIndex][ColumnIndex] ^= paes_ctx->KeyWordExpansion[RowIndex][(RoundIndex*((UINT) AES_STATE_COLUMNS)) + ColumnIndex];
 
     /* 
      * 4. Transfer the state block to cipher block 
      */
     for (RowIndex = 0; RowIndex < AES_STATE_ROWS;RowIndex++)
         for (ColumnIndex = 0; ColumnIndex < AES_STATE_COLUMNS;ColumnIndex++)
-            CipherBlock[RowIndex + 4*ColumnIndex] = aes_ctx.State[RowIndex][ColumnIndex];
+            CipherBlock[RowIndex + 4*ColumnIndex] = paes_ctx->State[RowIndex][ColumnIndex];
 
     *CipherBlockSize = ((UINT) AES_STATE_ROWS)*((UINT) AES_STATE_COLUMNS);
+
+	if (paes_ctx != NULL)
+		os_free_mem(NULL, paes_ctx);
 } /* End of RT_AES_Encrypt */
 
 
@@ -522,7 +535,9 @@ VOID RT_AES_Decrypt (
     OUT UINT8 PlainBlock[],
     INOUT UINT *PlainBlockSize)
 {
-    AES_CTX_STRUC aes_ctx;
+/*    AES_CTX_STRUC aes_ctx;
+*/
+	AES_CTX_STRUC *paes_ctx = NULL;
     UINT RowIndex, ColumnIndex;
     UINT RoundIndex, NumberOfRound = 0;
     UINT8 Temp, Row0, Row1, Row2, Row3;
@@ -546,103 +561,114 @@ VOID RT_AES_Decrypt (
         return;
     } /* End of if */
 
+	/* allocate memory */
+	os_alloc_mem(NULL, (UCHAR **)&paes_ctx, sizeof(AES_CTX_STRUC));
+	if (paes_ctx == NULL)
+	{
+		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n", __FUNCTION__));
+		return;
+	}
+
     /* 
      * 2. Transfer the cipher block to state block 
      */
     for (RowIndex = 0; RowIndex < AES_STATE_ROWS;RowIndex++)
         for (ColumnIndex = 0; ColumnIndex < AES_STATE_COLUMNS;ColumnIndex++)
-            aes_ctx.State[RowIndex][ColumnIndex] = CipherBlock[RowIndex + 4*ColumnIndex];
+            paes_ctx->State[RowIndex][ColumnIndex] = CipherBlock[RowIndex + 4*ColumnIndex];
 
     /* 
      *  3. Main decryption rounds
      */
-    RT_AES_KeyExpansion(Key, KeyLength, &aes_ctx);
+    RT_AES_KeyExpansion(Key, KeyLength, paes_ctx);
     NumberOfRound = (KeyLength >> 2) + 6;
 
     /* AES_AddRoundKey */
     RoundIndex = NumberOfRound;
     for (RowIndex = 0; RowIndex < AES_STATE_ROWS;RowIndex++)
         for (ColumnIndex = 0; ColumnIndex < AES_STATE_COLUMNS;ColumnIndex++)
-            aes_ctx.State[RowIndex][ColumnIndex] ^= aes_ctx.KeyWordExpansion[RowIndex][(RoundIndex*((UINT) AES_STATE_COLUMNS)) + ColumnIndex];
+            paes_ctx->State[RowIndex][ColumnIndex] ^= paes_ctx->KeyWordExpansion[RowIndex][(RoundIndex*((UINT) AES_STATE_COLUMNS)) + ColumnIndex];
 
     for (RoundIndex = (NumberOfRound - 1); RoundIndex > 0 ;RoundIndex--)
     {
         /* AES_InvShiftRows */
-        Temp = aes_ctx.State[1][3];
-        aes_ctx.State[1][3] = aes_ctx.State[1][2];
-        aes_ctx.State[1][2] = aes_ctx.State[1][1];
-        aes_ctx.State[1][1] = aes_ctx.State[1][0];
-        aes_ctx.State[1][0] = Temp;
-        Temp = aes_ctx.State[2][0];
-        aes_ctx.State[2][0] = aes_ctx.State[2][2];
-        aes_ctx.State[2][2] = Temp;
-        Temp = aes_ctx.State[2][1];
-        aes_ctx.State[2][1] = aes_ctx.State[2][3];
-        aes_ctx.State[2][3] = Temp;
-        Temp = aes_ctx.State[3][0];
-        aes_ctx.State[3][0] = aes_ctx.State[3][1];
-        aes_ctx.State[3][1] = aes_ctx.State[3][2];
-        aes_ctx.State[3][2] = aes_ctx.State[3][3];
-        aes_ctx.State[3][3] = Temp;
+        Temp = paes_ctx->State[1][3];
+        paes_ctx->State[1][3] = paes_ctx->State[1][2];
+        paes_ctx->State[1][2] = paes_ctx->State[1][1];
+        paes_ctx->State[1][1] = paes_ctx->State[1][0];
+        paes_ctx->State[1][0] = Temp;
+        Temp = paes_ctx->State[2][0];
+        paes_ctx->State[2][0] = paes_ctx->State[2][2];
+        paes_ctx->State[2][2] = Temp;
+        Temp = paes_ctx->State[2][1];
+        paes_ctx->State[2][1] = paes_ctx->State[2][3];
+        paes_ctx->State[2][3] = Temp;
+        Temp = paes_ctx->State[3][0];
+        paes_ctx->State[3][0] = paes_ctx->State[3][1];
+        paes_ctx->State[3][1] = paes_ctx->State[3][2];
+        paes_ctx->State[3][2] = paes_ctx->State[3][3];
+        paes_ctx->State[3][3] = Temp;
 
         /* AES_InvSubBytes */
         for (RowIndex = 0; RowIndex < AES_STATE_ROWS;RowIndex++)
             for (ColumnIndex = 0; ColumnIndex < AES_STATE_COLUMNS;ColumnIndex++)
-                aes_ctx.State[RowIndex][ColumnIndex] = aes_sbox_dec[aes_ctx.State[RowIndex][ColumnIndex]];
+                paes_ctx->State[RowIndex][ColumnIndex] = aes_sbox_dec[paes_ctx->State[RowIndex][ColumnIndex]];
 
         /* AES_AddRoundKey */
         for (RowIndex = 0; RowIndex < AES_STATE_ROWS;RowIndex++)
             for (ColumnIndex = 0; ColumnIndex < AES_STATE_COLUMNS;ColumnIndex++)
-                aes_ctx.State[RowIndex][ColumnIndex] ^= aes_ctx.KeyWordExpansion[RowIndex][(RoundIndex*((UINT) AES_STATE_COLUMNS)) + ColumnIndex];
+                paes_ctx->State[RowIndex][ColumnIndex] ^= paes_ctx->KeyWordExpansion[RowIndex][(RoundIndex*((UINT) AES_STATE_COLUMNS)) + ColumnIndex];
 
         /* AES_InvMixColumns */
         for (ColumnIndex = 0; ColumnIndex < AES_STATE_COLUMNS;ColumnIndex++)
         {
-            Row0 = aes_ctx.State[0][ColumnIndex];
-            Row1 = aes_ctx.State[1][ColumnIndex];
-            Row2 = aes_ctx.State[2][ColumnIndex];
-            Row3 = aes_ctx.State[3][ColumnIndex];
-            aes_ctx.State[0][ColumnIndex] = aes_mul_e[Row0]^aes_mul_b[Row1]^aes_mul_d[Row2]^aes_mul_9[Row3];
-            aes_ctx.State[1][ColumnIndex] = aes_mul_9[Row0]^aes_mul_e[Row1]^aes_mul_b[Row2]^aes_mul_d[Row3];
-            aes_ctx.State[2][ColumnIndex] = aes_mul_d[Row0]^aes_mul_9[Row1]^aes_mul_e[Row2]^aes_mul_b[Row3];
-            aes_ctx.State[3][ColumnIndex] = aes_mul_b[Row0]^aes_mul_d[Row1]^aes_mul_9[Row2]^aes_mul_e[Row3];
+            Row0 = paes_ctx->State[0][ColumnIndex];
+            Row1 = paes_ctx->State[1][ColumnIndex];
+            Row2 = paes_ctx->State[2][ColumnIndex];
+            Row3 = paes_ctx->State[3][ColumnIndex];
+            paes_ctx->State[0][ColumnIndex] = aes_mul_e[Row0]^aes_mul_b[Row1]^aes_mul_d[Row2]^aes_mul_9[Row3];
+            paes_ctx->State[1][ColumnIndex] = aes_mul_9[Row0]^aes_mul_e[Row1]^aes_mul_b[Row2]^aes_mul_d[Row3];
+            paes_ctx->State[2][ColumnIndex] = aes_mul_d[Row0]^aes_mul_9[Row1]^aes_mul_e[Row2]^aes_mul_b[Row3];
+            paes_ctx->State[3][ColumnIndex] = aes_mul_b[Row0]^aes_mul_d[Row1]^aes_mul_9[Row2]^aes_mul_e[Row3];
         }
     } /* End of for */
 
     /* AES_InvShiftRows */
-    Temp = aes_ctx.State[1][3];
-    aes_ctx.State[1][3] = aes_ctx.State[1][2];
-    aes_ctx.State[1][2] = aes_ctx.State[1][1];
-    aes_ctx.State[1][1] = aes_ctx.State[1][0];
-    aes_ctx.State[1][0] = Temp;
-    Temp = aes_ctx.State[2][0];
-    aes_ctx.State[2][0] = aes_ctx.State[2][2];
-    aes_ctx.State[2][2] = Temp;
-    Temp = aes_ctx.State[2][1];
-    aes_ctx.State[2][1] = aes_ctx.State[2][3];
-    aes_ctx.State[2][3] = Temp;
-    Temp = aes_ctx.State[3][0];
-    aes_ctx.State[3][0] = aes_ctx.State[3][1];
-    aes_ctx.State[3][1] = aes_ctx.State[3][2];
-    aes_ctx.State[3][2] = aes_ctx.State[3][3];
-    aes_ctx.State[3][3] = Temp;
+    Temp = paes_ctx->State[1][3];
+    paes_ctx->State[1][3] = paes_ctx->State[1][2];
+    paes_ctx->State[1][2] = paes_ctx->State[1][1];
+    paes_ctx->State[1][1] = paes_ctx->State[1][0];
+    paes_ctx->State[1][0] = Temp;
+    Temp = paes_ctx->State[2][0];
+    paes_ctx->State[2][0] = paes_ctx->State[2][2];
+    paes_ctx->State[2][2] = Temp;
+    Temp = paes_ctx->State[2][1];
+    paes_ctx->State[2][1] = paes_ctx->State[2][3];
+    paes_ctx->State[2][3] = Temp;
+    Temp = paes_ctx->State[3][0];
+    paes_ctx->State[3][0] = paes_ctx->State[3][1];
+    paes_ctx->State[3][1] = paes_ctx->State[3][2];
+    paes_ctx->State[3][2] = paes_ctx->State[3][3];
+    paes_ctx->State[3][3] = Temp;
     /* AES_InvSubBytes */
     for (RowIndex = 0; RowIndex < AES_STATE_ROWS;RowIndex++)
         for (ColumnIndex = 0; ColumnIndex < AES_STATE_COLUMNS;ColumnIndex++)
-            aes_ctx.State[RowIndex][ColumnIndex] = aes_sbox_dec[aes_ctx.State[RowIndex][ColumnIndex]];
+            paes_ctx->State[RowIndex][ColumnIndex] = aes_sbox_dec[paes_ctx->State[RowIndex][ColumnIndex]];
     /* AES_AddRoundKey */
     for (RowIndex = 0; RowIndex < AES_STATE_ROWS;RowIndex++)
         for (ColumnIndex = 0; ColumnIndex < AES_STATE_COLUMNS;ColumnIndex++)
-            aes_ctx.State[RowIndex][ColumnIndex] ^= aes_ctx.KeyWordExpansion[RowIndex][(RoundIndex*((UINT) AES_STATE_COLUMNS)) + ColumnIndex];
+            paes_ctx->State[RowIndex][ColumnIndex] ^= paes_ctx->KeyWordExpansion[RowIndex][(RoundIndex*((UINT) AES_STATE_COLUMNS)) + ColumnIndex];
 
     /* 
      * 4. Transfer the state block to plain block 
      */
     for (RowIndex = 0; RowIndex < AES_STATE_ROWS;RowIndex++)
         for (ColumnIndex = 0; ColumnIndex < AES_STATE_COLUMNS;ColumnIndex++)
-            PlainBlock[RowIndex + 4*ColumnIndex] = aes_ctx.State[RowIndex][ColumnIndex];
+            PlainBlock[RowIndex + 4*ColumnIndex] = paes_ctx->State[RowIndex][ColumnIndex];
 
     *PlainBlockSize = ((UINT) AES_STATE_ROWS)*((UINT) AES_STATE_COLUMNS);
+
+	if (paes_ctx != NULL)
+		os_free_mem(NULL, paes_ctx);
 } /* End of RT_AES_Decrypt */
 
 
@@ -1433,7 +1459,10 @@ INT AES_Key_Wrap (
             KeyLength, AES_KEY128_LENGTH, AES_KEY192_LENGTH, AES_KEY256_LENGTH));
         return -1;
     } /* End of if */    
-    if ((pResult = (UINT8 *) kmalloc(sizeof(UINT8)*PlainTextLength, GFP_ATOMIC)) == NULL) {
+	os_alloc_mem(NULL, (UCHAR **)&pResult, sizeof(UINT8)*PlainTextLength);
+/*    if ((pResult = (UINT8 *) kmalloc(sizeof(UINT8)*PlainTextLength, GFP_ATOMIC)) == NULL) {
+*/
+    if (pResult == NULL) {
     	DBGPRINT(RT_DEBUG_ERROR, ("AES_Key_Wrap: allocate %d bytes memory failure.\n", sizeof(UINT8)*PlainTextLength));
         return -2;
     } /* End of if */
@@ -1442,7 +1471,8 @@ INT AES_Key_Wrap (
     /*
      * 1. Initialize variables
      */
-    Number_Of_Block = PlainTextLength / AES_KEY_WRAP_BLOCK_SIZE; // 64 bits each block
+    Number_Of_Block = PlainTextLength / AES_KEY_WRAP_BLOCK_SIZE; /* 64 bits each block
+*/
     NdisMoveMemory(IV, Default_IV, AES_KEY_WRAP_IV_LENGTH);
     NdisMoveMemory(pResult, PlainText, PlainTextLength);
 
@@ -1473,7 +1503,9 @@ INT AES_Key_Wrap (
     NdisMoveMemory(CipherText, IV, AES_KEY_WRAP_IV_LENGTH);
     NdisMoveMemory(CipherText + AES_KEY_WRAP_IV_LENGTH, pResult, PlainTextLength);
 
-    kfree(pResult);
+/*    kfree(pResult);
+*/
+	os_free_mem(NULL, pResult);
     return 0;
 } /* End of AES_Key_Wrap */
 
@@ -1522,7 +1554,10 @@ INT AES_Key_Unwrap (
             KeyLength, AES_KEY128_LENGTH, AES_KEY192_LENGTH, AES_KEY256_LENGTH));
         return -1;
     } /* End of if */    
-    if ((pResult = (UINT8 *) kmalloc(sizeof(UINT8)*PlainLength, GFP_ATOMIC)) == NULL) {
+	os_alloc_mem(NULL, (UCHAR **)&pResult, sizeof(UINT8)*PlainLength);
+/*    if ((pResult = (UINT8 *) kmalloc(sizeof(UINT8)*PlainLength, GFP_ATOMIC)) == NULL) {
+*/
+    if (pResult == NULL) {
     	DBGPRINT(RT_DEBUG_ERROR, ("AES_Key_Unwrap: allocate %d bytes memory failure.\n", sizeof(UINT8)*PlainLength));
         return -2;
     } /* End of if */
@@ -1531,7 +1566,8 @@ INT AES_Key_Unwrap (
     /*
      * 1. Initialize variables
      */
-    Number_Of_Block = PlainLength / AES_KEY_WRAP_BLOCK_SIZE; // 64 bits each block
+    Number_Of_Block = PlainLength / AES_KEY_WRAP_BLOCK_SIZE; /* 64 bits each block
+*/
     NdisMoveMemory(IV, CipherText, AES_KEY_WRAP_IV_LENGTH);
     NdisMoveMemory(pResult, CipherText + AES_KEY_WRAP_IV_LENGTH, PlainLength);
 
@@ -1560,7 +1596,9 @@ INT AES_Key_Unwrap (
     *PlainTextLength = PlainLength;
     NdisMoveMemory(PlainText, pResult, PlainLength);
 
-    kfree(pResult);    
+/*    kfree(pResult);    
+*/
+	os_free_mem(NULL, pResult);
     return 0;
 } /* End of AES_Key_Unwrap */
 

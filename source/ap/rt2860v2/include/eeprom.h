@@ -30,7 +30,7 @@
 
 #ifdef RTMP_MAC_PCI
 #define EEPROM_SIZE					0x200
-#endif // RTMP_MAC_PCI //
+#endif /* RTMP_MAC_PCI */
 
 
 
@@ -47,7 +47,7 @@ int rtmp_ee_prom_write16(
 	IN PRTMP_ADAPTER	pAd,
 	IN USHORT			Offset,
 	IN USHORT			value);
-#endif // RTMP_PCI_SUPPORT //
+#endif /* RTMP_PCI_SUPPORT */
 
 
 
@@ -77,7 +77,7 @@ VOID rtmp_ee_flash_write_all(
 	IN PRTMP_ADAPTER pAd, 
 	IN USHORT *Data);
 
-#endif // defined(RTMP_RBUS_SUPPORT) || defined(RTMP_FLASH_SUPPORT) //
+#endif /* defined(RTMP_RBUS_SUPPORT) || defined(RTMP_FLASH_SUPPORT) */
 
 
 /*************************************************************************
@@ -87,4 +87,4 @@ INT RtmpChipOpsEepromHook(
 	IN RTMP_ADAPTER *pAd,
 	IN INT			infType);
 
-#endif // __EEPROM_H__ //
+#endif /* __EEPROM_H__ */

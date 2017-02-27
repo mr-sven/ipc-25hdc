@@ -1,6 +1,3 @@
-#ifndef __STA_CFG_H__
-#define __STA_CFG_H__
-
 /*
  ***************************************************************************
  * Ralink Tech Inc.
@@ -30,11 +27,12 @@
 
 */
 
+#ifndef __STA_CFG_H__
+#define __STA_CFG_H__
 
 INT RTMPSTAPrivIoctlSet(
-	IN RTMP_ADAPTER *pAd, 
+	IN RTMP_ADAPTER *pAd,
 	IN PSTRING SetProcName,
 	IN PSTRING ProcArg);
 
-#endif // __STA_CFG_H__ //
-
+#endif /* __STA_CFG_H__ */

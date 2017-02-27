@@ -23,8 +23,6 @@
 
 /* only for UAPSD_TIMING_RECORD */
 
-//#define UAPSD_CC_FUNC_PS_MGMT_TO_LEGACY	/* Allow to put PS man frame in legacy */
-//#define UAPSD_TIMING_RECORD_FUNC
 
 #define UAPSD_TIMING_RECORD_MAX				1000
 #define UAPSD_TIMING_RECORD_DISPLAY_TIMES	10
@@ -51,11 +49,11 @@
 		__TimeStamp |= (__Value64 << 32);				\
 	}
 
-#ifdef LINUX
-#define UAPSD_TIME_GET(__pAd, __Time)					\
-		__Time = jiffies
-#endif // LINUX //
 
+#define UAPSD_TIME_GET(__pAd, __Time)					\
+	{													\
+		NdisGetSystemUpTime(&__Time);					\
+	}
 
 #ifdef UAPSD_TIMING_RECORD_FUNC
 #define UAPSD_TIMING_RECORD_START()				\
@@ -72,13 +70,13 @@
 #define UAPSD_TIMING_RECORD_STOP()
 #define UAPSD_TIMING_RECORD(__pAd, __type)
 #define UAPSD_TIMING_RECORD_INDEX(__LoopIndex)
-#endif // UAPSD_TIMING_RECORD_FUNC //
+#endif /* UAPSD_TIMING_RECORD_FUNC */
 
 #ifdef VENDOR_FEATURE3_SUPPORT
 #define UAPSD_INSERT_QUEUE_AC	UAPSD_InsertTailQueueAc
 #else
 #define UAPSD_INSERT_QUEUE_AC	InsertTailQueueAc
-#endif // VENDOR_FEATURE3_SUPPORT //
+#endif /* VENDOR_FEATURE3_SUPPORT */
 
 #ifndef MODULE_WMM_UAPSD
 
@@ -208,7 +206,7 @@
 				(__pMacEntry)->UAPSDTxNum ++;								\
 			}																\
 		}
-#endif // RTMP_MAC_PCI //
+#endif /* RTMP_MAC_PCI */
 
 
 #else
@@ -256,11 +254,11 @@
 		Suspend SP handle before rx done and resume SP handle after rx done.
 */
 #define UAPSD_SP_ACCURATE		/* use more accurate method to send EOSP */
-#endif // RTMP_MAC_PCI //
+#endif /* RTMP_MAC_PCI */
 
 #define UAPSD_EPT_SP_INT		(100000/(1000000/OS_HZ)) /* 100ms */
 
-#endif // MODULE_WMM_UAPSD //
+#endif /* MODULE_WMM_UAPSD */
 
 
 /* max UAPSD buffer queue size */
@@ -584,7 +582,7 @@ Note:
 */
 UAPSD_EXTERN VOID UAPSD_TimeingRecordLoopIndex(
 	IN	UINT32				LoopIndex);
-#endif // UAPSD_TIMING_RECORD_FUNC //
+#endif /* UAPSD_TIMING_RECORD_FUNC */
 
 
 /*

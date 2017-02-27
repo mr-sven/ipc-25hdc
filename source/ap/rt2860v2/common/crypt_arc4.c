@@ -48,13 +48,13 @@ VOID ARC4_INIT (
     UINT BlockIndex = 0, SWAPIndex = 0, KeyIndex = 0;
     UINT8 TempValue = 0;
 
-    //Initialize the block value
+    /*Initialize the block value*/
     pARC4_CTX->BlockIndex1 = 0;
     pARC4_CTX->BlockIndex2 = 0;
     for (BlockIndex = 0; BlockIndex < ARC4_KEY_BLOCK_SIZE; BlockIndex++)
         pARC4_CTX->KeyBlock[BlockIndex] = (UINT8) BlockIndex;
 
-    //Key schedule
+    /*Key schedule*/
     for (BlockIndex = 0; BlockIndex < ARC4_KEY_BLOCK_SIZE; BlockIndex++)
     {
         TempValue = pARC4_CTX->KeyBlock[BlockIndex];

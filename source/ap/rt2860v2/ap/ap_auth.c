@@ -72,7 +72,7 @@ void APAuthStateMachineInit(
 					AP_MAX_AUTH_MSG, (STATE_MACHINE_FUNC)Drop,
 					AP_AUTH_REQ_IDLE, AP_AUTH_MACHINE_BASE);
      
-    // the first column
+    /* the first column */
     StateMachineSetAction(Sm, AP_AUTH_REQ_IDLE, APMT2_MLME_DEAUTH_REQ,
 						(STATE_MACHINE_FUNC)APMlmeDeauthReqAction);
 	StateMachineSetAction(Sm, AP_AUTH_REQ_IDLE, APMT2_PEER_DEAUTH,
@@ -117,18 +117,18 @@ static VOID APMlmeDeauthReqAction(
 							   pEntry->apidx, 
 							   pEntry->Addr, 
 							   WAI_MLME_DISCONNECT);		
-#endif // WAPI_SUPPORT //
+#endif /* WAPI_SUPPORT */
 		
-		// send wireless event - for deauthentication
+		/* send wireless event - for deauthentication */
 		RTMPSendWirelessEvent(pAd, IW_DEAUTH_EVENT_FLAG, pInfo->Addr, 0, 0);  
 		ApLogEvent(pAd, pInfo->Addr, EVENT_DISASSOCIATED);
 
 		apidx = pEntry->apidx;
 
-        // 1. remove this STA from MAC table
+        /* 1. remove this STA from MAC table */
         MacTableDeleteEntry(pAd, Elem->Wcid, pInfo->Addr);
 
-        // 2. send out DE-AUTH request frame
+        /* 2. send out DE-AUTH request frame */
         NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);
         if (NStatus != NDIS_STATUS_SUCCESS) 
             return;
@@ -139,6 +139,9 @@ static VOID APMlmeDeauthReqAction(
 				pInfo->Addr[3], pInfo->Addr[4], pInfo->Addr[5]));
            		
         MgtMacHeaderInit(pAd, &Hdr, SUBTYPE_DEAUTH, 0, pInfo->Addr,
+#ifdef P2P_SUPPORT
+						pAd->ApCfg.MBSSID[apidx].Bssid,
+#endif /* P2P_SUPPORT */
 						pAd->ApCfg.MBSSID[apidx].Bssid);
         MakeOutgoingFrame(pOutBuffer,				&FrameLen, 
                           sizeof(HEADER_802_11),	&Hdr, 
@@ -167,18 +170,18 @@ static VOID APPeerDeauthReqAction(
 
 	pEntry = NULL;
 
-	//pEntry = MacTableLookup(pAd, Addr2);
+	/*pEntry = MacTableLookup(pAd, Addr2); */
 	if (Elem->Wcid < MAX_LEN_OF_MAC_TABLE)
     {
 		pEntry = &pAd->MacTab.Content[Elem->Wcid];
 
 #ifdef DOT1X_SUPPORT    
-		// Notify 802.1x daemon to clear this sta info
+		/* Notify 802.1x daemon to clear this sta info */
 		if (pEntry->AuthMode == Ndis802_11AuthModeWPA || 
 			pEntry->AuthMode == Ndis802_11AuthModeWPA2 ||
 			pAd->ApCfg.MBSSID[pEntry->apidx].IEEE8021X)
 			DOT1X_InternalCmdAction(pAd, pEntry, DOT1X_DISCONNECT_ENTRY);
-#endif // DOT1X_SUPPORT //
+#endif /* DOT1X_SUPPORT */
 
 #ifdef WAPI_SUPPORT
 		WAPI_InternalCmdAction(pAd, 
@@ -186,9 +189,9 @@ static VOID APPeerDeauthReqAction(
 							   pEntry->apidx, 
 							   pEntry->Addr, 
 							   WAI_MLME_DISCONNECT);		
-#endif // WAPI_SUPPORT //
+#endif /* WAPI_SUPPORT */
 
-		// send wireless event - for deauthentication
+		/* send wireless event - for deauthentication */
 		RTMPSendWirelessEvent(pAd, IW_DEAUTH_EVENT_FLAG, Addr2, 0, 0);  
 		ApLogEvent(pAd, Addr2, EVENT_DISASSOCIATED);
 		
@@ -237,6 +240,14 @@ static VOID APPeerAuthReqAtIdleAction(
 		))
 		return;
     
+#ifdef P2P_SUPPORT
+	if (P2P_GO_ON(pAd) && (pAd->P2pCfg.bStopAuthRsp == TRUE))
+	{
+		DBGPRINT(RT_DEBUG_TRACE, ("%s:: GO update not complete, stop Auth Rsp.\n", __FUNCTION__));
+		return;
+	}
+#endif /* P2P_SUPPORT */
+
     /* Find which MBSSID to be authenticate */
 	for (apidx=0; apidx<pAd->ApCfg.BssidNum; apidx++)
 	{	
@@ -278,7 +289,7 @@ static VOID APPeerAuthReqAtIdleAction(
 
 #ifdef DOT11_N_SUPPORT
 			BASessionTearDownALL(pAd, pEntry->Aid);
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 			ASSERT(pEntry->Aid == Elem->Wcid);
 		}
 	}
@@ -290,14 +301,23 @@ static VOID APPeerAuthReqAtIdleAction(
 			apidx, Seq, Alg, Status, Elem->Wcid, PRINT_MAC(Addr2)));
 
 
-	// fail in ACL checking => send an AUTH-Fail seq#2.
+#ifdef WSC_V2_SUPPORT
+	/* Do not check ACL when WPS V2 is enabled and ACL policy is positive. */
+	if ((pAd->ApCfg.MBSSID[apidx].WscControl.WscConfMode != WSC_DISABLE) &&
+		(pAd->ApCfg.MBSSID[apidx].WscControl.WscV2Info.bEnableWpsV2) &&
+		(pAd->ApCfg.MBSSID[apidx].WscControl.WscV2Info.bWpsEnable) &&
+		(pAd->ApCfg.MBSSID[apidx].AccessControlList.Policy == 1))
+		; 
+	else
+#endif /* WSC_V2_SUPPORT */
+	/* fail in ACL checking => send an AUTH-Fail seq#2. */
     if (! ApCheckAccessControlList(pAd, Addr2, apidx))
     {
 		ASSERT(Seq == 1);
 		ASSERT(pEntry == NULL);
 		APPeerAuthSimpleRspGenAndSend(pAd, pRcvHdr, Alg, Seq + 1, MLME_UNSPECIFY_FAIL);
 
-		// If this STA exists, delete it.
+		/* If this STA exists, delete it. */
 		if (pEntry)
 			MacTableDeleteEntry(pAd, pEntry->Aid, pEntry->Addr);
 
@@ -313,31 +333,32 @@ static VOID APPeerAuthReqAtIdleAction(
 		(pAd->ApCfg.MBSSID[apidx].AuthMode != Ndis802_11AuthModeShared)) 
 	{
 		if (!pEntry)
-			pEntry = MacTableInsertEntry(pAd, Addr2, apidx, TRUE);
+			pEntry = MacTableInsertEntry(pAd, Addr2, apidx, OPMODE_AP, TRUE);
 
 		if (pEntry)
 		{
 			pEntry->AuthState = AS_AUTH_OPEN;
-			pEntry->Sst = SST_AUTH; // what if it already in SST_ASSOC ???????
+			pEntry->Sst = SST_AUTH; /* what if it already in SST_ASSOC ??????? */
 			APPeerAuthSimpleRspGenAndSend(pAd, pRcvHdr, Alg, Seq + 1, MLME_SUCCESS);
+
 		}
 		else
-			; // MAC table full, what should we respond ?????
+			; /* MAC table full, what should we respond ????? */
 	}
 	else if ((Alg == AUTH_MODE_KEY) && 
 				((pAd->ApCfg.MBSSID[apidx].AuthMode == Ndis802_11AuthModeShared)
 				|| (pAd->ApCfg.MBSSID[apidx].AuthMode == Ndis802_11AuthModeAutoSwitch)))
 	{
 		if (!pEntry)
-			pEntry = MacTableInsertEntry(pAd, Addr2, apidx, TRUE);
+			pEntry = MacTableInsertEntry(pAd, Addr2, apidx, OPMODE_AP, TRUE);
 
 		if (pEntry)
 		{
 			pEntry->AuthState = AS_AUTHENTICATING;
-			pEntry->Sst = SST_NOT_AUTH; // what if it already in SST_ASSOC ???????
+			pEntry->Sst = SST_NOT_AUTH; /* what if it already in SST_ASSOC ??????? */
 
-			// log this STA in AuthRspAux machine, only one STA is stored. If two STAs using
-			// SHARED_KEY authentication mingled together, then the late comer will win.
+			/* log this STA in AuthRspAux machine, only one STA is stored. If two STAs using */
+			/* SHARED_KEY authentication mingled together, then the late comer will win. */
 			COPY_MAC_ADDR(&pAd->ApMlmeAux.Addr, Addr2);
 			for(i=0; i<CIPHER_TEXT_LEN; i++) 
 				pAd->ApMlmeAux.Challenge[i] = RandomByte(pAd);
@@ -347,12 +368,15 @@ static VOID APPeerAuthReqAtIdleAction(
   
 			NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);
 			if(NStatus != NDIS_STATUS_SUCCESS) 
-				return;  // if no memory, can't do anything
+				return;  /* if no memory, can't do anything */
 
 			DBGPRINT(RT_DEBUG_TRACE, ("AUTH - Send AUTH seq#2 (Challenge)\n"));
 
-			MgtMacHeaderInit(pAd, &AuthHdr, SUBTYPE_AUTH, 0,
-							Addr2, pAd->ApCfg.MBSSID[apidx].Bssid);
+			MgtMacHeaderInit(pAd, &AuthHdr, SUBTYPE_AUTH, 0, 	Addr2, 
+#ifdef P2P_SUPPORT
+								pAd->ApCfg.MBSSID[apidx].Bssid,
+#endif /* P2P_SUPPORT */
+								pAd->ApCfg.MBSSID[apidx].Bssid);
 			MakeOutgoingFrame(pOutBuffer,            &FrameLen,
 								sizeof(HEADER_802_11), &AuthHdr,
 								2,                     &Alg,
@@ -366,14 +390,14 @@ static VOID APPeerAuthReqAtIdleAction(
 			MlmeFreeMemory(pAd, pOutBuffer);
 		}
 		else
-			; // MAC table full, what should we respond ????
+			; /* MAC table full, what should we respond ???? */
 	} 
 	else
 	{
-		// wrong algorithm
+		/* wrong algorithm */
 		APPeerAuthSimpleRspGenAndSend(pAd, pRcvHdr, Alg, Seq + 1, MLME_ALG_NOT_SUPPORT);
 
-		// If this STA exists, delete it.
+		/* If this STA exists, delete it. */
 		if (pEntry)
 			MacTableDeleteEntry(pAd, pEntry->Aid, pEntry->Addr);
 
@@ -447,7 +471,7 @@ static VOID APPeerAuthConfirmAction(
 			}
 #ifdef DOT11_N_SUPPORT
 			BASessionTearDownALL(pAd, pEntry->Aid);
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 			ASSERT(pEntry->Aid == Elem->Wcid);
 		}
 	}
@@ -464,7 +488,7 @@ static VOID APPeerAuthConfirmAction(
 		if ((pRcvHdr->FC.Wep == 1) &&
 			NdisEqualMemory(Chtxt, pAd->ApMlmeAux.Challenge, CIPHER_TEXT_LEN)) 
 		{
-			// Successful
+			/* Successful */
 			APPeerAuthSimpleRspGenAndSend(pAd, pRcvHdr, Alg, Seq + 1, MLME_SUCCESS);
 			pEntry->AuthState = AS_AUTH_KEY;
 			pEntry->Sst = SST_AUTH;
@@ -472,28 +496,28 @@ static VOID APPeerAuthConfirmAction(
 		else 
 		{
 	
-			// send wireless event - Authentication rejected because of challenge failure
+			/* send wireless event - Authentication rejected because of challenge failure */
 			RTMPSendWirelessEvent(pAd, IW_AUTH_REJECT_CHALLENGE_FAILURE, pEntry->Addr, 0, 0);  
 
-			// fail - wep bit is not set or challenge text is not equal
+			/* fail - wep bit is not set or challenge text is not equal */
 			APPeerAuthSimpleRspGenAndSend(pAd, pRcvHdr, Alg, Seq + 1, MLME_REJ_CHALLENGE_FAILURE);
 			MacTableDeleteEntry(pAd, pEntry->Aid, pEntry->Addr);
 
-			//Chtxt[127]='\0';
-			//pAd->ApMlmeAux.Challenge[127]='\0';
+			/*Chtxt[127]='\0'; */
+			/*pAd->ApMlmeAux.Challenge[127]='\0'; */
 			DBGPRINT(RT_DEBUG_TRACE,
 					("%s\n", ((pRcvHdr->FC.Wep == 1) ? "challenge text is not equal" : "wep bit is not set")));
-			//DBGPRINT(RT_DEBUG_TRACE, ("Sent Challenge = %s\n",&pAd->ApMlmeAux.Challenge[100]));
-			//DBGPRINT(RT_DEBUG_TRACE, ("Rcv Challenge = %s\n",&Chtxt[100]));
+			/*DBGPRINT(RT_DEBUG_TRACE, ("Sent Challenge = %s\n",&pAd->ApMlmeAux.Challenge[100])); */
+			/*DBGPRINT(RT_DEBUG_TRACE, ("Rcv Challenge = %s\n",&Chtxt[100])); */
 		}
 	} 
 	else 
 	{
-		// fail for unknown reason. most likely is AuthRspAux machine be overwritten by another
-		// STA also using SHARED_KEY authentication
+		/* fail for unknown reason. most likely is AuthRspAux machine be overwritten by another */
+		/* STA also using SHARED_KEY authentication */
 		APPeerAuthSimpleRspGenAndSend(pAd, pRcvHdr, Alg, Seq + 1, MLME_UNSPECIFY_FAIL);
 
-		// If this STA exists, delete it.
+		/* If this STA exists, delete it. */
 		if (pEntry)
 			MacTableDeleteEntry(pAd, pEntry->Aid, pEntry->Addr);
 	}
@@ -529,7 +553,7 @@ VOID APCls2errAction(
 
     if (pEntry && IS_ENTRY_CLIENT(pEntry))
     {
-        //ApLogEvent(pAd, pAddr, EVENT_DISASSOCIATED);
+        /*ApLogEvent(pAd, pAddr, EVENT_DISASSOCIATED); */
         MacTableDeleteEntry(pAd, pEntry->Aid, pHeader->Addr2);
 	}
 	else
@@ -543,7 +567,7 @@ VOID APCls2errAction(
 			return;
 	}
 
-	// send out DEAUTH request frame 
+	/* send out DEAUTH request frame */
 	NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);
 	if (NStatus != NDIS_STATUS_SUCCESS) 
 		return;
@@ -553,7 +577,11 @@ VOID APCls2errAction(
 			"%02x:%02x:%02x:%02x:%02x:%02x\n",
 			PRINT_MAC(pHeader->Addr2)));
 
-	MgtMacHeaderInit(pAd, &Hdr, SUBTYPE_DEAUTH, 0, pHeader->Addr2, pHeader->Addr1);
+	MgtMacHeaderInit(pAd, &Hdr, SUBTYPE_DEAUTH, 0, pHeader->Addr2, 
+#ifdef P2P_SUPPORT
+						pHeader->Addr1,
+#endif /* P2P_SUPPORT */
+						pHeader->Addr1);
 	MakeOutgoingFrame(pOutBuffer,            &FrameLen, 
 					  sizeof(HEADER_802_11), &Hdr, 
 					  2,                     &Reason, 
@@ -592,11 +620,15 @@ VOID APPeerAuthSimpleRspGenAndSend(
 	}
     else
     {
-        // For MAC wireless client(Macintosh), need to send AUTH_RSP with Status Code (fail reason code) to reject it.
+        /* For MAC wireless client(Macintosh), need to send AUTH_RSP with Status Code (fail reason code) to reject it. */
         DBGPRINT(RT_DEBUG_TRACE, ("AUTH_RSP - Peer AUTH fail (Status = %d)...\n", StatusCode));
     }
 
-	MgtMacHeaderInit(pAd, &AuthHdr, SUBTYPE_AUTH, 0, pHdr->Addr2, pHdr->Addr1/*pAd->ApCfg.MBSSID[apidx].Bssid*/);
+	MgtMacHeaderInit(pAd, &AuthHdr, SUBTYPE_AUTH, 0, pHdr->Addr2, 
+#ifdef P2P_SUPPORT
+						pHdr->Addr1,
+#endif /* P2P_SUPPORT */
+						pHdr->Addr1);
 	MakeOutgoingFrame(pOutBuffer,				&FrameLen,
 					  sizeof(HEADER_802_11),	&AuthHdr,
 					  2,						&Alg,

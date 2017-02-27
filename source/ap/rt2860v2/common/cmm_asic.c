@@ -29,93 +29,10 @@
 #include "rt_config.h"
 
 
-#if defined(RT28xx) || defined(RT2883)
-// Reset the RFIC setting to new series    
-RTMP_RF_REGS RF2850RegTable[] = {
-//		ch	 R1 		 R2 		 R3(TX0~4=0) R4
-		{1,  0x98402ecc, 0x984c0786, 0x9816b455, 0x9800510b},
-		{2,  0x98402ecc, 0x984c0786, 0x98168a55, 0x9800519f},
-		{3,  0x98402ecc, 0x984c078a, 0x98168a55, 0x9800518b},
-		{4,  0x98402ecc, 0x984c078a, 0x98168a55, 0x9800519f},
-		{5,  0x98402ecc, 0x984c078e, 0x98168a55, 0x9800518b},
-		{6,  0x98402ecc, 0x984c078e, 0x98168a55, 0x9800519f},
-		{7,  0x98402ecc, 0x984c0792, 0x98168a55, 0x9800518b},
-		{8,  0x98402ecc, 0x984c0792, 0x98168a55, 0x9800519f},
-		{9,  0x98402ecc, 0x984c0796, 0x98168a55, 0x9800518b},
-		{10, 0x98402ecc, 0x984c0796, 0x98168a55, 0x9800519f},
-		{11, 0x98402ecc, 0x984c079a, 0x98168a55, 0x9800518b},
-		{12, 0x98402ecc, 0x984c079a, 0x98168a55, 0x9800519f},
-		{13, 0x98402ecc, 0x984c079e, 0x98168a55, 0x9800518b},
-		{14, 0x98402ecc, 0x984c07a2, 0x98168a55, 0x98005193},
-
-		// 802.11 UNI / HyperLan 2
-		{36, 0x98402ecc, 0x984c099a, 0x98158a55, 0x980ed1a3},
-		{38, 0x98402ecc, 0x984c099e, 0x98158a55, 0x980ed193},
-		{40, 0x98402ec8, 0x984c0682, 0x98158a55, 0x980ed183},
-		{44, 0x98402ec8, 0x984c0682, 0x98158a55, 0x980ed1a3},
-		{46, 0x98402ec8, 0x984c0686, 0x98158a55, 0x980ed18b},
-		{48, 0x98402ec8, 0x984c0686, 0x98158a55, 0x980ed19b},
-		{52, 0x98402ec8, 0x984c068a, 0x98158a55, 0x980ed193},
-		{54, 0x98402ec8, 0x984c068a, 0x98158a55, 0x980ed1a3},
-		{56, 0x98402ec8, 0x984c068e, 0x98158a55, 0x980ed18b},
-		{60, 0x98402ec8, 0x984c0692, 0x98158a55, 0x980ed183},
-		{62, 0x98402ec8, 0x984c0692, 0x98158a55, 0x980ed193},
-		{64, 0x98402ec8, 0x984c0692, 0x98158a55, 0x980ed1a3}, // Plugfest#4, Day4, change RFR3 left4th 9->5.
-
-		// 802.11 HyperLan 2
-		{100, 0x98402ec8, 0x984c06b2, 0x98178a55, 0x980ed783},
-		
-		// 2008.04.30 modified 
-		// The system team has AN to improve the EVM value 
-		// for channel 102 to 108 for the RT2850/RT2750 dual band solution.
-		{102, 0x98402ec8, 0x985c06b2, 0x98578a55, 0x980ed793},
-		{104, 0x98402ec8, 0x985c06b2, 0x98578a55, 0x980ed1a3},
-		{108, 0x98402ecc, 0x985c0a32, 0x98578a55, 0x980ed193},
-
-		{110, 0x98402ecc, 0x984c0a36, 0x98178a55, 0x980ed183},
-		{112, 0x98402ecc, 0x984c0a36, 0x98178a55, 0x980ed19b},
-		{116, 0x98402ecc, 0x984c0a3a, 0x98178a55, 0x980ed1a3},
-		{118, 0x98402ecc, 0x984c0a3e, 0x98178a55, 0x980ed193},
-		{120, 0x98402ec4, 0x984c0382, 0x98178a55, 0x980ed183},
-		{124, 0x98402ec4, 0x984c0382, 0x98178a55, 0x980ed193},
-		{126, 0x98402ec4, 0x984c0382, 0x98178a55, 0x980ed15b}, // 0x980ed1bb->0x980ed15b required by Rory 20070927
-		{128, 0x98402ec4, 0x984c0382, 0x98178a55, 0x980ed1a3},
-		{132, 0x98402ec4, 0x984c0386, 0x98178a55, 0x980ed18b},
-		{134, 0x98402ec4, 0x984c0386, 0x98178a55, 0x980ed193},
-		{136, 0x98402ec4, 0x984c0386, 0x98178a55, 0x980ed19b},
-		{140, 0x98402ec4, 0x984c038a, 0x98178a55, 0x980ed183},
-
-		// 802.11 UNII
-		{149, 0x98402ec4, 0x984c038a, 0x98178a55, 0x980ed1a7},
-		{151, 0x98402ec4, 0x984c038e, 0x98178a55, 0x980ed187},
-		{153, 0x98402ec4, 0x984c038e, 0x98178a55, 0x980ed18f},
-		{157, 0x98402ec4, 0x984c038e, 0x98178a55, 0x980ed19f},
-		{159, 0x98402ec4, 0x984c038e, 0x98178a55, 0x980ed1a7},
-		{161, 0x98402ec4, 0x984c0392, 0x98178a55, 0x980ed187},
-		{165, 0x98402ec4, 0x984c0392, 0x98178a55, 0x980ed197},
-		{167, 0x98402ec4, 0x984c03d2, 0x98179855, 0x9815531f},
-		{169, 0x98402ec4, 0x984c03d2, 0x98179855, 0x98155327},
-		{171, 0x98402ec4, 0x984c03d6, 0x98179855, 0x98155307},
-		{173, 0x98402ec4, 0x984c03d6, 0x98179855, 0x9815530f},
-
-		// Japan
-		{184, 0x95002ccc, 0x9500491e, 0x9509be55, 0x950c0a0b},
-		{188, 0x95002ccc, 0x95004922, 0x9509be55, 0x950c0a13},
-		{192, 0x95002ccc, 0x95004926, 0x9509be55, 0x950c0a1b},
-		{196, 0x95002ccc, 0x9500492a, 0x9509be55, 0x950c0a23},
-		{208, 0x95002ccc, 0x9500493a, 0x9509be55, 0x950c0a13},
-		{212, 0x95002ccc, 0x9500493e, 0x9509be55, 0x950c0a1b},
-		{216, 0x95002ccc, 0x95004982, 0x9509be55, 0x950c0a23},
-
-		// still lack of MMAC(Japan) ch 34,38,42,46
-};
-UCHAR	NUM_OF_2850_CHNL = (sizeof(RF2850RegTable) / sizeof(RTMP_RF_REGS));
-#endif // defined(RT28xx) || defined(RT2883) //
-
 #ifdef RT2880
-// Reset the RFIC setting to new series    
+/* Reset the RFIC setting to new series    */
 RTMP_RF_REGS RF2850RegTable[] = {
-//		ch	 R1 		 R2 		 R3(TX0~4=0) R4
+/*		ch	 R1 		 R2 		 R3(TX0~4=0) R4*/
 		{1,  0x98402ecc, 0x984c0786, 0x981ab455, 0x9800510b},
 		{2,  0x98402ecc, 0x984c0786, 0x981a8a55, 0x9800519f},
 		{3,  0x98402ecc, 0x984c078a, 0x981a8a55, 0x9800518b},
@@ -131,7 +48,7 @@ RTMP_RF_REGS RF2850RegTable[] = {
 		{13, 0x98402ecc, 0x984c079e, 0x981a8a55, 0x9800518b},
 		{14, 0x98402ecc, 0x984c07a2, 0x981a8a55, 0x98005193},
 
-		// 802.11 UNI / HyperLan 2
+		/* 802.11 UNI / HyperLan 2*/
 		{36, 0x98402ecc, 0x984c099a, 0x98198a55, 0x980ed1a3},
 		{38, 0x98402ecc, 0x984c099e, 0x98198a55, 0x980ed193},
 		{40, 0x98402ec8, 0x984c0682, 0x98198a55, 0x980ed183},
@@ -143,14 +60,14 @@ RTMP_RF_REGS RF2850RegTable[] = {
 		{56, 0x98402ec8, 0x984c068e, 0x98198a55, 0x980ed18b},
 		{60, 0x98402ec8, 0x984c0692, 0x98198a55, 0x980ed183},
 		{62, 0x98402ec8, 0x984c0692, 0x98198a55, 0x980ed193},
-		{64, 0x98402ec8, 0x984c0692, 0x98198a55, 0x980ed1a3}, // Plugfest#4, Day4, change RFR3 left4th 9->5.
+		{64, 0x98402ec8, 0x984c0692, 0x98198a55, 0x980ed1a3}, /* Plugfest#4, Day4, change RFR3 left4th 9->5.*/
 
-		// 802.11 HyperLan 2
+		/* 802.11 HyperLan 2*/
 		{100, 0x98402ec8, 0x984c06b2, 0x981b8a55, 0x980ed783},
 		
-		// 2008.04.30 modified 
-		// The system team has AN to improve the EVM value 
-		// for channel 102 to 108 for the RT2850/RT2750 dual band solution.
+		/* 2008.04.30 modified */
+		/* The system team has AN to improve the EVM value */
+		/* for channel 102 to 108 for the RT2850/RT2750 dual band solution.*/
 		{102, 0x98402ec8, 0x985c06b2, 0x985b8a55, 0x980ed793},
 		{104, 0x98402ec8, 0x985c06b2, 0x985b8a55, 0x980ed1a3},
 		{108, 0x98402ecc, 0x985c0a32, 0x985b8a55, 0x980ed193},
@@ -161,14 +78,14 @@ RTMP_RF_REGS RF2850RegTable[] = {
 		{118, 0x98402ecc, 0x984c0a3e, 0x981b8a55, 0x980ed193},
 		{120, 0x98402ec4, 0x984c0382, 0x981b8a55, 0x980ed183},
 		{124, 0x98402ec4, 0x984c0382, 0x981b8a55, 0x980ed193},
-		{126, 0x98402ec4, 0x984c0382, 0x981b8a55, 0x980ed15b}, // 0x980ed1bb->0x980ed15b required by Rory 20070927
+		{126, 0x98402ec4, 0x984c0382, 0x981b8a55, 0x980ed15b}, /* 0x980ed1bb->0x980ed15b required by Rory 20070927*/
 		{128, 0x98402ec4, 0x984c0382, 0x981b8a55, 0x980ed1a3},
 		{132, 0x98402ec4, 0x984c0386, 0x981b8a55, 0x980ed18b},
 		{134, 0x98402ec4, 0x984c0386, 0x981b8a55, 0x980ed193},
 		{136, 0x98402ec4, 0x984c0386, 0x981b8a55, 0x980ed19b},
 		{140, 0x98402ec4, 0x984c038a, 0x981b8a55, 0x980ed183},
 
-		// 802.11 UNII
+		/* 802.11 UNII*/
 		{149, 0x98402ec4, 0x984c038a, 0x981b8a55, 0x980ed1a7},
 		{151, 0x98402ec4, 0x984c038e, 0x981b8a55, 0x980ed187},
 		{153, 0x98402ec4, 0x984c038e, 0x981b8a55, 0x980ed18f},
@@ -181,7 +98,7 @@ RTMP_RF_REGS RF2850RegTable[] = {
 		{171, 0x98402ec4, 0x984c03d6, 0x981b9855, 0x98155307},
 		{173, 0x98402ec4, 0x984c03d6, 0x981b9855, 0x9815530f},
 
-		// Japan
+		/* Japan*/
 		{184, 0x95002ccc, 0x9500491e, 0x9509be55, 0x950c0a0b},
 		{188, 0x95002ccc, 0x95004922, 0x9509be55, 0x950c0a13},
 		{192, 0x95002ccc, 0x95004926, 0x9509be55, 0x950c0a1b},
@@ -190,46 +107,20 @@ RTMP_RF_REGS RF2850RegTable[] = {
 		{212, 0x95002ccc, 0x9500493e, 0x9509be55, 0x950c0a1b},
 		{216, 0x95002ccc, 0x95004982, 0x9509be55, 0x950c0a23},
 
-		// still lack of MMAC(Japan) ch 34,38,42,46
+		/* still lack of MMAC(Japan) ch 34,38,42,46*/
 };
 UCHAR	NUM_OF_2850_CHNL = (sizeof(RF2850RegTable) / sizeof(RTMP_RF_REGS));
-#endif // RT2880 //
-
-
-FREQUENCY_ITEM FreqItems3020[] =
-{	
-	/**************************************************/
-	// ISM : 2.4 to 2.483 GHz                         //
-	/**************************************************/
-	// 11g
-	/**************************************************/
-	//-CH---N-------R---K-----------
-	{1,    241,  2,  2},
-	{2,    241,	 2,  7},
-	{3,    242,	 2,  2},
-	{4,    242,	 2,  7},
-	{5,    243,	 2,  2},
-	{6,    243,	 2,  7},
-	{7,    244,	 2,  2},
-	{8,    244,	 2,  7},
-	{9,    245,	 2,  2},
-	{10,   245,	 2,  7},
-	{11,   246,	 2,  2},
-	{12,   246,	 2,  7},
-	{13,   247,	 2,  2},
-	{14,   248,	 2,  4},
-};
-UCHAR	NUM_OF_3020_CHNL = (sizeof(FreqItems3020) / sizeof(FREQUENCY_ITEM));
+#endif /* RT2880 */
 
 
 
 
 #ifdef RTMP_INTERNAL_TX_ALC
-// The Tx power tuning entry
-TX_POWER_TUNING_ENTRY_STRUCT TxPowerTuningTable[] = 
+/* The Tx power tuning entry*/
+TX_POWER_TUNING_ENTRY_STRUCT TxPowerTuningTableOrg[] = 
 {
-//	idxTxPowerTable		Tx power control over RF		Tx power control over MAC
-//	(zero-based array)		{ RF R12[4:0]: Tx0 ALC},		{MAC 0x1314~0x1324}
+/*	idxTxPowerTable		Tx power control over RF		Tx power control over MAC*/
+/*	(zero-based array)		{ RF R12[4:0]: Tx0 ALC},		{MAC 0x1314~0x1324}*/
 /*	0	*/				{0x00, 							-15}, 
 /*	1	*/				{0x01, 							-15}, 
 /*	2	*/				{0x00, 							-14}, 
@@ -308,18 +199,8 @@ TX_POWER_TUNING_ENTRY_STRUCT TxPowerTuningTable[] =
 /*	75	*/				{0x0F,							15}, 
 };
 
-// The desired TSSI over CCK
-CHAR desiredTSSIOverCCK[4] = {0};
-
-// The desired TSSI over OFDM
-CHAR desiredTSSIOverOFDM[8] = {0};
-
-// The desired TSSI over HT
-CHAR desiredTSSIOverHT[8] = {0};
-
-// The desired TSSI over HT using STBC
-CHAR desiredTSSIOverHTUsingSTBC[8] = {0};
-#endif // RTMP_INTERNAL_TX_ALC //
+TX_POWER_TUNING_ENTRY_STRUCT *TxPowerTuningTable = TxPowerTuningTableOrg;
+#endif /* RTMP_INTERNAL_TX_ALC */
 
 #ifdef CONFIG_STA_SUPPORT
 VOID AsicUpdateAutoFallBackTable(
@@ -331,7 +212,7 @@ VOID AsicUpdateAutoFallBackTable(
 	HT_FBK_CFG1_STRUC		HtCfg1;
 	LG_FBK_CFG0_STRUC		LgCfg0;
 	LG_FBK_CFG1_STRUC		LgCfg1;
-//#ifdef DOT11N_SS3_SUPPORT
+/*#ifdef DOT11N_SS3_SUPPORT*/
 	PRTMP_TX_RATE_SWITCH	pCurrTxRate, pNextTxRate;
 
 #ifdef AGS_SUPPORT
@@ -349,14 +230,14 @@ VOID AsicUpdateAutoFallBackTable(
 
 	Ht3SSCfg0.word = 0x1211100f;
 	Ht3SSCfg1.word = 0x16151413;	
-#endif // AGS_SUPPORT //
+#endif /* AGS_SUPPORT */
 
-	// set to initial value
+	/* set to initial value*/
 	HtCfg0.word = 0x65432100;
 	HtCfg1.word = 0xedcba980;
 	LgCfg0.word = 0xedcba988;
 	LgCfg1.word = 0x00002100;
-//#ifdef DOT11N_SS3_SUPPORT
+/*#ifdef DOT11N_SS3_SUPPORT*/
 
 #ifdef AGS_SUPPORT
 	if (bUseAGS)
@@ -365,7 +246,7 @@ VOID AsicUpdateAutoFallBackTable(
 		pNextTxRate = (PRTMP_TX_RATE_SWITCH)pNextTxRate_AGS;
 	}
 	else
-#endif // AGS_SUPPORT //
+#endif /* AGS_SUPPORT */
 	pNextTxRate = (PRTMP_TX_RATE_SWITCH)pRateTable+1;
 
 	for (i = 1; i < *((PUCHAR) pRateTable); i++)
@@ -377,14 +258,14 @@ VOID AsicUpdateAutoFallBackTable(
 			pCurrTxRate = (PRTMP_TX_RATE_SWITCH)pCurrTxRate_AGS;
 		}
 		else
-#endif // AGS_SUPPORT //
+#endif /* AGS_SUPPORT */
 		pCurrTxRate = (PRTMP_TX_RATE_SWITCH)pRateTable+1+i;
 
 		switch (pCurrTxRate->Mode)
 		{
-			case 0:		//CCK
+			case 0:		/*CCK*/
 				break;
-			case 1:		//OFDM
+			case 1:		/*OFDM*/
 				{
 					switch(pCurrTxRate->CurrMCS)
 					{
@@ -416,8 +297,8 @@ VOID AsicUpdateAutoFallBackTable(
 				}
 				break;
 #ifdef DOT11_N_SUPPORT
-			case 2:		//HT-MIX
-			case 3:		//HT-GF
+			case 2:		/*HT-MIX*/
+			case 3:		/*HT-GF*/
 				{
 					if ((pNextTxRate->Mode >= MODE_HTMIX) && (pCurrTxRate->CurrMCS != pNextTxRate->CurrMCS))
 					{
@@ -471,7 +352,7 @@ VOID AsicUpdateAutoFallBackTable(
 							case 15:
 								HtCfg1.field.HTMCS15FBK = pNextTxRate->CurrMCS;
 								break;
-//#ifdef DOT11N_SS3_SUPPORT
+/*#ifdef DOT11N_SS3_SUPPORT*/
 #ifdef AGS_SUPPORT
 							case 16:
 								Ht3SSCfg0.field.HTMCS16FBK = pNextTxRate->CurrMCS;
@@ -497,18 +378,30 @@ VOID AsicUpdateAutoFallBackTable(
 							case 23:
 								Ht3SSCfg1.field.HTMCS23FBK = pNextTxRate->CurrMCS;
 								break;
-#endif // AGS_SUPPORT //									
+#endif /* AGS_SUPPORT */									
 							default:
 								DBGPRINT(RT_DEBUG_ERROR, ("AsicUpdateAutoFallBackTable: not support CurrMCS=%d\n", pCurrTxRate->CurrMCS));
 						}
 					}
 				}
 				break;
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 		}
 
 		pNextTxRate = pCurrTxRate;
 	}
+
+#ifdef AGS_SUPPORT
+	if (bUseAGS == TRUE)
+	{
+		Ht3SSCfg0.field.HTMCS16FBK = 0x8; // MCS 16 -> MCS 8
+		HtCfg1.field.HTMCS8FBK = 0x0; // MCS 8 -> MCS 0
+
+		LgCfg0.field.OFDMMCS2FBK = 0x3; // OFDM 12 -> CCK 11
+		LgCfg0.field.OFDMMCS1FBK = 0x2; // OFDM 9 -> CCK 5.5
+		LgCfg0.field.OFDMMCS0FBK = 0x2; // OFDM 6 -> CCK 5.5
+	}
+#endif /* AGS_SUPPORT */
 
 	RTMP_IO_WRITE32(pAd, HT_FBK_CFG0, HtCfg0.word);
 	RTMP_IO_WRITE32(pAd, HT_FBK_CFG1, HtCfg1.word);
@@ -516,19 +409,17 @@ VOID AsicUpdateAutoFallBackTable(
 	RTMP_IO_WRITE32(pAd, LG_FBK_CFG1, LgCfg1.word);
 
 #ifdef AGS_SUPPORT
-	if(bUseAGS)
+	if(bUseAGS == TRUE)
 	{
-		Ht3SSCfg0.field.HTMCS16FBK = 0x00; // MCS 16 (BW40, 45Mbps) ==> MCS 0 (BW40, 15Mbps)
-		
 		RTMP_IO_WRITE32(pAd, HT_FBK_3SS_CFG0, Ht3SSCfg0.word);
 		RTMP_IO_WRITE32(pAd, HT_FBK_3SS_CFG1, Ht3SSCfg1.word);
 		DBGPRINT(RT_DEBUG_TRACE, ("AsicUpdateAutoFallBackTable: Ht3SSCfg0=0x%x, Ht3SSCfg1=0x%x\n", Ht3SSCfg0.word, Ht3SSCfg1.word));
 	}
-#endif // AGS_SUPPORT //
+#endif /* AGS_SUPPORT */
 
-//#ifdef DOT11N_SS3_SUPPORT
+/*#ifdef DOT11N_SS3_SUPPORT*/
 }
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 
 /*
 	========================================================================
@@ -563,7 +454,7 @@ VOID 	AsicUpdateProtect(
 #ifdef RALINK_ATE
 	if (ATE_ON(pAd))
 		return;
-#endif // RALINK_ATE //
+#endif /* RALINK_ATE */
 
 #ifdef DOT11_N_SUPPORT
 	if (!(pAd->CommonCfg.bHTProtect) && (OperationMode != 8))
@@ -573,22 +464,22 @@ VOID 	AsicUpdateProtect(
 
 	if (pAd->BATable.numDoneOriginator)
 	{
-		// 
-		// enable the RTS/CTS to avoid channel collision
-		// 
+		/* */
+		/* enable the RTS/CTS to avoid channel collision*/
+		/* */
 		SetMask |= ALLN_SETPROTECT;
 		OperationMode = 8;
 	}
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 
-	// Config ASIC RTS threshold register
+	/* Config ASIC RTS threshold register*/
 	RTMP_IO_READ32(pAd, TX_RTS_CFG, &MacReg);
 	MacReg &= 0xFF0000FF;
-	// If the user want disable RtsThreshold and enbale Amsdu/Ralink-Aggregation, set the RtsThreshold as 4096
+	/* If the user want disable RtsThreshold and enbale Amsdu/Ralink-Aggregation, set the RtsThreshold as 4096*/
         if ((
 #ifdef DOT11_N_SUPPORT
 			(pAd->CommonCfg.BACapability.field.AmsduEnable) || 
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 			(pAd->CommonCfg.bAggregationCapable == TRUE))
             && pAd->CommonCfg.RtsThreshold == MAX_RTS_THRESHOLD)
         {
@@ -601,7 +492,7 @@ VOID 	AsicUpdateProtect(
 
 	RTMP_IO_WRITE32(pAd, TX_RTS_CFG, MacReg);
 
-	// Initial common protection settings
+	/* Initial common protection settings*/
 	RTMPZeroMemory(Protect, sizeof(Protect));
 	ProtCfg4.word = 0;
 	ProtCfg.word = 0;
@@ -614,15 +505,33 @@ VOID 	AsicUpdateProtect(
 	ProtCfg.field.RTSThEn = 1;
 	ProtCfg.field.ProtectNav = ASIC_SHORTNAV;
 
-	// update PHY mode and rate
-	if (pAd->CommonCfg.Channel > 14)
-		ProtCfg.field.ProtectRate = 0x4000;
-	ProtCfg.field.ProtectRate |= pAd->CommonCfg.RtsRate;	
+	/* update PHY mode and rate*/
+	if (pAd->OpMode == OPMODE_AP)
+	{
+		/* update PHY mode and rate*/
+		if (pAd->CommonCfg.Channel > 14)
+			ProtCfg.field.ProtectRate = 0x4000;
+		ProtCfg.field.ProtectRate |= pAd->CommonCfg.RtsRate;	
+	}
+	else if (pAd->OpMode == OPMODE_STA)
+	{
+		// Decide Protect Rate for Legacy packet
+		if (pAd->CommonCfg.Channel > 14)
+		{
+			ProtCfg.field.ProtectRate = 0x4000; // OFDM 6Mbps
+		}
+		else 
+		{
+			ProtCfg.field.ProtectRate = 0x0000; // CCK 1Mbps
+			if (pAd->CommonCfg.MinTxRate > RATE_11)
+				ProtCfg.field.ProtectRate |= 0x4000; // OFDM 6Mbps
+		}
+	}
 
-	// Handle legacy(B/G) protection
+	/* Handle legacy(B/G) protection*/
 	if (bDisableBGProtect)
 	{
-		//ProtCfg.field.ProtectRate = pAd->CommonCfg.RtsRate;
+		/*ProtCfg.field.ProtectRate = pAd->CommonCfg.RtsRate;*/
 		ProtCfg.field.ProtectCtrl = 0;
 		Protect[0] = ProtCfg.word;
 		Protect[1] = ProtCfg.word;
@@ -630,63 +539,63 @@ VOID 	AsicUpdateProtect(
 	}
 	else
 	{
-		//ProtCfg.field.ProtectRate = pAd->CommonCfg.RtsRate;
-		ProtCfg.field.ProtectCtrl = 0;			// CCK do not need to be protected
+		/*ProtCfg.field.ProtectRate = pAd->CommonCfg.RtsRate;*/
+		ProtCfg.field.ProtectCtrl = 0;			/* CCK do not need to be protected*/
 		Protect[0] = ProtCfg.word;
-		ProtCfg.field.ProtectCtrl = ASIC_CTS;	// OFDM needs using CCK to protect
+		ProtCfg.field.ProtectCtrl = ASIC_CTS;	/* OFDM needs using CCK to protect*/
 		Protect[1] = ProtCfg.word;
 		pAd->FlgCtsEnabled = 1; /* CTS-self is used */
 	}
 
 #ifdef DOT11_N_SUPPORT
-	// Decide HT frame protection.
+	/* Decide HT frame protection.*/
 	if ((SetMask & ALLN_SETPROTECT) != 0)
 	{
 		switch(OperationMode)
 		{
 			case 0x0:
-				// NO PROTECT 
-				// 1.All STAs in the BSS are 20/40 MHz HT
-				// 2. in ai 20/40MHz BSS
-				// 3. all STAs are 20MHz in a 20MHz BSS
-				// Pure HT. no protection.
+				/* NO PROTECT */
+				/* 1.All STAs in the BSS are 20/40 MHz HT*/
+				/* 2. in ai 20/40MHz BSS*/
+				/* 3. all STAs are 20MHz in a 20MHz BSS*/
+				/* Pure HT. no protection.*/
 
-				// MM20_PROT_CFG
-				//	Reserved (31:27)
-				// 	PROT_TXOP(25:20) -- 010111
-				//	PROT_NAV(19:18)  -- 01 (Short NAV protection)
-				//  PROT_CTRL(17:16) -- 00 (None)
-				// 	PROT_RATE(15:0)  -- 0x4004 (OFDM 24M)
+				/* MM20_PROT_CFG*/
+				/*	Reserved (31:27)*/
+				/* 	PROT_TXOP(25:20) -- 010111*/
+				/*	PROT_NAV(19:18)  -- 01 (Short NAV protection)*/
+				/*  PROT_CTRL(17:16) -- 00 (None)*/
+				/* 	PROT_RATE(15:0)  -- 0x4004 (OFDM 24M)*/
 				Protect[2] = 0x01744004;	
 
-				// MM40_PROT_CFG
-				//	Reserved (31:27)
-				// 	PROT_TXOP(25:20) -- 111111
-				//	PROT_NAV(19:18)  -- 01 (Short NAV protection)
-				//  PROT_CTRL(17:16) -- 00 (None) 
-				// 	PROT_RATE(15:0)  -- 0x4084 (duplicate OFDM 24M)
+				/* MM40_PROT_CFG*/
+				/*	Reserved (31:27)*/
+				/* 	PROT_TXOP(25:20) -- 111111*/
+				/*	PROT_NAV(19:18)  -- 01 (Short NAV protection)*/
+				/*  PROT_CTRL(17:16) -- 00 (None) */
+				/* 	PROT_RATE(15:0)  -- 0x4084 (duplicate OFDM 24M)*/
 				Protect[3] = 0x03f44084;
 
-				// CF20_PROT_CFG
-				//	Reserved (31:27)
-				// 	PROT_TXOP(25:20) -- 010111
-				//	PROT_NAV(19:18)  -- 01 (Short NAV protection)
-				//  PROT_CTRL(17:16) -- 00 (None)
-				// 	PROT_RATE(15:0)  -- 0x4004 (OFDM 24M)
+				/* CF20_PROT_CFG*/
+				/*	Reserved (31:27)*/
+				/* 	PROT_TXOP(25:20) -- 010111*/
+				/*	PROT_NAV(19:18)  -- 01 (Short NAV protection)*/
+				/*  PROT_CTRL(17:16) -- 00 (None)*/
+				/* 	PROT_RATE(15:0)  -- 0x4004 (OFDM 24M)*/
 				Protect[4] = 0x01744004;
 
-				// CF40_PROT_CFG
-				//	Reserved (31:27)
-				// 	PROT_TXOP(25:20) -- 111111
-				//	PROT_NAV(19:18)  -- 01 (Short NAV protection)
-				//  PROT_CTRL(17:16) -- 00 (None)
-				// 	PROT_RATE(15:0)  -- 0x4084 (duplicate OFDM 24M)
+				/* CF40_PROT_CFG*/
+				/*	Reserved (31:27)*/
+				/* 	PROT_TXOP(25:20) -- 111111*/
+				/*	PROT_NAV(19:18)  -- 01 (Short NAV protection)*/
+				/*  PROT_CTRL(17:16) -- 00 (None)*/
+				/* 	PROT_RATE(15:0)  -- 0x4084 (duplicate OFDM 24M)*/
 				Protect[5] = 0x03f44084;
 
 				if (bNonGFExist)
 				{
-					// PROT_NAV(19:18)  -- 01 (Short NAV protectiion)
-					// PROT_CTRL(17:16) -- 01 (RTS/CTS)
+					/* PROT_NAV(19:18)  -- 01 (Short NAV protectiion)*/
+					/* PROT_CTRL(17:16) -- 01 (RTS/CTS)*/
 					Protect[4] = 0x01754004;
 					Protect[5] = 0x03f54084;
 				}
@@ -694,16 +603,16 @@ VOID 	AsicUpdateProtect(
 				break;
 				
  			case 1:
-				// This is "HT non-member protection mode."
-				// If there may be non-HT STAs my BSS
-				ProtCfg.word = 0x01744004;	// PROT_CTRL(17:16) : 0 (None)
-				ProtCfg4.word = 0x03f44084; // duplicaet legacy 24M. BW set 1.
+				/* This is "HT non-member protection mode."*/
+				/* If there may be non-HT STAs my BSS*/
+				ProtCfg.word = 0x01744004;	/* PROT_CTRL(17:16) : 0 (None)*/
+				ProtCfg4.word = 0x03f44084; /* duplicaet legacy 24M. BW set 1.*/
 				if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_BG_PROTECTION_INUSED))
 				{
-					ProtCfg.word = 0x01740003;	//ERP use Protection bit is set, use protection rate at Clause 18..
-					ProtCfg4.word = 0x03f40003; // Don't duplicate RTS/CTS in CCK mode. 0x03f40083; 
+					ProtCfg.word = 0x01740003;	/*ERP use Protection bit is set, use protection rate at Clause 18..*/
+					ProtCfg4.word = 0x03f40003; /* Don't duplicate RTS/CTS in CCK mode. 0x03f40083; */
 				}
-				//Assign Protection method for 20&40 MHz packets
+				/*Assign Protection method for 20&40 MHz packets*/
 				ProtCfg.field.ProtectCtrl = ASIC_RTS;
 				ProtCfg.field.ProtectNav = ASIC_SHORTNAV;
 				ProtCfg4.field.ProtectCtrl = ASIC_RTS;
@@ -716,15 +625,15 @@ VOID 	AsicUpdateProtect(
 				break;
 				
 			case 2:
-				// If only HT STAs are in BSS. at least one is 20MHz. Only protect 40MHz packets
-				ProtCfg.word = 0x01744004;  // PROT_CTRL(17:16) : 0 (None)
-				ProtCfg4.word = 0x03f44084; // duplicaet legacy 24M. BW set 1.
+				/* If only HT STAs are in BSS. at least one is 20MHz. Only protect 40MHz packets*/
+				ProtCfg.word = 0x01744004;  /* PROT_CTRL(17:16) : 0 (None)*/
+				ProtCfg4.word = 0x03f44084; /* duplicaet legacy 24M. BW set 1.*/
 				if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_BG_PROTECTION_INUSED))
 				{
-					ProtCfg.word = 0x01740003;	//ERP use Protection bit is set, use protection rate at Clause 18..
-					ProtCfg4.word = 0x03f40003; // Don't duplicate RTS/CTS in CCK mode. 0x03f40083; 
+					ProtCfg.word = 0x01740003;	/*ERP use Protection bit is set, use protection rate at Clause 18..*/
+					ProtCfg4.word = 0x03f40003; /* Don't duplicate RTS/CTS in CCK mode. 0x03f40083; */
 				} 
-				//Assign Protection method for 40MHz packets
+				/*Assign Protection method for 40MHz packets*/
 				ProtCfg4.field.ProtectCtrl = ASIC_RTS;
 				ProtCfg4.field.ProtectNav = ASIC_SHORTNAV;
 				Protect[2] = ProtCfg.word;
@@ -741,17 +650,17 @@ VOID 	AsicUpdateProtect(
 				break;
 				
 			case 3:
-				// HT mixed mode.	 PROTECT ALL!
-				// Assign Rate
-				ProtCfg.word = 0x01744004;	//duplicaet legacy 24M. BW set 1.
+				/* HT mixed mode.	 PROTECT ALL!*/
+				/* Assign Rate*/
+				ProtCfg.word = 0x01744004;	/*duplicaet legacy 24M. BW set 1.*/
 				ProtCfg4.word = 0x03f44084;
-				// both 20MHz and 40MHz are protected. Whether use RTS or CTS-to-self depends on the
+				/* both 20MHz and 40MHz are protected. Whether use RTS or CTS-to-self depends on the*/
 				if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_BG_PROTECTION_INUSED))
 				{
-					ProtCfg.word = 0x01740003;	//ERP use Protection bit is set, use protection rate at Clause 18..
-					ProtCfg4.word = 0x03f40003; // Don't duplicate RTS/CTS in CCK mode. 0x03f40083
+					ProtCfg.word = 0x01740003;	/*ERP use Protection bit is set, use protection rate at Clause 18..*/
+					ProtCfg4.word = 0x03f40003; /* Don't duplicate RTS/CTS in CCK mode. 0x03f40083*/
 				}
-				//Assign Protection method for 20&40 MHz packets
+				/*Assign Protection method for 20&40 MHz packets*/
 				ProtCfg.field.ProtectCtrl = ASIC_RTS;
 				ProtCfg.field.ProtectNav = ASIC_SHORTNAV;
 				ProtCfg4.field.ProtectCtrl = ASIC_RTS;
@@ -764,24 +673,24 @@ VOID 	AsicUpdateProtect(
 				break;	
 				
 			case 8:
-				// Special on for Atheros problem n chip.
-				ProtCfg.word = 0x01754004;	//duplicaet legacy 24M. BW set 1.
+				/* Special on for Atheros problem n chip.*/
+				ProtCfg.word = 0x01754004;	/*duplicaet legacy 24M. BW set 1.*/
 				ProtCfg4.word = 0x03f54084;
 				if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_BG_PROTECTION_INUSED))
 				{
-					ProtCfg.word = 0x01750003;	//ERP use Protection bit is set, use protection rate at Clause 18..
-					ProtCfg4.word = 0x03f50003; // Don't duplicate RTS/CTS in CCK mode. 0x03f40083
+					ProtCfg.word = 0x01750003;	/*ERP use Protection bit is set, use protection rate at Clause 18..*/
+					ProtCfg4.word = 0x03f50003; /* Don't duplicate RTS/CTS in CCK mode. 0x03f40083*/
 				}
 				
-				Protect[2] = ProtCfg.word; 	//0x01754004;
-				Protect[3] = ProtCfg4.word; //0x03f54084;
-				Protect[4] = ProtCfg.word; 	//0x01754004;
-				Protect[5] = ProtCfg4.word; //0x03f54084;
+				Protect[2] = ProtCfg.word; 	/*0x01754004;*/
+				Protect[3] = ProtCfg4.word; /*0x03f54084;*/
+				Protect[4] = ProtCfg.word; 	/*0x01754004;*/
+				Protect[5] = ProtCfg4.word; /*0x03f54084;*/
 				pAd->CommonCfg.IOTestParm.bRTSLongProtOn = TRUE;
 				break;		
 		}
 	}
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 	
 	offset = CCK_PROT_CFG;
 	for (i = 0;i < 6;i++)
@@ -796,181 +705,7 @@ VOID 	AsicUpdateProtect(
 
 VOID AsicBBPAdjust(RTMP_ADAPTER *pAd)
 {
-	UINT32 Value;
-	UCHAR byteValue = 0;
-
-
-
-#ifdef DOT11_N_SUPPORT
-	if ((pAd->CommonCfg.HtCapability.HtCapInfo.ChannelWidth  == BW_40) && 
-		(pAd->CommonCfg.RegTransmitSetting.field.EXTCHA == EXTCHA_ABOVE)
-		/*(pAd->CommonCfg.AddHTInfo.AddHtInfo.ExtChanOffset == EXTCHA_ABOVE)*/
-	)
-	{
-		{
-		pAd->CommonCfg.BBPCurrentBW = BW_40;
-		pAd->CommonCfg.CentralChannel = pAd->CommonCfg.Channel + 2;
-		}
-		//  TX : control channel at lower 
-		RTMP_IO_READ32(pAd, TX_BAND_CFG, &Value);
-		Value &= (~0x1);
-		RTMP_IO_WRITE32(pAd, TX_BAND_CFG, Value);
-
-		//  RX : control channel at lower 
-		RTMP_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R3, &byteValue);
-		byteValue &= (~0x20);
-		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, byteValue);
-
-		RTMP_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R4, &byteValue);
-		byteValue &= (~0x18);
-		byteValue |= 0x10;
-		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R4, byteValue);
-
-		if (pAd->CommonCfg.Channel > 14)
-		{ 	// request by Gary 20070208 for middle and long range A Band
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R66, 0x48);
-		}
-		else
-		{	// request by Gary 20070208 for middle and long range G Band
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R66, 0x38);
-		}	
-		// 
-		if (pAd->MACVersion == 0x28600100)
-		{
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R69, 0x1A);
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R70, 0x0A);
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R73, 0x16);
-		}
-		else
-		{
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R69, 0x12);
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R70, 0x0A);
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R73, 0x10);
-		}	
-
-		DBGPRINT(RT_DEBUG_TRACE, ("ApStartUp : ExtAbove, ChannelWidth=%d, Channel=%d, ExtChanOffset=%d(%d) \n",
-									pAd->CommonCfg.HtCapability.HtCapInfo.ChannelWidth, 
-									pAd->CommonCfg.Channel, 
-									pAd->CommonCfg.RegTransmitSetting.field.EXTCHA,
-									pAd->CommonCfg.AddHTInfo.AddHtInfo.ExtChanOffset));
-	}
-	else if ((pAd->CommonCfg.Channel > 2) && 
-			(pAd->CommonCfg.HtCapability.HtCapInfo.ChannelWidth  == BW_40) && 
-			(pAd->CommonCfg.RegTransmitSetting.field.EXTCHA == EXTCHA_BELOW)
-			/*(pAd->CommonCfg.AddHTInfo.AddHtInfo.ExtChanOffset == EXTCHA_BELOW)*/)
-	{
-		pAd->CommonCfg.BBPCurrentBW = BW_40;
-
-		if (pAd->CommonCfg.Channel == 14)
-			pAd->CommonCfg.CentralChannel = pAd->CommonCfg.Channel - 1;
-		else
-			pAd->CommonCfg.CentralChannel = pAd->CommonCfg.Channel - 2;
-		//  TX : control channel at upper 
-		RTMP_IO_READ32(pAd, TX_BAND_CFG, &Value);
-		Value |= (0x1);		
-		RTMP_IO_WRITE32(pAd, TX_BAND_CFG, Value);
-
-		//  RX : control channel at upper 
-		RTMP_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R3, &byteValue);
-		byteValue |= (0x20);
-		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, byteValue);
-
-		RTMP_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R4, &byteValue);
-		byteValue &= (~0x18);
-		byteValue |= 0x10;
-		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R4, byteValue);
-		
-		if (pAd->CommonCfg.Channel > 14)
-		{ 	// request by Gary 20070208 for middle and long range A Band
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R66, 0x48);
-		}
-		else
-		{ 	// request by Gary 20070208 for middle and long range G band
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R66, 0x38);
-		}	
-	
-		
-		if (pAd->MACVersion == 0x28600100)
-		{
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R69, 0x1A);
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R70, 0x0A);
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R73, 0x16);
-		}
-		else
-		{	
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R69, 0x12);
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R70, 0x0A);
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R73, 0x10);
-		}
-		DBGPRINT(RT_DEBUG_TRACE, ("ApStartUp : ExtBlow, ChannelWidth=%d, Channel=%d, ExtChanOffset=%d(%d) \n",
-									pAd->CommonCfg.HtCapability.HtCapInfo.ChannelWidth, 
-									pAd->CommonCfg.Channel, 
-									pAd->CommonCfg.RegTransmitSetting.field.EXTCHA,
-									pAd->CommonCfg.AddHTInfo.AddHtInfo.ExtChanOffset));
-	}
-	else
-#endif // DOT11_N_SUPPORT //
-	{
-		pAd->CommonCfg.BBPCurrentBW = BW_20;
-		pAd->CommonCfg.CentralChannel = pAd->CommonCfg.Channel;
-		
-		//  TX : control channel at lower 
-		RTMP_IO_READ32(pAd, TX_BAND_CFG, &Value);
-		Value &= (~0x1);
-		RTMP_IO_WRITE32(pAd, TX_BAND_CFG, Value);
-
-		RTMP_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R4, &byteValue);
-		byteValue &= (~0x18);
-		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R4, byteValue);
-		
-		// 20 MHz bandwidth
-		if (pAd->CommonCfg.Channel > 14)
-		{	 // request by Gary 20070208
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R66, 0x40);
-		}	
-		else
-		{	// request by Gary 20070208
-			//RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R66, 0x30);
-			// request by Brian 20070306
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R66, 0x38);
-		}	
-				 
-		if (pAd->MACVersion == 0x28600100)
-		{
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R69, 0x16);
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R70, 0x08);
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R73, 0x11);
-		}
-		else
-		{
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R69, 0x12);
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R70, 0x0a);
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R73, 0x10);
-		}
-
-#ifdef DOT11_N_SUPPORT
-		DBGPRINT(RT_DEBUG_TRACE, ("ApStartUp : 20MHz, ChannelWidth=%d, Channel=%d, ExtChanOffset=%d(%d) \n",
-										pAd->CommonCfg.HtCapability.HtCapInfo.ChannelWidth, 
-										pAd->CommonCfg.Channel, 
-										pAd->CommonCfg.RegTransmitSetting.field.EXTCHA,
-										pAd->CommonCfg.AddHTInfo.AddHtInfo.ExtChanOffset));
-#endif // DOT11_N_SUPPORT //
-	}
-	
-	if (pAd->CommonCfg.Channel > 14)
-	{	// request by Gary 20070208 for middle and long range A Band
-		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R62, 0x1D);
-		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R63, 0x1D);
-		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R64, 0x1D);
-		//RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R86, 0x1D);
-	}
-	else
-	{ 	// request by Gary 20070208 for middle and long range G band
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R62, 0x2D);
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R63, 0x2D);
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R64, 0x2D);
-			//RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R86, 0x2D);
-	}	
+	RTMP_CHIP_ASIC_BBP_ADJUST(pAd);
 
 }
 
@@ -989,455 +724,62 @@ VOID AsicSwitchChannel(
 	IN	UCHAR			Channel,
 	IN	BOOLEAN			bScan) 
 {
-	CHAR    TxPwer = 0, TxPwer2 = DEFAULT_RF_TX_POWER; //Bbp94 = BBPR94_DEFAULT, TxPwer2 = DEFAULT_RF_TX_POWER;
-	UCHAR	index;
-	UINT32 	Value = 0; //BbpReg, Value;
-	UCHAR 	RFValue;
+#ifdef DOT11N_SS3_SUPPORT
+
+#endif /* DOT11N_SS3_SUPPORT */
 #ifdef RTMP_MAC_PCI
-#endif // RTMP_MAC_PCI //
+#endif /* RTMP_MAC_PCI */
+
+
+#ifdef CONFIG_STA_SUPPORT
+#ifdef CONFIG_PM
+#ifdef USB_SUPPORT_SELECTIVE_SUSPEND
+	POS_COOKIE  pObj = (POS_COOKIE) pAd->OS_Cookie;
+#endif /* USB_SUPPORT_SELECTIVE_SUSPEND */
+#endif /* CONFIG_PM */
+#endif /* CONFIG_STA_SUPPORT */
+
+#ifdef CONFIG_STA_SUPPORT
+#ifdef CONFIG_PM
+#ifdef USB_SUPPORT_SELECTIVE_SUSPEND
+
+		if(!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_CPU_SUSPEND))
+		{
+			if( (RTMP_Usb_AutoPM_Get_Interface(pObj->pUsb_Dev,pObj->intf)) == 1)
+			{
+				DBGPRINT(RT_DEBUG_TRACE, ("AsicSwitchChannel: autopm_resume success\n"));
+				RTMP_CLEAR_FLAG(pAd, fRTMP_ADAPTER_SUSPEND);
+			}
+			else if ((RTMP_Usb_AutoPM_Get_Interface(pObj->pUsb_Dev,pObj->intf)) == (-1))
+			{
+				DBGPRINT(RT_DEBUG_ERROR, ("AsicSwitchChannel autopm_resume fail ------\n"));
+				RTMP_SET_FLAG(pAd, fRTMP_ADAPTER_SUSPEND);
+				return;
+			}
+			else
+				DBGPRINT(RT_DEBUG_TRACE, ("AsicSwitchChannel: autopm_resume do nothing \n"));
+
+		}
+		else
+		{
+			DBGPRINT(RT_DEBUG_TRACE, ("AsicSwitchChannel: fRTMP_ADAPTER_CPU_SUSPEND\n"));
+			return;
+		}
+
+#endif /* USB_SUPPORT_SELECTIVE_SUSPEND */
+#endif /* CONFIG_PM */
+#endif /* CONFIG_STA_SUPPORT */
 
 
 #ifdef CONFIG_AP_SUPPORT
 #ifdef AP_QLOAD_SUPPORT
 	/* clear all statistics count for QBSS Load */
 	QBSS_LoadStatusClear(pAd);
-#endif // AP_QLOAD_SUPPORT //
-#endif // CONFIG_AP_SUPPORT //
+#endif /* AP_QLOAD_SUPPORT */
+#endif /* CONFIG_AP_SUPPORT */
 
-	RFValue = 0;
-	// Search Tx power value
+	RTMP_CHIP_ASIC_SWITCH_CHANNEL(pAd, Channel, bScan);
 
-	/*
-		We can't use ChannelList to search channel, since some central channl's txpowr doesn't list 
-		in ChannelList, so use TxPower array instead.
-	*/
-	for (index = 0; index < MAX_NUM_OF_CHANNELS; index++)
-	{
-		if (Channel == pAd->TxPower[index].Channel)
-		{
-			TxPwer = pAd->TxPower[index].Power;
-			TxPwer2 = pAd->TxPower[index].Power2;
-
-
-			break;
-		}
-	}
-
-	if (index == MAX_NUM_OF_CHANNELS)
-	{
-		DBGPRINT(RT_DEBUG_ERROR, ("AsicSwitchChannel: Can't find the Channel#%d \n", Channel));
-	}
-#ifdef RT305x
-	// The RF programming sequence is difference between 3xxx and 2xxx
-	if ((pAd->MACVersion == 0x28720200) && 
-		((pAd->RfIcType == RFIC_3320) || (pAd->RfIcType == RFIC_3020) || (pAd->RfIcType == RFIC_3021) || (pAd->RfIcType == RFIC_3022)))
-	{
-		/* modify by WY for Read RF Reg. error */
-		
-		for (index = 0; index < NUM_OF_3020_CHNL; index++)
-		{
-			if (Channel == FreqItems3020[index].Channel)
-			{
-				// Programming channel parameters
-				RT30xxWriteRFRegister(pAd, RF_R02, FreqItems3020[index].N);
-#ifdef RT3350 /*kurtis*/
-				RT30xxReadRFRegister(pAd, RF_R03, (PUCHAR)&RFValue);
-				RFValue = (RFValue & 0xF0) | (FreqItems3020[index].K & 0x0F);
-				RT30xxWriteRFRegister(pAd, RF_R03, (UCHAR)RFValue);
-#else
-				RT30xxWriteRFRegister(pAd, RF_R03, FreqItems3020[index].K);
-#endif // RT3350 //
-
-
-				RT30xxReadRFRegister(pAd, RF_R06, (PUCHAR)&RFValue);
-				RFValue = (RFValue & 0xFC) | FreqItems3020[index].R;
-				RT30xxWriteRFRegister(pAd, RF_R06, (UCHAR)RFValue);
-
-				// Set Tx Power
-				RT30xxReadRFRegister(pAd, RF_R12, (PUCHAR)&RFValue);
-				RFValue = (RFValue & 0xE0) | TxPwer;
-				RT30xxWriteRFRegister(pAd, RF_R12, (UCHAR)RFValue);
-
-				// Set Tx1 Power
-				RT30xxReadRFRegister(pAd, RF_R13, (PUCHAR)&RFValue);
-				RFValue = (RFValue & 0xE0) | TxPwer2;
-				RT30xxWriteRFRegister(pAd, RF_R13, (UCHAR)RFValue);
-
-				// Set RF offset
-				RT30xxReadRFRegister(pAd, RF_R23, (PUCHAR)&RFValue);
-				RFValue = (RFValue & 0x80) | pAd->RfFreqOffset;
-				RT30xxWriteRFRegister(pAd, RF_R23, (UCHAR)RFValue);
-
-				// Set BW
-				RT30xxReadRFRegister(pAd, RF_R24, &RFValue);
-#ifdef RT3350 /*kurtis*/
-				/*R24, BW=20M*/
-				if(pAd->CommonCfg.PhyMode == PHY_11B)
-					RFValue = 0x1F;
-				else
-					RFValue = 0x18;
-#else
-				RFValue &= 0xDF;
-#endif // RT3350 //
-
-
-				if (!bScan && (pAd->CommonCfg.BBPCurrentBW == BW_40)
-#ifdef GREENAP_SUPPORT
-			&& (pAd->ApCfg.bGreenAPActive == 0)
-#endif // GREENAP_SUPPORT //
-				)
-				{
-#ifdef RT3350 /*kurtis*/
-	//				RFValue |= 0x30;
-					if(pAd->CommonCfg.PhyMode == PHY_11B)
-					    RFValue = 0x3F;
-					else
-					    RFValue = 0x28;
-#else
-					RFValue |= 0x20;
-#endif // RT3350 //
-				}
-				RT30xxWriteRFRegister(pAd, RF_R24, RFValue);
-
-				// Rx filter
-				if (!bScan && (pAd->CommonCfg.BBPCurrentBW == BW_40)
-#ifdef GREENAP_SUPPORT
-			&& (pAd->ApCfg.bGreenAPActive == 0)
-#endif // GREENAP_SUPPORT //
-				)
-				{
-#ifdef RT3350 /*kurtis*/
-					RT30xxWriteRFRegister(pAd, RF_R31, 0x68);
-#else
-					RT30xxWriteRFRegister(pAd, RF_R31, 0x2F);
-#endif // RT3350 //
-				}
-				else
-				{
-#ifdef RT3350 /*kurtis*/
-					RT30xxWriteRFRegister(pAd, RF_R31, 0x48);
-#else
-					RT30xxWriteRFRegister(pAd, RF_R31, 0x0F);
-#endif // RT3350 //
-				}
-
-				// Enable RF tuning
-				RT30xxReadRFRegister(pAd, RF_R07, (PUCHAR)&RFValue);
-				RFValue = RFValue | 0x1;
-				RT30xxWriteRFRegister(pAd, RF_R07, (UCHAR)RFValue);
-
-				// Antenna
-				RT30xxReadRFRegister(pAd, RF_R01, (PUCHAR)&RFValue);
-				RFValue = RFValue & 0xab;
-				if (pAd->Antenna.field.RxPath == 2)
-				{
-					RT30xxWriteRFRegister(pAd, RF_R01, (UCHAR)RFValue);
-				}
-				else if (pAd->Antenna.field.RxPath == 1)
-				{
-					RFValue = RFValue | 0x10;
-					RT30xxWriteRFRegister(pAd, RF_R01, (UCHAR)RFValue);
-				}
-
-				RT30xxReadRFRegister(pAd, RF_R01, (PUCHAR)&RFValue);
-				RFValue = RFValue & 0x57;
-				if (pAd->Antenna.field.TxPath == 2)
-				{
-					RT30xxWriteRFRegister(pAd, RF_R01, (UCHAR)RFValue);
-				}
-				else if (pAd->Antenna.field.TxPath == 1)
-				{
-					RFValue = RFValue | 0x20;
-					RT30xxWriteRFRegister(pAd, RF_R01, (UCHAR)RFValue);
-				}
-
-
-
-				// latch channel for future usage.
-				pAd->LatchRfRegs.Channel = Channel;
-				
-				break;				
-			}
-		}
-
-		DBGPRINT(RT_DEBUG_TRACE, ("SwitchChannel#%d(RF=%d, Pwr0=%d, Pwr1=%d, %dT), N=0x%02X, K=0x%02X, R=0x%02X\n",
-			Channel, 
-			pAd->RfIcType, 
-			TxPwer,
-			TxPwer2,
-			pAd->Antenna.field.TxPath,
-			FreqItems3020[index].N, 
-			FreqItems3020[index].K, 
-			FreqItems3020[index].R));
-	}
-	else
-#endif // RT305x //
-	{
-#if defined(RT28xx) || defined(RT2880) || defined(RT2883)
-		ULONG	R2 = 0, R3 = DEFAULT_RF_TX_POWER, R4 = 0;
-		RTMP_RF_REGS *RFRegTable;
-
-		RFRegTable = RF2850RegTable;
-#endif // Rdefined(RT28xx) || defined(RT2880) || defined(RT2883) //
-	
-		switch (pAd->RfIcType)
-		{
-#if defined(RT28xx) || defined(RT2880) || defined(RT2883)
-#if defined(RT28xx) || defined(RT2880) 
-			case RFIC_2820:
-			case RFIC_2850:
-			case RFIC_2720:
-			case RFIC_2750:
-#endif // defined(RT28xx) || defined(RT2880) //
-				for (index = 0; index < NUM_OF_2850_CHNL; index++)
-				{
-					if (Channel == RFRegTable[index].Channel)
-					{
-						R2 = RFRegTable[index].R2;
-						if (pAd->Antenna.field.TxPath == 1)
-						{
-							R2 |= 0x4000;	// If TXpath is 1, bit 14 = 1;
-						}
-
-						if (pAd->Antenna.field.RxPath == 2
-#ifdef GREENAP_SUPPORT
-			&& (pAd->ApCfg.bGreenAPActive == FALSE)
-#endif // GREENAP_SUPPORT //
-)
-						{
-							R2 |= 0x40;	// write 1 to off Rxpath.
-						}
-						else if (pAd->Antenna.field.RxPath == 1
-#ifdef GREENAP_SUPPORT
-			|| (pAd->ApCfg.bGreenAPActive == TRUE)
-#endif // GREENAP_SUPPORT //
-)
-						{
-							R2 |= 0x20040;	// write 1 to off RxPath
-						}
-
-						if (Channel > 14)
-						{
-							// initialize R3, R4
-							R3 = (RFRegTable[index].R3 & 0xffffc1ff);
-							R4 = (RFRegTable[index].R4 & (~0x001f87c0)) | (pAd->RfFreqOffset << 15);
-
-							// 5G band power range: 0xF9~0X0F, TX0 Reg3 bit9/TX1 Reg4 bit6="0" means the TX power reduce 7dB
-							// R3
-							if ((TxPwer >= -7) && (TxPwer < 0))
-							{
-								TxPwer = (7+TxPwer);
-
-								/* TxPwer is not possible larger than 15 */
-//								TxPwer = (TxPwer > 0xF) ? (0xF) : (TxPwer);
-
-								R3 |= (TxPwer << 10);
-								DBGPRINT(RT_DEBUG_ERROR, ("AsicSwitchChannel: TxPwer=%d \n", TxPwer));
-							}
-							else
-							{
-								TxPwer = (TxPwer > 0xF) ? (0xF) : (TxPwer);
-								R3 |= (TxPwer << 10) | (1 << 9);
-							}
-
-							// R4
-							if ((TxPwer2 >= -7) && (TxPwer2 < 0))
-							{
-								TxPwer2 = (7+TxPwer2);
-								TxPwer2 = (TxPwer2 > 0xF) ? (0xF) : (TxPwer2);
-								R4 |= (TxPwer2 << 7);
-								DBGPRINT(RT_DEBUG_ERROR, ("AsicSwitchChannel: TxPwer2=%d \n", TxPwer2));
-							}
-							else
-							{
-								TxPwer2 = (TxPwer2 > 0xF) ? (0xF) : (TxPwer2);
-								R4 |= (TxPwer2 << 7) | (1 << 6);
-							}                        
-						}
-						else
-						{
-							R3 = (RFRegTable[index].R3 & 0xffffc1ff) | (TxPwer << 9); // set TX power0
-						R4 = (RFRegTable[index].R4 & (~0x001f87c0)) | (pAd->RfFreqOffset << 15) | (TxPwer2 <<6);// Set freq Offset & TxPwr1
-						}
-
-						// Based on BBP current mode before changing RF channel.
-						if (!bScan && (pAd->CommonCfg.BBPCurrentBW == BW_40)
-#ifdef GREENAP_SUPPORT
-			&& (pAd->ApCfg.bGreenAPActive == 0)
-#endif // GREENAP_SUPPORT //
-							)
-						{
-							R4 |=0x200000;
-						}
-
-						// Update variables
-						pAd->LatchRfRegs.Channel = Channel;
-						pAd->LatchRfRegs.R1 = RFRegTable[index].R1;
-						pAd->LatchRfRegs.R2 = R2;
-						pAd->LatchRfRegs.R3 = R3;
-						pAd->LatchRfRegs.R4 = R4;
-
-						// Set RF value 1's set R3[bit2] = [0]
-						RTMP_RF_IO_WRITE32(pAd, pAd->LatchRfRegs.R1);
-						RTMP_RF_IO_WRITE32(pAd, pAd->LatchRfRegs.R2);
-						RTMP_RF_IO_WRITE32(pAd, (pAd->LatchRfRegs.R3 & (~0x04)));
-						RTMP_RF_IO_WRITE32(pAd, pAd->LatchRfRegs.R4);
-
-						RTMPusecDelay(200);
-
-						// Set RF value 2's set R3[bit2] = [1]
-						RTMP_RF_IO_WRITE32(pAd, pAd->LatchRfRegs.R1);
-						RTMP_RF_IO_WRITE32(pAd, pAd->LatchRfRegs.R2);
-						RTMP_RF_IO_WRITE32(pAd, (pAd->LatchRfRegs.R3 | 0x04));
-						RTMP_RF_IO_WRITE32(pAd, pAd->LatchRfRegs.R4);
-
-						RTMPusecDelay(200);
-
-						// Set RF value 3's set R3[bit2] = [0]
-						RTMP_RF_IO_WRITE32(pAd, pAd->LatchRfRegs.R1);
-						RTMP_RF_IO_WRITE32(pAd, pAd->LatchRfRegs.R2);
-						RTMP_RF_IO_WRITE32(pAd, (pAd->LatchRfRegs.R3 & (~0x04)));
-						RTMP_RF_IO_WRITE32(pAd, pAd->LatchRfRegs.R4);
-
-						break;
-					}
-				}
-
-				DBGPRINT(RT_DEBUG_TRACE, ("SwitchChannel#%d(RF=%d, Pwr0=%lu, Pwr1=%lu, %dT) to , R1=0x%08x, R2=0x%08x, R3=0x%08x, R4=0x%08x\n",
-							  Channel, 
-							  pAd->RfIcType, 
-							  (R3 & 0x00003e00) >> 9,
-							  (R4 & 0x000007c0) >> 6,
-							  pAd->Antenna.field.TxPath,
-							  pAd->LatchRfRegs.R1, 
-							  pAd->LatchRfRegs.R2, 
-							  pAd->LatchRfRegs.R3, 
-							  pAd->LatchRfRegs.R4));
-			
-				break;
-#endif // defined(RT28xx) || defined(RT2880) || defined(RT2883) //
-			default:
-				DBGPRINT(RT_DEBUG_TRACE, ("SwitchChannel#%d : unknown RFIC=%d\n",
-					  Channel, pAd->RfIcType));
-				break;
-		}	
-	}
-
-	// Change BBP setting during siwtch from a->g, g->a
-	if (Channel <= 14)
-	{
-		ULONG	TxPinCfg = 0x00050F0A;//Gary 2007/08/09 0x050A0A
-
-
-		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R62, (0x37 - GET_LNA_GAIN(pAd)));
-		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R63, (0x37 - GET_LNA_GAIN(pAd)));
-		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R64, (0x37 - GET_LNA_GAIN(pAd)));
-		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R86, 0);//(0x44 - GET_LNA_GAIN(pAd)));	// According the Rory's suggestion to solve the middle range issue.
-
-		// Rx High power VGA offset for LNA select
-		{
-			if (pAd->NicConfig2.field.ExternalLNAForG)
-			{
-				RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R82, 0x62);
-				RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R75, 0x46);
-			}
-			else
-			{
-				RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R82, 0x84);
-				RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R75, 0x50);
-			}
-		}
-
-		// 5G band selection PIN, bit1 and bit2 are complement
-		RTMP_IO_READ32(pAd, TX_BAND_CFG, &Value);
-		Value &= (~0x6);
-		Value |= (0x04);
-		RTMP_IO_WRITE32(pAd, TX_BAND_CFG, Value);
-
-
-		{
-			// Turn off unused PA or LNA when only 1T or 1R
-			if (pAd->Antenna.field.TxPath == 1)
-			{
-				TxPinCfg &= 0xFFFFFFF3;
-			}
-			if (pAd->Antenna.field.RxPath == 1)
-			{
-				TxPinCfg &= 0xFFFFF3FF;
-			}
-		}
-
-		RTMP_IO_WRITE32(pAd, TX_PIN_CFG, TxPinCfg);
-
-
-	}
-	else
-	{
-		ULONG	TxPinCfg = 0x00050F05;//Gary 2007/8/9 0x050505
-		UINT8	bbpValue;
-		
-
-		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R62, (0x37 - GET_LNA_GAIN(pAd)));
-		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R63, (0x37 - GET_LNA_GAIN(pAd)));
-		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R64, (0x37 - GET_LNA_GAIN(pAd)));
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R86, 0);//(0x44 - GET_LNA_GAIN(pAd)));   // According the Rory's suggestion to solve the middle range issue.     
-
-		/* Set the BBP_R82 value here */
-		bbpValue = 0xF2;
-		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R82, bbpValue);
-
-
-		// Rx High power VGA offset for LNA select
-		if (pAd->NicConfig2.field.ExternalLNAForA)
-		{
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R75, 0x46);
-		}
-		else
-		{
-			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R75, 0x50);
-		}
-
-		// 5G band selection PIN, bit1 and bit2 are complement
-		RTMP_IO_READ32(pAd, TX_BAND_CFG, &Value);
-		Value &= (~0x6);
-		Value |= (0x02);
-		RTMP_IO_WRITE32(pAd, TX_BAND_CFG, Value);
-
-		// Turn off unused PA or LNA when only 1T or 1R
-
-		{
-			// Turn off unused PA or LNA when only 1T or 1R
-			if (pAd->Antenna.field.TxPath == 1)
-			{
-				TxPinCfg &= 0xFFFFFFF3;
-			}
-			if (pAd->Antenna.field.RxPath == 1)
-			{
-				TxPinCfg &= 0xFFFFF3FF;
-			}
-		}
-
-		RTMP_IO_WRITE32(pAd, TX_PIN_CFG, TxPinCfg);
-
-	}
-
-	//
-	// GPIO control
-	//
-
-	// R66 should be set according to Channel and use 20MHz when scanning
-	//RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R66, (0x2E + GET_LNA_GAIN(pAd)));
-	if (bScan)
-		RTMPSetAGCInitValue(pAd, BW_20);
-	else
-		RTMPSetAGCInitValue(pAd, pAd->CommonCfg.BBPCurrentBW);
-
-	//
-	// On 11A, We should delay and wait RF/BBP to be stable
-	// and the appropriate time should be 1000 micro seconds 
-	// 2005/06/05 - On 11G, We also need this delay time. Otherwise it's difficult to pass the WHQL.
-	//
-	RTMPusecDelay(1000);  
 }
 
 /*
@@ -1470,356 +812,21 @@ VOID AsicLockChannel(
  */
 
 #ifdef RTMP_INTERNAL_TX_ALC
-//
-// Initialize the desired TSSI table
-//
-// Parameters
-//	pAd: The adapter data structure
-//
-// Return Value:
-//	None
-//
+
+/* Initialize the desired TSSI table*/
+
+/* Parameters*/
+/*	pAd: The adapter data structure*/
+
+/* Return Value:*/
+/*	None*/
+
 VOID InitDesiredTSSITable(
 	IN PRTMP_ADAPTER pAd)
 {
-	UCHAR TSSIBase = 0; // The TSSI over OFDM 54Mbps
-	USHORT TSSIStepOver2dot4G = 0; // The TSSI value/step (0.5 dB/unit)
-	UCHAR RFValue = 0;
-	BBP_R49_STRUC BbpR49 = {0};
-	ULONG i = 0;
-	CHAR Tx0PowerSetting = 0;
-	USHORT TxPower = 0, TxPowerOFDM54 = 0, temp = 0;
-
-	if (pAd->TxPowerCtrl.bInternalTxALC == FALSE)
-	{
-		return;
-	}
-
-	DBGPRINT(RT_DEBUG_TRACE, ("---> %s\n", __FUNCTION__));
-
-	RT28xx_EEPROM_READ16(pAd, EEPROM_TSSI_OVER_OFDM_54, temp);
-	TSSIBase = (temp & 0x000F);
-	
-	RT28xx_EEPROM_READ16(pAd, (EEPROM_TSSI_STEP_OVER_2DOT4G - 1), TSSIStepOver2dot4G);
-	TSSIStepOver2dot4G = (0x000F & (TSSIStepOver2dot4G >> 8));
-
-	RT28xx_EEPROM_READ16(pAd, (EEPROM_OFDM_MCS6_MCS7 - 1), TxPowerOFDM54);
-	TxPowerOFDM54 = (0x000F & (TxPowerOFDM54 >> 8));
-
-	DBGPRINT(RT_DEBUG_TRACE, ("%s: TSSIBase = %d, TSSIStepOver2dot4G = %d, TxPowerOFDM54 = %d\n", 
-		__FUNCTION__, 
-		TSSIBase, 
-		TSSIStepOver2dot4G, 
-		TxPowerOFDM54));
-
-	//
-	// The desired TSSI over CCK
-	//
-	RT28xx_EEPROM_READ16(pAd, EEPROM_CCK_MCS0_MCS1, TxPower);
-	TxPower = (TxPower & 0x000F);
-	DBGPRINT(RT_DEBUG_TRACE, ("%s: 0xDE = 0x%X\n", __FUNCTION__, TxPower));
-	desiredTSSIOverCCK[MCS_0] = (TSSIBase + ((TxPower - TxPowerOFDM54) * (TSSIStepOver2dot4G * 2)) + 6);
-	desiredTSSIOverCCK[MCS_1] = desiredTSSIOverCCK[MCS_0];
-	RT28xx_EEPROM_READ16(pAd, (EEPROM_CCK_MCS2_MCS3 - 1), TxPower);
-	TxPower = ((TxPower >> 8) & 0x000F);
-	DBGPRINT(RT_DEBUG_TRACE, ("%s: 0xDF = 0x%X\n", __FUNCTION__, TxPower));
-	desiredTSSIOverCCK[MCS_2] = (TSSIBase + ((TxPower - TxPowerOFDM54) * (TSSIStepOver2dot4G * 2)) + 6);
-	desiredTSSIOverCCK[MCS_3] = desiredTSSIOverCCK[MCS_2];
-
-	//
-	// Boundary verification: the desired TSSI value
-	//
-	for (i = 0; i < 4; i++) // CCK: MCS 0 ~ MCS 3
-	{
-		if (desiredTSSIOverCCK[i] < 0x00)
-		{
-			desiredTSSIOverCCK[i] = 0x00;
-		}
-		else if (desiredTSSIOverCCK[i] > 0x1F)
-		{
-			desiredTSSIOverCCK[i] = 0x1F;
-		}
-		else
-		{
-			// do nothing
-		}
-	}
-
-	DBGPRINT(RT_DEBUG_TRACE, ("%s: desiredTSSIOverCCK[0] = %d, desiredTSSIOverCCK[1] = %d, desiredTSSIOverCCK[2] = %d, desiredTSSIOverCCK[3] = %d\n", 
-		__FUNCTION__, 
-		desiredTSSIOverCCK[0], 
-		desiredTSSIOverCCK[1], 
-		desiredTSSIOverCCK[2], 
-		desiredTSSIOverCCK[3]));
-
-	//
-	// The desired TSSI over OFDM
-	//
-	RT28xx_EEPROM_READ16(pAd, EEPROM_OFDM_MCS0_MCS1, TxPower);
-	TxPower = (TxPower & 0x000F);
-	DBGPRINT(RT_DEBUG_TRACE, ("%s: 0xE0 = 0x%X\n", __FUNCTION__, TxPower));
-	desiredTSSIOverOFDM[MCS_0] = (TSSIBase + ((TxPower - TxPowerOFDM54) * (TSSIStepOver2dot4G * 2)));
-	desiredTSSIOverOFDM[MCS_1] = desiredTSSIOverOFDM[MCS_0];
-	RT28xx_EEPROM_READ16(pAd, (EEPROM_OFDM_MCS2_MCS3 - 1), TxPower);
-	TxPower = ((TxPower >> 8) & 0x000F);
-	DBGPRINT(RT_DEBUG_TRACE, ("%s: 0xE1 = 0x%X\n", __FUNCTION__, TxPower));
-	desiredTSSIOverOFDM[MCS_2] = (TSSIBase + ((TxPower - TxPowerOFDM54) * (TSSIStepOver2dot4G * 2)));
-	desiredTSSIOverOFDM[MCS_3] = desiredTSSIOverOFDM[MCS_2];
-	RT28xx_EEPROM_READ16(pAd, EEPROM_OFDM_MCS4_MCS5, TxPower);
-	TxPower = (TxPower & 0x000F);
-	DBGPRINT(RT_DEBUG_TRACE, ("%s: 0xE2 = 0x%X\n", __FUNCTION__, TxPower));
-	desiredTSSIOverOFDM[MCS_4] = (TSSIBase + ((TxPower - TxPowerOFDM54) * (TSSIStepOver2dot4G * 2)));
-	desiredTSSIOverOFDM[MCS_5] = desiredTSSIOverOFDM[MCS_4];
-	desiredTSSIOverOFDM[MCS_6] = TSSIBase;
-	desiredTSSIOverOFDM[MCS_7] = TSSIBase;
-
-	//
-	// Boundary verification: the desired TSSI value
-	//
-	for (i = 0; i < 8; i++) // OFDM: MCS 0 ~ MCS 7
-	{
-		if (desiredTSSIOverOFDM[i] < 0x00)
-		{
-			desiredTSSIOverOFDM[i] = 0x00;
-		}
-		else if (desiredTSSIOverOFDM[i] > 0x1F)
-		{
-			desiredTSSIOverOFDM[i] = 0x1F;
-		}
-		else
-		{
-			// do nothing
-		}
-	}
-
-	DBGPRINT(RT_DEBUG_TRACE, ("%s: desiredTSSIOverOFDM[0] = %d, desiredTSSIOverOFDM[1] = %d, desiredTSSIOverOFDM[2] = %d, desiredTSSIOverOFDM[3] = %d\n", 
-		__FUNCTION__, 
-		desiredTSSIOverOFDM[0], 
-		desiredTSSIOverOFDM[1], 
-		desiredTSSIOverOFDM[2], 
-		desiredTSSIOverOFDM[3]));
-	DBGPRINT(RT_DEBUG_TRACE, ("%s: desiredTSSIOverOFDM[4] = %d, desiredTSSIOverOFDM[5] = %d, desiredTSSIOverOFDM[6] = %d, desiredTSSIOverOFDM[7] = %d\n", 
-		__FUNCTION__, 
-		desiredTSSIOverOFDM[4], 
-		desiredTSSIOverOFDM[5], 
-		desiredTSSIOverOFDM[6], 
-		desiredTSSIOverOFDM[7]));
-
-	//
-	// The desired TSSI over HT
-	//
-	RT28xx_EEPROM_READ16(pAd, EEPROM_HT_MCS0_MCS1, TxPower);
-	TxPower = (TxPower & 0x000F);
-	DBGPRINT(RT_DEBUG_TRACE, ("%s: 0xE4 = 0x%X\n", __FUNCTION__, TxPower));
-	desiredTSSIOverHT[MCS_0] = (TSSIBase + ((TxPower - TxPowerOFDM54) * (TSSIStepOver2dot4G * 2)));
-	desiredTSSIOverHT[MCS_1] = desiredTSSIOverHT[MCS_0];
-	RT28xx_EEPROM_READ16(pAd, (EEPROM_HT_MCS2_MCS3 - 1), TxPower);
-	TxPower = ((TxPower >> 8) & 0x000F);
-	DBGPRINT(RT_DEBUG_TRACE, ("%s: 0xE5 = 0x%X\n", __FUNCTION__, TxPower));
-	desiredTSSIOverHT[MCS_2] = (TSSIBase + ((TxPower - TxPowerOFDM54) * (TSSIStepOver2dot4G * 2)));
-	desiredTSSIOverHT[MCS_3] = desiredTSSIOverHT[MCS_2];
-	RT28xx_EEPROM_READ16(pAd, EEPROM_HT_MCS4_MCS5, TxPower);
-	TxPower = (TxPower & 0x000F);
-	DBGPRINT(RT_DEBUG_TRACE, ("%s: 0xE6 = 0x%X\n", __FUNCTION__, TxPower));
-	desiredTSSIOverHT[MCS_4] = (TSSIBase + ((TxPower - TxPowerOFDM54) * (TSSIStepOver2dot4G * 2)));
-	desiredTSSIOverHT[MCS_5] = desiredTSSIOverHT[MCS_4];
-	RT28xx_EEPROM_READ16(pAd, (EEPROM_HT_MCS6_MCS7 - 1), TxPower);
-	TxPower = ((TxPower >> 8) & 0x000F);
-	DBGPRINT(RT_DEBUG_TRACE, ("%s: 0xE7 = 0x%X\n", __FUNCTION__, TxPower));
-	desiredTSSIOverHT[MCS_6] = (TSSIBase + ((TxPower - TxPowerOFDM54) * (TSSIStepOver2dot4G * 2)));
-	desiredTSSIOverHT[MCS_7] = desiredTSSIOverHT[MCS_6];
-
-	//
-	// Boundary verification: the desired TSSI value
-	//
-	for (i = 0; i < 8; i++) // HT: MCS 0 ~ MCS 7
-	{
-		if (desiredTSSIOverHT[i] < 0x00)
-		{
-			desiredTSSIOverHT[i] = 0x00;
-		}
-		else if (desiredTSSIOverHT[i] > 0x1F)
-		{
-			desiredTSSIOverHT[i] = 0x1F;
-		}
-		else
-		{
-			// do nothing
-		}
-	}
-
-	DBGPRINT(RT_DEBUG_TRACE, ("%s: desiredTSSIOverHT[0] = %d, desiredTSSIOverHT[1] = %d, desiredTSSIOverHT[2] = %d, desiredTSSIOverHT[3] = %d\n", 
-		__FUNCTION__, 
-		desiredTSSIOverHT[0], 
-		desiredTSSIOverHT[1], 
-		desiredTSSIOverHT[2], 
-		desiredTSSIOverHT[3]));
-	DBGPRINT(RT_DEBUG_TRACE, ("%s: desiredTSSIOverHT[4] = %d, desiredTSSIOverHT[5] = %d, desiredTSSIOverHT[6] = %d, desiredTSSIOverHT[7] = %d\n", 
-		__FUNCTION__, 
-		desiredTSSIOverHT[4], 
-		desiredTSSIOverHT[5], 
-		desiredTSSIOverHT[6], 
-		desiredTSSIOverHT[7]));
-
-	//
-	// The desired TSSI over HT using STBC
-	//
-	RT28xx_EEPROM_READ16(pAd, EEPROM_HT_USING_STBC_MCS0_MCS1, TxPower);
-	TxPower = (TxPower & 0x000F);
-	DBGPRINT(RT_DEBUG_TRACE, ("%s: 0xEC = 0x%X\n", __FUNCTION__, TxPower));
-	desiredTSSIOverHTUsingSTBC[MCS_0] = (TSSIBase + ((TxPower - TxPowerOFDM54) * (TSSIStepOver2dot4G * 2)));
-	desiredTSSIOverHTUsingSTBC[MCS_1] = desiredTSSIOverHTUsingSTBC[MCS_0];
-	RT28xx_EEPROM_READ16(pAd, (EEPROM_HT_USING_STBC_MCS2_MCS3 - 1), TxPower);
-	TxPower = ((TxPower >> 8) & 0x000F);
-	DBGPRINT(RT_DEBUG_TRACE, ("%s: 0xED = 0x%X\n", __FUNCTION__, TxPower));
-	desiredTSSIOverHTUsingSTBC[MCS_2] = (TSSIBase + ((TxPower - TxPowerOFDM54) * (TSSIStepOver2dot4G * 2)));
-	desiredTSSIOverHTUsingSTBC[MCS_3] = desiredTSSIOverHTUsingSTBC[MCS_2];
-	RT28xx_EEPROM_READ16(pAd, EEPROM_HT_USING_STBC_MCS4_MCS5, TxPower);
-	TxPower = (TxPower & 0x000F);
-	DBGPRINT(RT_DEBUG_TRACE, ("%s: 0xEE = 0x%X\n", __FUNCTION__, TxPower));
-	desiredTSSIOverHTUsingSTBC[MCS_4] = (TSSIBase + ((TxPower - TxPowerOFDM54) * (TSSIStepOver2dot4G * 2)));
-	desiredTSSIOverHTUsingSTBC[MCS_5] = desiredTSSIOverHTUsingSTBC[MCS_4];
-	RT28xx_EEPROM_READ16(pAd, (EEPROM_HT_USING_STBC_MCS6_MCS7 - 1), TxPower);
-	TxPower = ((TxPower >> 8) & 0x000F);
-	DBGPRINT(RT_DEBUG_TRACE, ("%s: 0xEF = 0x%X\n", __FUNCTION__, TxPower));
-	desiredTSSIOverHTUsingSTBC[MCS_6] = (TSSIBase + ((TxPower - TxPowerOFDM54) * (TSSIStepOver2dot4G * 2)));
-	desiredTSSIOverHTUsingSTBC[MCS_7] = desiredTSSIOverHTUsingSTBC[MCS_6];
-
-	//
-	// Boundary verification: the desired TSSI value
-	//
-	for (i = 0; i < 8; i++) // HT using STBC: MCS 0 ~ MCS 7
-	{
-		if (desiredTSSIOverHTUsingSTBC[i] < 0x00)
-		{
-			desiredTSSIOverHTUsingSTBC[i] = 0x00;
-		}
-		else if (desiredTSSIOverHTUsingSTBC[i] > 0x1F)
-		{
-			desiredTSSIOverHTUsingSTBC[i] = 0x1F;
-		}
-		else
-		{
-			// do nothing
-		}
-	}
-
-	DBGPRINT(RT_DEBUG_TRACE, ("%s: desiredTSSIOverHTUsingSTBC[0] = %d, desiredTSSIOverHTUsingSTBC[1] = %d, desiredTSSIOverHTUsingSTBC[2] = %d, desiredTSSIOverHTUsingSTBC[3] = %d\n", 
-		__FUNCTION__, 
-		desiredTSSIOverHTUsingSTBC[0], 
-		desiredTSSIOverHTUsingSTBC[1], 
-		desiredTSSIOverHTUsingSTBC[2], 
-		desiredTSSIOverHTUsingSTBC[3]));
-	DBGPRINT(RT_DEBUG_TRACE, ("%s: desiredTSSIOverHTUsingSTBC[4] = %d, desiredTSSIOverHTUsingSTBC[5] = %d, desiredTSSIOverHTUsingSTBC[6] = %d, desiredTSSIOverHTUsingSTBC[7] = %d\n", 
-		__FUNCTION__, 
-		desiredTSSIOverHTUsingSTBC[4], 
-		desiredTSSIOverHTUsingSTBC[5], 
-		desiredTSSIOverHTUsingSTBC[6], 
-		desiredTSSIOverHTUsingSTBC[7]));
-
-	RT30xxReadRFRegister(pAd, RF_R27, (PUCHAR)(&RFValue));
-	RFValue = (RFValue | 0x88); // <7>: IF_Rxout_en, <3>: IF_Txout_en
-	RT30xxWriteRFRegister(pAd, RF_R27, RFValue);
-
-	RT30xxReadRFRegister(pAd, RF_R28, (PUCHAR)(&RFValue));
-	RFValue = (RFValue & (~0x60)); // <6:5>: tssi_atten
-	RT30xxWriteRFRegister(pAd, RF_R28, RFValue);
-
-	RTMP_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R49, &BbpR49.byte);
-	BbpR49.field.adc5_in_sel = 1; // Enable the PSI (internal components, new version - RT3390)
-	RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R49, BbpR49.byte);		
-
-	DBGPRINT(RT_DEBUG_TRACE, ("<--- %s\n", __FUNCTION__));
+	RTMP_CHIP_ASIC_TSSI_TABLE_INIT(pAd);
 }
-
-/*
-	==========================================================================
-	Description:
-		Get the desired TSSI based on the latest packet
-
-	Arguments:
-		pAd
-
-	Return Value:
-		The desired TSSI
-	==========================================================================
- */
-UCHAR GetDesiredTSSI(
-	IN PRTMP_ADAPTER pAd)
-{
-	PHTTRANSMIT_SETTING pLatestTxHTSetting = (PHTTRANSMIT_SETTING)(&pAd->LastTxRate);
-	UCHAR desiredTSSI = 0;
-	UCHAR MCS = 0;
-
-	MCS = (UCHAR)(pLatestTxHTSetting->field.MCS);
-	
-	if (pLatestTxHTSetting->field.MODE == MODE_CCK)
-	{
-		if ((MCS < 0) || (MCS > 3)) // boundary verification
-		{
-			DBGPRINT(RT_DEBUG_ERROR, ("%s: incorrect MCS: MCS = %d\n", 
-				__FUNCTION__, 
-				MCS));
-			
-			MCS = 0;
-		}
-	
-		desiredTSSI = desiredTSSIOverCCK[MCS];
-	}
-	else if (pLatestTxHTSetting->field.MODE == MODE_OFDM)
-	{
-		if ((MCS < 0) || (MCS > 7)) // boundary verification
-		{
-			DBGPRINT(RT_DEBUG_ERROR, ("%s: incorrect MCS: MCS = %d\n", 
-				__FUNCTION__, 
-				MCS));
-
-			MCS = 0;
-		}
-
-		desiredTSSI = desiredTSSIOverOFDM[MCS];
-	}
-	else if ((pLatestTxHTSetting->field.MODE == MODE_HTMIX) || (pLatestTxHTSetting->field.MODE == MODE_HTGREENFIELD))
-	{
-		if ((MCS < 0) || (MCS > 7)) // boundary verification
-		{
-			DBGPRINT(RT_DEBUG_ERROR, ("%s: incorrect MCS: MCS = %d\n", 
-				__FUNCTION__, 
-				MCS));
-
-			MCS = 0;
-		}
-
-		if (pLatestTxHTSetting->field.STBC == 1)
-		{
-			desiredTSSI = desiredTSSIOverHT[MCS];
-		}
-		else
-		{
-			desiredTSSI = desiredTSSIOverHTUsingSTBC[MCS];
-		}
-
-		//
-		// For HT BW40 MCS 7 with/without STBC configuration, the desired TSSI value should subtract one from the formula.
-		//
-		if ((pLatestTxHTSetting->field.BW == BW_40) && (MCS == MCS_7))
-		{
-			desiredTSSI -= 1;
-		}
-	}
-
-	DBGPRINT(RT_DEBUG_INFO, ("%s: desiredTSSI = %d, Latest Tx HT setting: MODE = %d, MCS = %d, STBC = %d\n", 
-		__FUNCTION__, 
-		desiredTSSI, 
-		pLatestTxHTSetting->field.MODE, 
-		pLatestTxHTSetting->field.MCS, 
-		pLatestTxHTSetting->field.STBC));
-
-	DBGPRINT(RT_DEBUG_INFO, ("<--- %s\n", __FUNCTION__));
-
-	return desiredTSSI;
-}
-#endif // RTMP_INTERNAL_TX_ALC //
+#endif /* RTMP_INTERNAL_TX_ALC */
 
 VOID AsicGetAutoAgcOffset(
 	IN PRTMP_ADAPTER pAd,
@@ -1831,100 +838,25 @@ VOID AsicGetAutoAgcOffset(
 	CHAR            DeltaPwr = 0;
 	BOOLEAN		bAutoTxAgc = FALSE;
 	UCHAR		TssiRef, *pTssiMinusBoundary, *pTssiPlusBoundary, TxAgcStep;
-//	UCHAR		BbpR49 = 0, idx;
+/*	UCHAR		BbpR49 = 0, idx;*/
 	UCHAR		idx;
-	PCHAR		pTxAgcCompensate;
+	PCHAR		pTxAgcCompensate = NULL;
 	BBP_R49_STRUC BbpR49;
-	CHAR		TotalDeltaPower = 0; // (non-positive number) including the transmit power controlled by the MAC and the BBP R1
-#ifdef RTMP_INTERNAL_TX_ALC
-	UCHAR desiredTSSI = 0, currentTSSI = 0;
-	PTX_POWER_TUNING_ENTRY_STRUCT pTxPowerTuningEntry = NULL;
-	UCHAR RFValue = 0;
-#endif // RTMP_INTERNAL_TX_ALC //
-#if defined(RT3090) || defined(RT3572) || defined(RT3390) || defined(RT3593)
-    unsigned long flags;
-#endif // RT3090 || RT3572 || RT3390 || RT3593 //
+	CHAR		TotalDeltaPower = 0; /* (non-positive number) including the transmit power controlled by the MAC and the BBP R1*/
 
 	BbpR49.byte = 0;
 
 #ifdef RTMP_INTERNAL_TX_ALC
-	// Locate the internal Tx ALC tuning entry
+	/* Locate the internal Tx ALC tuning entry*/
 	if (pAd->TxPowerCtrl.bInternalTxALC == TRUE)
 	{
-		if (pAd->Mlme.OneSecPeriodicRound % 4 == 0)
-		{
-			desiredTSSI = GetDesiredTSSI(pAd);
-
-			RTMP_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R49, &BbpR49.byte);
-			currentTSSI = BbpR49.field.TSSI;
-
-			if (desiredTSSI > currentTSSI)
-			{
-				pAd->TxPowerCtrl.idxTxPowerTable++;
-			}
-
-			if (desiredTSSI < currentTSSI)
-			{
-				pAd->TxPowerCtrl.idxTxPowerTable--;
-			}
-
-			if (pAd->TxPowerCtrl.idxTxPowerTable < LOWERBOUND_TX_POWER_TUNING_ENTRY)
-			{
-				pAd->TxPowerCtrl.idxTxPowerTable = LOWERBOUND_TX_POWER_TUNING_ENTRY;
-			}
-
-			if (pAd->TxPowerCtrl.idxTxPowerTable >= UPPERBOUND_TX_POWER_TUNING_ENTRY)
-			{
-				pAd->TxPowerCtrl.idxTxPowerTable = UPPERBOUND_TX_POWER_TUNING_ENTRY;
-			}
-
-			//
-			// Valide pAd->TxPowerCtrl.idxTxPowerTable: -30 ~ 45
-			//
-
-			pTxPowerTuningEntry = &TxPowerTuningTable[pAd->TxPowerCtrl.idxTxPowerTable + TX_POWER_TUNING_ENTRY_OFFSET]; // zero-based array
-			pAd->TxPowerCtrl.RF_R12_Value = pTxPowerTuningEntry->RF_R12_Value;
-			pAd->TxPowerCtrl.MAC_PowerDelta = pTxPowerTuningEntry->MAC_PowerDelta;
-
-			//
-			// Tx power adjustment over RF
-			//
-			RT30xxReadRFRegister(pAd, RF_R12, (PUCHAR)(&RFValue));
-			RFValue = ((RFValue & 0xE0) | pAd->TxPowerCtrl.RF_R12_Value);
-			RT30xxWriteRFRegister(pAd, RF_R12, (UCHAR)(RFValue));
-
-			//
-			// Tx power adjustment over MAC
-			//
-			TotalDeltaPower += pAd->TxPowerCtrl.MAC_PowerDelta;
-
-			DBGPRINT(RT_DEBUG_TRACE, ("%s: desiredTSSI = %d, currentTSSI = %d, idxTxPowerTable = %d, {RF_R12_Value = %d, MAC_PowerDelta = %d}\n", 
-				__FUNCTION__, 
-				desiredTSSI, 
-				currentTSSI, 
-				pAd->TxPowerCtrl.idxTxPowerTable, 
-				pTxPowerTuningEntry->RF_R12_Value, 
-				pTxPowerTuningEntry->MAC_PowerDelta));
-		}
-		else
-		{
-			//
-			// Tx power adjustment over RF
-			//
-			RT30xxReadRFRegister(pAd, RF_R12, (PUCHAR)(&RFValue));
-			RFValue = ((RFValue & 0xE0) | pAd->TxPowerCtrl.RF_R12_Value);
-			RT30xxWriteRFRegister(pAd, RF_R12, (UCHAR)(RFValue));
-
-			//
-			// Tx power adjustment over MAC
-			//
-			TotalDeltaPower += pAd->TxPowerCtrl.MAC_PowerDelta;
-		}
+		RTMP_CHIP_ASIC_AUTO_AGC_OFFSET_GET(
+				pAd, &DeltaPwr, &TotalDeltaPower, pTxAgcCompensate, &BbpR49.byte);
 	}
-	
-#endif // RTMP_INTERNAL_TX_ALC //
+	/* no else; avoid pTxAgcCompensate == NULL */
+#endif /* RTMP_INTERNAL_TX_ALC */
 
-	// TX power compensation for temperature variation based on TSSI. try every 4 second
+	/* TX power compensation for temperature variation based on TSSI. try every 4 second*/
 	if (pAd->Mlme.OneSecPeriodicRound % 4 == 0)
 	{
 		if (pAd->CommonCfg.Channel <= 14)
@@ -1967,18 +899,18 @@ VOID AsicGetAutoAgcOffset(
 
 			if (BbpR49.byte > pTssiMinusBoundary[1])
 			{
-				// Reading is larger than the reference value
-				// check for how large we need to decrease the Tx power
+				/* Reading is larger than the reference value*/
+				/* check for how large we need to decrease the Tx power*/
 				for (idx = 1; idx < 5; idx++)
 				{
-					if (BbpR49.byte <= pTssiMinusBoundary[idx])  // Found the range
+					if (BbpR49.byte <= pTssiMinusBoundary[idx])  /* Found the range*/
 						break;
 				}
-				// The index is the step we should decrease, idx = 0 means there is nothing to compensate
-//				if (R3 > (ULONG) (TxAgcStep * (idx-1)))
+				/* The index is the step we should decrease, idx = 0 means there is nothing to compensate*/
+/*				if (R3 > (ULONG) (TxAgcStep * (idx-1)))*/
 					*pTxAgcCompensate = -(TxAgcStep * (idx-1));
-//				else
-//					*pTxAgcCompensate = -((UCHAR)R3);
+/*				else*/
+/*					*pTxAgcCompensate = -((UCHAR)R3);*/
 				
 				DeltaPwr += (*pTxAgcCompensate);
 				DBGPRINT(RT_DEBUG_TRACE, ("-- Tx Power, BBP R49=%x, TssiRef=%x, TxAgcStep=%x, step = -%d\n",
@@ -1986,14 +918,14 @@ VOID AsicGetAutoAgcOffset(
 			}
 			else if (BbpR49.byte < pTssiPlusBoundary[1])
 			{
-				// Reading is smaller than the reference value
-				// check for how large we need to increase the Tx power
+				/* Reading is smaller than the reference value*/
+				/* check for how large we need to increase the Tx power*/
 				for (idx = 1; idx < 5; idx++)
 				{
-					if (BbpR49.byte >= pTssiPlusBoundary[idx])   // Found the range
+					if (BbpR49.byte >= pTssiPlusBoundary[idx])   /* Found the range*/
 						break;
 				}
-				// The index is the step we should increase, idx = 0 means there is nothing to compensate
+				/* The index is the step we should increase, idx = 0 means there is nothing to compensate*/
 				*pTxAgcCompensate = TxAgcStep * (idx-1);
 				DeltaPwr += (*pTxAgcCompensate);
 				DBGPRINT(RT_DEBUG_TRACE, ("++ Tx Power, BBP R49=%x, TssiRef=%x, TxAgcStep=%x, step = +%d\n",
@@ -2030,81 +962,6 @@ VOID AsicGetAutoAgcOffset(
 	*pAgcCompensate = *pTxAgcCompensate;
 }
 
-VOID AsicGetTxPowerOffset(
-	IN PRTMP_ADAPTER pAd,
-	IN PULONG TxPwr)
-{
-	CONFIGURATION_OF_TX_POWER_CONTROL_OVER_MAC CfgOfTxPwrCtrlOverMAC;
-
-	/* non-3593 */
-	{
-		CfgOfTxPwrCtrlOverMAC.NumOfEntries = 5; // MAC 0x1314, 0x1318, 0x131C, 0x1320 and 1324
-
-		if (pAd->CommonCfg.BBPCurrentBW == BW_40)
-		{
-			if (pAd->CommonCfg.CentralChannel > 14)
-			{
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[0].MACRegisterOffset = TX_PWR_CFG_0;
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[0].RegisterValue = pAd->Tx40MPwrCfgABand[0];
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[1].MACRegisterOffset = TX_PWR_CFG_1;
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[1].RegisterValue = pAd->Tx40MPwrCfgABand[1];
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[2].MACRegisterOffset = TX_PWR_CFG_2;
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[2].RegisterValue = pAd->Tx40MPwrCfgABand[2];
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[3].MACRegisterOffset = TX_PWR_CFG_3;
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[3].RegisterValue = pAd->Tx40MPwrCfgABand[3];
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[4].MACRegisterOffset = TX_PWR_CFG_4;
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[4].RegisterValue = pAd->Tx40MPwrCfgABand[4];
-			}
-			else
-			{
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[0].MACRegisterOffset = TX_PWR_CFG_0;
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[0].RegisterValue = pAd->Tx40MPwrCfgGBand[0];
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[1].MACRegisterOffset = TX_PWR_CFG_1;
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[1].RegisterValue = pAd->Tx40MPwrCfgGBand[1];
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[2].MACRegisterOffset = TX_PWR_CFG_2;
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[2].RegisterValue = pAd->Tx40MPwrCfgGBand[2];
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[3].MACRegisterOffset = TX_PWR_CFG_3;
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[3].RegisterValue = pAd->Tx40MPwrCfgGBand[3];
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[4].MACRegisterOffset = TX_PWR_CFG_4;
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[4].RegisterValue = pAd->Tx40MPwrCfgGBand[4];
-			}
-		}
-		else
-		{
-			if (pAd->CommonCfg.CentralChannel > 14)
-			{
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[0].MACRegisterOffset = TX_PWR_CFG_0;
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[0].RegisterValue = pAd->Tx20MPwrCfgABand[0];
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[1].MACRegisterOffset = TX_PWR_CFG_1;
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[1].RegisterValue = pAd->Tx20MPwrCfgABand[1];
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[2].MACRegisterOffset = TX_PWR_CFG_2;
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[2].RegisterValue = pAd->Tx20MPwrCfgABand[2];
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[3].MACRegisterOffset = TX_PWR_CFG_3;
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[3].RegisterValue = pAd->Tx20MPwrCfgABand[3];
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[4].MACRegisterOffset = TX_PWR_CFG_4;
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[4].RegisterValue = pAd->Tx20MPwrCfgABand[4];
-			}
-			else
-			{
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[0].MACRegisterOffset = TX_PWR_CFG_0;
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[0].RegisterValue = pAd->Tx20MPwrCfgGBand[0];
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[1].MACRegisterOffset = TX_PWR_CFG_1;
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[1].RegisterValue = pAd->Tx20MPwrCfgGBand[1];
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[2].MACRegisterOffset = TX_PWR_CFG_2;
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[2].RegisterValue = pAd->Tx20MPwrCfgGBand[2];
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[3].MACRegisterOffset = TX_PWR_CFG_3;
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[3].RegisterValue = pAd->Tx20MPwrCfgGBand[3];
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[4].MACRegisterOffset = TX_PWR_CFG_4;
-				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[4].RegisterValue = pAd->Tx20MPwrCfgGBand[4];
-			}
-		}
-
-		NdisCopyMemory(TxPwr, (UCHAR *)&CfgOfTxPwrCtrlOverMAC, sizeof(CfgOfTxPwrCtrlOverMAC));
-	}
-
-
-}
-
 #ifdef SINGLE_SKU
 /*
 	==========================================================================
@@ -2130,15 +987,15 @@ VOID AsicAdjustSingleSkuTxPower(
 	CHAR		DeltaPwr = 0;
 	UCHAR		BbpR1 = 0, BbpR49 = 0, BbpR1Offset = 0;
 	CHAR		TxAgcCompensate;
-//	ULONG		TxPwr[MAX_TXPOWER_ARRAY_SIZE];
+/*	ULONG		TxPwr[MAX_TXPOWER_ARRAY_SIZE];*/
 	ULONG		TotalDeltaPwr[MAX_TXPOWER_ARRAY_SIZE];
 	CHAR		Value, MinValue = 127;
-	CHAR		TotalDeltaPower = 0; // (non-positive number) including the transmit power controlled by the MAC and the BBP R1
+	CHAR		TotalDeltaPower = 0; /* (non-positive number) including the transmit power controlled by the MAC and the BBP R1*/
 	CONFIGURATION_OF_TX_POWER_CONTROL_OVER_MAC CfgOfTxPwrCtrlOverMAC = {0};
 
 #ifdef CONFIG_STA_SUPPORT
 	CHAR		Rssi = -127;
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 	
 
 #ifdef CONFIG_STA_SUPPORT
@@ -2146,7 +1003,7 @@ VOID AsicAdjustSingleSkuTxPower(
 #ifdef RTMP_MAC_PCI
 		(pAd->bPCIclkOff == TRUE) ||
 		RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_IDLE_RADIO_OFF) ||
-#endif // RTMP_MAC_PCI //
+#endif /* RTMP_MAC_PCI */
 		RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_BSS_SCAN_IN_PROGRESS))
 {
 		return;
@@ -2157,7 +1014,7 @@ VOID AsicAdjustSingleSkuTxPower(
 						   pAd->StaCfg.RssiSample.AvgRssi0, 
 						   pAd->StaCfg.RssiSample.AvgRssi1, 
 						   pAd->StaCfg.RssiSample.AvgRssi2);
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 
         NdisZeroMemory(TotalDeltaPwr, sizeof(TotalDeltaPwr));
         /* Get Tx Rate Offset Table which from eeprom 0xDEh ~ 0xEFh */
@@ -2168,53 +1025,53 @@ VOID AsicAdjustSingleSkuTxPower(
 	RTMP_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R1, &BbpR1);
 	BbpR1 &= 0xFC;
 
-	// Handle regulatory max tx power constrain
+	/* Handle regulatory max tx power constrain*/
 	do
 	{
 		UCHAR    TxPwrInEEPROM = 0xFF, CountryTxPwr = 0xFF, criterion;
-//		UCHAR    AdjustMaxTxPwr[MAX_TXPOWER_ARRAY_SIZE * 8]; 
+/*		UCHAR    AdjustMaxTxPwr[MAX_TXPOWER_ARRAY_SIZE * 8]; */
 		UCHAR    AdjustMaxTxPwr[(MAX_TX_PWR_CONTROL_OVER_MAC_REGISTERS * 8)]; 
 
 		{
-		if (pAd->CommonCfg.Channel > 14) // 5G band
+		if (pAd->CommonCfg.Channel > 14) /* 5G band*/
 			TxPwrInEEPROM = ((pAd->CommonCfg.DefineMaxTxPwr & 0xFF00) >> 8);
-		else // 2.4G band
+		else /* 2.4G band*/
 			TxPwrInEEPROM = (pAd->CommonCfg.DefineMaxTxPwr & 0x00FF);
 		}
 
 		CountryTxPwr = GetCuntryMaxTxPwr(pAd, pAd->CommonCfg.Channel); 
 
-		//
-		// FAE uses OFDM 6M as criterion
-		//
-//		criterion = (TxPwr[0] >> 16) & 0xF;        // FAE use OFDM 6M as criterion
+		
+		/* FAE uses OFDM 6M as criterion*/
+		
+/*		criterion = (TxPwr[0] >> 16) & 0xF;         FAE use OFDM 6M as criterion*/
 		criterion = (UCHAR)((CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[0].RegisterValue & 0x000F0000) >> 16);
 
 		DBGPRINT_RAW(RT_DEBUG_INFO, ("AsicAdjustSingleSkuTxPower (criterion=%d, TxPwrInEEPROM=%d, CountryTxPwr=%d)\n", criterion, TxPwrInEEPROM, CountryTxPwr));
  
-		// Adjust max tx power according to the relationship of tx power in E2PROM
-//		for (i=0; i<MAX_TXPOWER_ARRAY_SIZE; i++)
+		/* Adjust max tx power according to the relationship of tx power in E2PROM*/
+/*		for (i=0; i<MAX_TXPOWER_ARRAY_SIZE; i++)*/
 		for (i=0; i<CfgOfTxPwrCtrlOverMAC.NumOfEntries; i++)
 		{
-			// CCK will have 4dBm larger than OFDM
-			// Therefore, we should separate to parse the tx power field
+			/* CCK will have 4dBm larger than OFDM*/
+			/* Therefore, we should separate to parse the tx power field*/
 			if (i == 0)
 			{
 				for (j=0; j<8; j++)
 				{
-//					Value = (CHAR)((TxPwr[i] >> j*4) & 0x0F);
+/*					Value = (CHAR)((TxPwr[i] >> j*4) & 0x0F);*/
 					Value = (CHAR)((CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[i].RegisterValue >> j*4) & 0x0F);
  
 					if (j < 4)
 					{
-						// CCK will have 4dBm larger than OFDM
+						/* CCK will have 4dBm larger than OFDM*/
 						AdjustMaxTxPwr[i*8+j] = TxPwrInEEPROM + (Value - criterion) + 4;
 					}
 					else
 					{
 						AdjustMaxTxPwr[i*8+j] = TxPwrInEEPROM + (Value - criterion);
 					}
-//					DBGPRINT_RAW(RT_DEBUG_INFO, ("AsicAdjustSingleSkuTxPower (i/j=%d/%d, Value=%d, %d)\n", i, j, Value, AdjustMaxTxPwr[i*8+j]));
+/*					DBGPRINT_RAW(RT_DEBUG_INFO, ("AsicAdjustSingleSkuTxPower (i/j=%d/%d, Value=%d, %d)\n", i, j, Value, AdjustMaxTxPwr[i*8+j]));*/
 
 					DBGPRINT_RAW(RT_DEBUG_INFO, ("AsicAdjustSingleSkuTxPower (offset = 0x%04X, i/j=%d/%d, Value=%d, %d)\n", 
 						i, 
@@ -2231,7 +1088,7 @@ VOID AsicAdjustSingleSkuTxPower(
 					Value = (CHAR)((CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[i].RegisterValue >> j*4) & 0x0F);
  
 					AdjustMaxTxPwr[i*8+j] = TxPwrInEEPROM + (Value - criterion);
-//					DBGPRINT_RAW(RT_DEBUG_INFO, ("AsicAdjustSingleSkuTxPower (i/j=%d/%d, Value=%d, %d)\n", i, j, Value, AdjustMaxTxPwr[i*8+j]));
+/*					DBGPRINT_RAW(RT_DEBUG_INFO, ("AsicAdjustSingleSkuTxPower (i/j=%d/%d, Value=%d, %d)\n", i, j, Value, AdjustMaxTxPwr[i*8+j]));*/
 
 					DBGPRINT_RAW(RT_DEBUG_INFO, ("AsicAdjustSingleSkuTxPower (offset = 0x%04X, i/j=%d/%d, Value=%d, %d)\n", 
 						CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[i].MACRegisterOffset, 
@@ -2243,19 +1100,19 @@ VOID AsicAdjustSingleSkuTxPower(
 			}
 		}
  
-		// Adjust tx power according to the relationship
-//		for (i=0; i<MAX_TXPOWER_ARRAY_SIZE; i++)
+		/* Adjust tx power according to the relationship*/
+/*		for (i=0; i<MAX_TXPOWER_ARRAY_SIZE; i++)*/
 		for (i=0; i<CfgOfTxPwrCtrlOverMAC.NumOfEntries; i++)
 		{
-//			if (TxPwr[i] != 0xffffffff)
+/*			if (TxPwr[i] != 0xffffffff)*/
 			if (CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[i].RegisterValue != 0xffffffff)
 			{
 				for (j=0; j<8; j++)
 				{
-//					Value = (CHAR)((TxPwr[i] >> j*4) & 0x0F);
+/*					Value = (CHAR)((TxPwr[i] >> j*4) & 0x0F);*/
 					Value = (CHAR)((CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[i].RegisterValue >> j*4) & 0x0F);
 
-					// The system tx power is larger than the regulatory, the power should be restrain
+					/* The system tx power is larger than the regulatory, the power should be restrain*/
 					if (AdjustMaxTxPwr[i*8+j] > CountryTxPwr)
 					{
 						Value = (AdjustMaxTxPwr[i*8+j] - CountryTxPwr);
@@ -2268,7 +1125,7 @@ VOID AsicAdjustSingleSkuTxPower(
 						}
 						TotalDeltaPwr[i] = (TotalDeltaPwr[i] & ~(0x0000000F << j*4)) | (Value << j*4);
 
-//						DBGPRINT_RAW(RT_DEBUG_INFO, ("AsicAdjustSingleSkuTxPower (i/j=%d/%d, Value=%d, %d)\n", i, j, Value, AdjustMaxTxPwr[i*8+j]));
+/*						DBGPRINT_RAW(RT_DEBUG_INFO, ("AsicAdjustSingleSkuTxPower (i/j=%d/%d, Value=%d, %d)\n", i, j, Value, AdjustMaxTxPwr[i*8+j]));*/
 						DBGPRINT_RAW(RT_DEBUG_INFO,("AsicAdjustSingleSkuTxPower (offset = 0x%04X, i/j=%d/%d, Value=%d, %d)\n", 
 							CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[i].MACRegisterOffset, 
 							i, 
@@ -2278,7 +1135,7 @@ VOID AsicAdjustSingleSkuTxPower(
 					}
 					else
 					{
-//						DBGPRINT_RAW(RT_DEBUG_INFO, ("AsicAdjustSingleSkuTxPower (i/j=%d/%d, Value=%d, %d, no change)\n", i, j, Value, AdjustMaxTxPwr[i*8+j]));
+/*						DBGPRINT_RAW(RT_DEBUG_INFO, ("AsicAdjustSingleSkuTxPower (i/j=%d/%d, Value=%d, %d, no change)\n", i, j, Value, AdjustMaxTxPwr[i*8+j]));*/
 						DBGPRINT_RAW(RT_DEBUG_INFO,("AsicAdjustSingleSkuTxPower (offset = 0x%04X, i/j=%d/%d, Value=%d, %d, no change)\n", 
 							CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[i].MACRegisterOffset, 
 							i, 
@@ -2291,19 +1148,19 @@ VOID AsicAdjustSingleSkuTxPower(
 		}
 	} while (FALSE);
 
-//	TotalDeltaPower += DeltaPowerByBbpR1; // the transmit power controlled by the BBP R1
-//	TotalDeltaPower += DeltaPwr; // the transmit power controlled by the MAC	
+/*	TotalDeltaPower += DeltaPowerByBbpR1;  the transmit power controlled by the BBP R1*/
+/*	TotalDeltaPower += DeltaPwr;  the transmit power controlled by the MAC	*/
 	DeltaPwr += TotalDeltaPower;
 
 	/* calculate delta power based on the percentage specified from UI */
-	// E2PROM setting is calibrated for maximum TX power (i.e. 100%)
-	// We lower TX power here according to the percentage specified from UI
-	if (pAd->CommonCfg.TxPowerPercentage == 0xffffffff)       // AUTO TX POWER control
+	/* E2PROM setting is calibrated for maximum TX power (i.e. 100%)*/
+	/* We lower TX power here according to the percentage specified from UI*/
+	if (pAd->CommonCfg.TxPowerPercentage == 0xffffffff)       /* AUTO TX POWER control*/
 	{
 #ifdef CONFIG_STA_SUPPORT
 		IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
 		{
-			// to patch high power issue with some APs, like Belkin N1.
+			/* to patch high power issue with some APs, like Belkin N1.*/
 			if (Rssi > -35)
 			{
 				DeltaPwr -= 12;
@@ -2315,27 +1172,27 @@ VOID AsicAdjustSingleSkuTxPower(
 			else
 		;
 		}
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 	}
-	else if (pAd->CommonCfg.TxPowerPercentage > 90)  // 91 ~ 100% & AUTO, treat as 100% in terms of mW
+	else if (pAd->CommonCfg.TxPowerPercentage > 90)  /* 91 ~ 100% & AUTO, treat as 100% in terms of mW*/
 		;
-	else if (pAd->CommonCfg.TxPowerPercentage > 60)  // 61 ~ 90%, treat as 75% in terms of mW		// DeltaPwr -= 1;
+	else if (pAd->CommonCfg.TxPowerPercentage > 60)  /* 61 ~ 90%, treat as 75% in terms of mW		 DeltaPwr -= 1;*/
 	{
 		DeltaPwr -= 1;
 	}
-	else if (pAd->CommonCfg.TxPowerPercentage > 30)  // 31 ~ 60%, treat as 50% in terms of mW		// DeltaPwr -= 3;
+	else if (pAd->CommonCfg.TxPowerPercentage > 30)  /* 31 ~ 60%, treat as 50% in terms of mW		 DeltaPwr -= 3;*/
 	{
 		DeltaPwr -= 3;
 	}
-	else if (pAd->CommonCfg.TxPowerPercentage > 15)  // 16 ~ 30%, treat as 25% in terms of mW		// DeltaPwr -= 6;
+	else if (pAd->CommonCfg.TxPowerPercentage > 15)  /* 16 ~ 30%, treat as 25% in terms of mW		 DeltaPwr -= 6;*/
 	{
 		DeltaPwr -= 6;
 	}
-	else if (pAd->CommonCfg.TxPowerPercentage > 9)   // 10 ~ 15%, treat as 12.5% in terms of mW		// DeltaPwr -= 9;
+	else if (pAd->CommonCfg.TxPowerPercentage > 9)   /* 10 ~ 15%, treat as 12.5% in terms of mW		 DeltaPwr -= 9;*/
 	{
 		DeltaPwr -= 9;
 	}
-	else                                           // 0 ~ 9 %, treat as MIN(~3%) in terms of mW		// DeltaPwr -= 12;
+	else                                           /* 0 ~ 9 %, treat as MIN(~3%) in terms of mW		 DeltaPwr -= 12;*/
 	{
 		DeltaPwr -= 12;
 	}
@@ -2343,10 +1200,10 @@ VOID AsicAdjustSingleSkuTxPower(
 	/* reset different new tx power for different TX rate */
 
 	/* Calcuate the minimum transmit power */
-//	for(i=0; i<MAX_TXPOWER_ARRAY_SIZE; i++)
+/*	for(i=0; i<MAX_TXPOWER_ARRAY_SIZE; i++)*/
 	for(i=0; i<CfgOfTxPwrCtrlOverMAC.NumOfEntries; i++)
 	{
-//		if (TxPwr[i] != 0xffffffff)
+/*		if (TxPwr[i] != 0xffffffff)*/
 		if (CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[i].RegisterValue != 0xffffffff)
 		{
 			for (j=0; j<8; j++)
@@ -2358,7 +1215,6 @@ VOID AsicAdjustSingleSkuTxPower(
 
 				/* Value / TxPwr[] is get from eeprom 0xDEh ~ 0xEFh and increase or decrease the  
 				   20/40 Bandwidth Delta Value in eeprom 0x50h. */
-//				Value = (CHAR)((TxPwr[i] >> j*4) & 0x0F); /* 0 ~ 15 */
 				Value = (CHAR)((CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[i].RegisterValue >> j*4) & 0x0F); /* 0 ~ 15 */
 
 				/* Fix the corner case of Single SKU read eeprom offset 0xF0h ~ 0xFEh which for BBP Instruction configuration */
@@ -2400,10 +1256,10 @@ VOID AsicAdjustSingleSkuTxPower(
 	RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R1, BbpR1);
 
 
-//	for(i=0; i<MAX_TXPOWER_ARRAY_SIZE; i++)
+/*	for(i=0; i<MAX_TXPOWER_ARRAY_SIZE; i++)*/
 	for (i=0; i < CfgOfTxPwrCtrlOverMAC.NumOfEntries; i++)
 	{
-//		if (TxPwr[i] != 0xffffffff)
+/*		if (TxPwr[i] != 0xffffffff)*/
 		if (CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[i].RegisterValue != 0xffffffff)
 		{
 			for (j=0; j<8; j++)
@@ -2415,7 +1271,6 @@ VOID AsicAdjustSingleSkuTxPower(
 
 				/* Value / TxPwr[] is get from eeprom 0xDEh ~ 0xEFh and increase or decrease the  
 				   20/40 Bandwidth Delta Value in eeprom 0x50h. */
-//				Value = (CHAR)((TxPwr[i] >> j*4) & 0x0F); /* 0 ~ 15 */
 				Value = (CHAR)((CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[i].RegisterValue >> j*4) & 0x0F); /* 0 ~ 15 */
 
 				/* Value_offset is current Pwr comapre with Country Regulation and need adjust delta value */
@@ -2431,7 +1286,7 @@ VOID AsicAdjustSingleSkuTxPower(
 					Value = 0xF; /* max */
 
 				/* fill new value to CSR offset */
-//				TxPwr[i] = (TxPwr[i] & ~(0x0000000F << j*4)) | (Value << j*4);
+/*				TxPwr[i] = (TxPwr[i] & ~(0x0000000F << j*4)) | (Value << j*4);*/
 				CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[i].RegisterValue = (CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[i].RegisterValue & ~(0x0000000F << j*4)) | (Value << j*4);
 			}
 
@@ -2449,7 +1304,7 @@ VOID AsicAdjustSingleSkuTxPower(
 
 
 }
-#endif // SINGLE_SKU //
+#endif /* SINGLE_SKU */
 
 /*
 	==========================================================================
@@ -2480,22 +1335,28 @@ VOID AsicAdjustTxPower(
 	CHAR		DeltaPwr = 0;
 	UCHAR		BbpR1 = 0, BbpR49 = 0;
 	CHAR		TxAgcCompensate;
-//	ULONG		TxPwr[MAX_TXPOWER_ARRAY_SIZE];
+/*	ULONG		TxPwr[MAX_TXPOWER_ARRAY_SIZE];*/
 	CHAR		Value;
-	CHAR		DeltaPowerByBbpR1 = 0; // non-positive number
-	CHAR		TotalDeltaPower = 0; // (non-positive number) including the transmit power controlled by the MAC and the BBP R1	
+	CHAR		DeltaPowerByBbpR1 = 0; /* non-positive number*/
+	CHAR		TotalDeltaPower = 0; /* (non-positive number) including the transmit power controlled by the MAC and the BBP R1	*/
 	CONFIGURATION_OF_TX_POWER_CONTROL_OVER_MAC CfgOfTxPwrCtrlOverMAC = {0};
 
 #ifdef CONFIG_STA_SUPPORT
 	CHAR		Rssi = -127;
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 	
 #ifdef CONFIG_STA_SUPPORT
+
+	if(RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_IDLE_RADIO_OFF))
+		return;
+
+
+
 	if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_DOZE) || 
 #ifdef RTMP_MAC_PCI
 		(pAd->bPCIclkOff == TRUE) ||
 		RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_IDLE_RADIO_OFF) ||
-#endif // RTMP_MAC_PCI //
+#endif /* RTMP_MAC_PCI */
 		RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_BSS_SCAN_IN_PROGRESS))
 	{
 		return;
@@ -2506,7 +1367,7 @@ VOID AsicAdjustTxPower(
 						   pAd->StaCfg.RssiSample.AvgRssi0, 
 						   pAd->StaCfg.RssiSample.AvgRssi1, 
 						   pAd->StaCfg.RssiSample.AvgRssi2);
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 
 #ifdef SINGLE_SKU
 	if (pAd->CommonCfg.bSKUMode == TRUE)
@@ -2514,70 +1375,77 @@ VOID AsicAdjustTxPower(
 		AsicAdjustSingleSkuTxPower(pAd);
 		return;
 	}
-#endif // SINGLE_SKU //
+#endif /* SINGLE_SKU */
 
 	/* Get Tx Rate Offset Table which from eeprom 0xDEh ~ 0xEFh */
-//	AsicGetTxPowerOffset(pAd, (PULONG) &TxPwr);
+/*	AsicGetTxPowerOffset(pAd, (PULONG) &TxPwr);*/
 	AsicGetTxPowerOffset(pAd, (PULONG) &CfgOfTxPwrCtrlOverMAC);
 	/* Get temperature compensation Delta Power Value */
 	AsicGetAutoAgcOffset(pAd, &DeltaPwr, &TotalDeltaPower, &TxAgcCompensate, &BbpR49);
 
+	/* The BBP R1 controls the transmit power for all rates */
 	RTMP_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R1, &BbpR1);
 	BbpR1 &= 0xFC;
 
+#ifdef RTMP_INTERNAL_TX_ALC
+	/* 
+		This code segment is merged into InitDesiredTSSITable()
+		if Internal Tx ALC is enabled.
+	*/ 
+	if (pAd->TxPowerCtrl.bInternalTxALC == FALSE)/* ralink debug */
+	{
+#endif /* RTMP_INTERNAL_TX_ALC */
+
 	/* calculate delta power based on the percentage specified from UI */
-	// E2PROM setting is calibrated for maximum TX power (i.e. 100%)
-	// We lower TX power here according to the percentage specified from UI
-	if (pAd->CommonCfg.TxPowerPercentage == 0xffffffff)       // AUTO TX POWER control
+	/* E2PROM setting is calibrated for maximum TX power (i.e. 100%)*/
+	/* We lower TX power here according to the percentage specified from UI*/
+	if (pAd->CommonCfg.TxPowerPercentage == 0xffffffff)       /* AUTO TX POWER control*/
 	{
 #ifdef CONFIG_STA_SUPPORT
 		IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
 		{
-			// to patch high power issue with some APs, like Belkin N1.
+			/* to patch high power issue with some APs, like Belkin N1.*/
 			if (Rssi > -35)
 			{
-				BbpR1 |= 0x02;		// DeltaPwr -= 12;
+				BbpR1 |= 0x02;		/* DeltaPwr -= 12;*/
 			}
 			else if (Rssi > -40)
 			{
-				BbpR1 |= 0x01;		// DeltaPwr -= 6;
+				BbpR1 |= 0x01;		/* DeltaPwr -= 6;*/
 			}
 			else
 		;
 		}
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 	}
-	else if (pAd->CommonCfg.TxPowerPercentage > 90)  // 91 ~ 100% & AUTO, treat as 100% in terms of mW
+	else if (pAd->CommonCfg.TxPowerPercentage > 90)  /* 91 ~ 100% & AUTO, treat as 100% in terms of mW*/
 		;
-	else if (pAd->CommonCfg.TxPowerPercentage > 60)  // 61 ~ 90%, treat as 75% in terms of mW		// DeltaPwr -= 1;
+	else if (pAd->CommonCfg.TxPowerPercentage > 60)  /* 61 ~ 90%, treat as 75% in terms of mW		 DeltaPwr -= 1;*/
 	{
 		DeltaPwr -= 1;
 	}
-	else if (pAd->CommonCfg.TxPowerPercentage > 30)  // 31 ~ 60%, treat as 50% in terms of mW		// DeltaPwr -= 3;
+	else if (pAd->CommonCfg.TxPowerPercentage > 30)  /* 31 ~ 60%, treat as 50% in terms of mW		 DeltaPwr -= 3;*/
 	{
 		DeltaPwr -= 3;
 	}
-	else if (pAd->CommonCfg.TxPowerPercentage > 15)  // 16 ~ 30%, treat as 25% in terms of mW		// DeltaPwr -= 6;
+	else if (pAd->CommonCfg.TxPowerPercentage > 15)  /* 16 ~ 30%, treat as 25% in terms of mW		 DeltaPwr -= 6;*/
 	{
-		DeltaPowerByBbpR1 -= 6; // -6 dBm
+		DeltaPowerByBbpR1 -= 6; /* -6 dBm*/
 	}
-	else if (pAd->CommonCfg.TxPowerPercentage > 9)   // 10 ~ 15%, treat as 12.5% in terms of mW		// DeltaPwr -= 9;
+	else if (pAd->CommonCfg.TxPowerPercentage > 9)   /* 10 ~ 15%, treat as 12.5% in terms of mW		 DeltaPwr -= 9;*/
 	{
-		DeltaPowerByBbpR1 -= 6; // -6 dBm
+		DeltaPowerByBbpR1 -= 6; /* -6 dBm*/
 		DeltaPwr -= 3;
 	}
-	else                                           // 0 ~ 9 %, treat as MIN(~3%) in terms of mW		// DeltaPwr -= 12;
+	else                                           /* 0 ~ 9 %, treat as MIN(~3%) in terms of mW		 DeltaPwr -= 12;*/
 	{
-		DeltaPowerByBbpR1 -= 12; // -12 dBm
+		DeltaPowerByBbpR1 -= 12; /* -12 dBm*/
 	}
-	RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R1, BbpR1);
 
 
-	TotalDeltaPower += DeltaPowerByBbpR1; // the transmit power controlled by the BBP R1
-	TotalDeltaPower += DeltaPwr; // the transmit power controlled by the MAC	
+	TotalDeltaPower += DeltaPowerByBbpR1; /* the transmit power controlled by the BBP R1*/
+	TotalDeltaPower += DeltaPwr; /* the transmit power controlled by the MAC	*/
 
-	// The BBP R1 controls the transmit power for all rates
-	RTMP_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R1, &BbpR1);
 	BbpR1 &= ~MDSM_BBP_R1_STATIC_TX_POWER_CONTROL_MASK;
 
 	if (TotalDeltaPower <= -12)
@@ -2600,12 +1468,14 @@ VOID AsicAdjustTxPower(
 	}
 	else
 	{
-		// Control the the transmit power by using the MAC only
+		/* Control the the transmit power by using the MAC only*/
 		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R1, BbpR1);
 	}
-
+#ifdef RTMP_INTERNAL_TX_ALC
+	}/* ralink debug */
+#endif /* RTMP_INTERNAL_TX_ALC */
 	/* reset different new tx power for different TX rate */
-//	for(i=0; i<MAX_TXPOWER_ARRAY_SIZE; i++)
+/*	for(i=0; i<MAX_TXPOWER_ARRAY_SIZE; i++)*/
 	for (i=0; i < CfgOfTxPwrCtrlOverMAC.NumOfEntries; i++)
 	{
 		if (CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[i].RegisterValue != 0xffffffff)
@@ -2615,7 +1485,7 @@ VOID AsicAdjustTxPower(
 				Value = (CHAR)((CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[i].RegisterValue >> j*4) & 0x0F);
 
 #ifdef RTMP_INTERNAL_TX_ALC
-				// The upper bounds of the MAC 0x1314~0x1324 are variable when the STA uses the internal Tx ALC.
+				/* The upper bounds of the MAC 0x1314~0x1324 are variable when the STA uses the internal Tx ALC.*/
 				if (pAd->TxPowerCtrl.bInternalTxALC == TRUE)
 				{
 					switch (TX_PWR_CFG_0 + (i * 4))
@@ -2645,9 +1515,9 @@ VOID AsicAdjustTxPower(
 								{
 									Value = 0;
 								}
-								else if ((Value + TotalDeltaPower) > 0xC)
+								else if ((Value + TotalDeltaPower) > 0xE)/* by HK 2011.04.06 */
 								{
-									Value = 0xC;
+									Value = 0xE;/* by HK 2011.04.06 */
 								}
 								else
 								{
@@ -2680,9 +1550,9 @@ VOID AsicAdjustTxPower(
 								{
 									Value = 0;
 								}
-								else if ((Value + TotalDeltaPower) > 0xC)
+								else if ((Value + TotalDeltaPower) > 0xE)/* by HK 2011.04.06 */
 								{
-									Value = 0xC;
+									Value = 0xE;/* by HK 2011.04.06 */
 								}
 								else
 								{
@@ -2716,9 +1586,9 @@ VOID AsicAdjustTxPower(
 								{
 									Value = 0;
 								}
-								else if ((Value + TotalDeltaPower) > 0xC)
+								else if ((Value + TotalDeltaPower) > 0xE)/* by HK 2011.04.06 */
 								{
-									Value = 0xC;
+									Value = 0xE;/* by HK 2011.04.06 */
 								}
 								else
 								{
@@ -2749,9 +1619,9 @@ VOID AsicAdjustTxPower(
 							{
 								Value = 0;
 							}
-							else if ((Value + TotalDeltaPower) > 0xC)
+							else if ((Value + TotalDeltaPower) > 0xE)/* by HK 2011.04.06 */
 							{
-								Value = 0xC;
+								Value = 0xE;/* by HK 2011.04.06 */
 							}
 							else
 							{
@@ -2762,7 +1632,7 @@ VOID AsicAdjustTxPower(
 
 						default: 
 						{							
-							// do nothing
+							/* do nothing*/
 							DBGPRINT(RT_DEBUG_ERROR, ("%s: unknown register = 0x%X\n", 
 								__FUNCTION__, 
 								(TX_PWR_CFG_0 + (i * 4))));
@@ -2771,7 +1641,7 @@ VOID AsicAdjustTxPower(
 					}
 				}
 				else
-#endif // RTMP_INTERNAL_TX_ALC //
+#endif /* RTMP_INTERNAL_TX_ALC */
 				{
 					if ((Value + TotalDeltaPower) < 0)
 					{
@@ -2798,7 +1668,7 @@ VOID AsicAdjustTxPower(
 			/* TX_PWR_CFG_1 ~ TX_PWR_CFG_4 */
 
 			{
-//				RTMP_IO_WRITE32(pAd, TX_PWR_CFG_0 + i*4, TxPwr[i]);
+/*				RTMP_IO_WRITE32(pAd, TX_PWR_CFG_0 + i*4, TxPwr[i]);*/
 				RTMP_IO_WRITE32(pAd, CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[i].MACRegisterOffset, CfgOfTxPwrCtrlOverMAC.TxPwrCtrlOverMAC[i].RegisterValue);
 			}
 
@@ -2815,7 +1685,7 @@ IN PRTMP_ADAPTER pAd)
 {
 	BBP_CSR_CFG_STRUC	BbpCsr;
 	DBGPRINT(RT_DEBUG_ERROR, ("Reset BBP Agent busy bit.!! \n"));
-	// Still need to find why BBP agent keeps busy, but in fact, hardware still function ok. Now clear busy first.	
+	/* Still need to find why BBP agent keeps busy, but in fact, hardware still function ok. Now clear busy first.	*/
 	RTMP_IO_READ32(pAd, H2M_BBP_AGENT, &BbpCsr.word);
 	BbpCsr.field.Busy = 0;
 	RTMP_IO_WRITE32(pAd, H2M_BBP_AGENT, BbpCsr.word);
@@ -2870,7 +1740,7 @@ VOID AsicForceWakeup(
     DBGPRINT(RT_DEBUG_INFO, ("--> AsicForceWakeup \n"));
     RTMP_STA_FORCE_WAKEUP(pAd, bFromTx);	
 }
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 
 
 /*
@@ -2887,6 +1757,10 @@ VOID AsicSetBssid(
 	IN PUCHAR pBssid) 
 {
 	ULONG		  Addr4;
+#ifdef P2P_SUPPORT
+	UINT32	regValue;
+#endif /* P2P_SUPPORT */
+
 	DBGPRINT(RT_DEBUG_TRACE, ("==============> AsicSetBssid %x:%x:%x:%x:%x:%x\n",
 		pBssid[0],pBssid[1],pBssid[2],pBssid[3], pBssid[4],pBssid[5]));
 	
@@ -2897,10 +1771,45 @@ VOID AsicSetBssid(
 	RTMP_IO_WRITE32(pAd, MAC_BSSID_DW0, Addr4);
 
 	Addr4 = 0;
-	// always one BSSID in STA mode
+	/* always one BSSID in STA mode*/
 	Addr4 = (ULONG)(pBssid[4]) | (ULONG)(pBssid[5] << 8);
 
 	RTMP_IO_WRITE32(pAd, MAC_BSSID_DW1, Addr4);
+#ifdef P2P_SUPPORT
+	if (P2P_INF_ON(pAd))
+	{
+		PUCHAR pP2PBssid = &pAd->CurrentAddress[0];
+
+		Addr4 = (ULONG)(pP2PBssid[0])		 | 
+				(ULONG)(pP2PBssid[1] << 8)  | 
+				(ULONG)(pP2PBssid[2] << 16) |
+				(ULONG)(pP2PBssid[3] << 24);
+		RTMP_IO_WRITE32(pAd, MAC_BSSID_DW0, Addr4);
+
+		Addr4 = 0;
+
+		/* always one BSSID in STA mode */
+		Addr4 = (ULONG)(pP2PBssid[4]) | (ULONG)(pP2PBssid[5] << 8);
+
+		RTMP_IO_WRITE32(pAd, MAC_BSSID_DW1, Addr4);
+
+		RTMP_IO_READ32(pAd, MAC_BSSID_DW1, &regValue);
+		regValue &= 0x0000FFFF;
+
+		if (pAd->CurrentAddress[5] % 2 != 0)
+			DBGPRINT(RT_DEBUG_ERROR, ("The 2-BSSID mode is enabled, the BSSID byte5 MUST be the multiple of 2\n"));
+		
+		regValue |= (1 << 16);
+		//regValue |= (1 << 18);
+
+#ifdef NEW_MBSSID_MODE
+		/* 	set as 0/1 bit-21 of MAC_BSSID_DW1(offset: 0x1014) 
+			to disable/enable the new MAC address assignment.  */
+		regValue |= (1 << 21);
+#endif /* NEW_MBSSID_MODE */
+		RTMP_IO_WRITE32(pAd, MAC_BSSID_DW1, regValue);
+	}
+#endif /* P2P_SUPPORT */
 }
 
 VOID AsicSetMcastWC(
@@ -2910,7 +1819,7 @@ VOID AsicSetMcastWC(
 	USHORT		offset;
 	
 	pEntry->Sst        = SST_ASSOC;
-	pEntry->Aid        = MCAST_WCID;	// Softap supports 1 BSSID and use WCID=0 as multicast Wcid index
+	pEntry->Aid        = MCAST_WCID;	/* Softap supports 1 BSSID and use WCID=0 as multicast Wcid index*/
 	pEntry->PsMode     = PWR_ACTIVE;
 	pEntry->CurrTxRate = pAd->CommonCfg.MlmeRate; 
 	offset = MAC_WCID_BASE + BSS0Mcast_WCID * HW_WCID_ENTRY_SIZE;
@@ -2962,7 +1871,7 @@ VOID AsicEnableRDG(
 	Data  |= 0x80;
 	RTMP_IO_WRITE32(pAd, EDCA_AC0_CFG, Data);
 
-	//OPSTATUS_CLEAR_FLAG(pAd, fOP_STATUS_AGGREGATION_INUSED);
+	/*OPSTATUS_CLEAR_FLAG(pAd, fOP_STATUS_AGGREGATION_INUSED);*/
 }
 
 /*
@@ -2988,25 +1897,25 @@ VOID AsicDisableRDG(
 	RTMP_IO_READ32(pAd, EDCA_AC0_CFG, &Data);
 	
 	Data  &= 0xFFFFFF00;
-	//Data  |= 0x20;
+	/*Data  |= 0x20;*/
 #ifndef WIFI_TEST
-	//if ( pAd->CommonCfg.bEnableTxBurst )	
-	//	Data |= 0x60; // for performance issue not set the TXOP to 0
+	/*if ( pAd->CommonCfg.bEnableTxBurst )	*/
+	/*	Data |= 0x60;  for performance issue not set the TXOP to 0*/
 #endif
 	if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_DYNAMIC_BE_TXOP_ACTIVE) 
 #ifdef DOT11_N_SUPPORT
 		&& (pAd->MacTab.fAnyStationMIMOPSDynamic == FALSE)
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 	)
 	{
-		// For CWC test, change txop from 0x30 to 0x20 in TxBurst mode
+		/* For CWC test, change txop from 0x30 to 0x20 in TxBurst mode*/
 		if (pAd->CommonCfg.bEnableTxBurst)
 		Data |= 0x20;
 	}
 	RTMP_IO_WRITE32(pAd, EDCA_AC0_CFG, Data);
 
 }
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 
 /*
 	==========================================================================
@@ -3024,9 +1933,9 @@ VOID AsicDisableSync(
 	
 	DBGPRINT(RT_DEBUG_TRACE, ("--->Disable TSF synchronization\n"));
 
-	// 2003-12-20 disable TSF and TBTT while NIC in power-saving have side effect
-	//			  that NIC will never wakes up because TSF stops and no more 
-	//			  TBTT interrupts
+	/* 2003-12-20 disable TSF and TBTT while NIC in power-saving have side effect*/
+	/*			  that NIC will never wakes up because TSF stops and no more */
+	/*			  TBTT interrupts*/
 	pAd->TbttTickCount = 0;
 	RTMP_IO_READ32(pAd, BCN_TIME_CFG, &csr.word);
 	csr.field.bBeaconGen = 0;
@@ -3053,27 +1962,27 @@ VOID AsicEnableBssSync(
 	DBGPRINT(RT_DEBUG_TRACE, ("--->AsicEnableBssSync(INFRA mode)\n"));
 
 	RTMP_IO_READ32(pAd, BCN_TIME_CFG, &csr.word);
-//	RTMP_IO_WRITE32(pAd, BCN_TIME_CFG, 0x00000000);
+/*	RTMP_IO_WRITE32(pAd, BCN_TIME_CFG, 0x00000000);*/
 #ifdef CONFIG_AP_SUPPORT
 	IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
 	{
-		csr.field.BeaconInterval = pAd->CommonCfg.BeaconPeriod << 4; // ASIC register in units of 1/16 TU
+		csr.field.BeaconInterval = pAd->CommonCfg.BeaconPeriod << 4; /* ASIC register in units of 1/16 TU*/
 		csr.field.bTsfTicking = 1;
-		csr.field.TsfSyncMode = 3; // sync TSF similar as in ADHOC mode?
-		csr.field.bBeaconGen  = 1; // AP should generate BEACON
+		csr.field.TsfSyncMode = 3; /* sync TSF similar as in ADHOC mode?*/
+		csr.field.bBeaconGen  = 1; /* AP should generate BEACON*/
 		csr.field.bTBTTEnable = 1;
 	}
-#endif // CONFIG_AP_SUPPORT //
+#endif /* CONFIG_AP_SUPPORT */
 #ifdef CONFIG_STA_SUPPORT	
 	IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
 	{
-		csr.field.BeaconInterval = pAd->CommonCfg.BeaconPeriod << 4; // ASIC register in units of 1/16 TU
+		csr.field.BeaconInterval = pAd->CommonCfg.BeaconPeriod << 4; /* ASIC register in units of 1/16 TU*/
 		csr.field.bTsfTicking = 1;
-		csr.field.TsfSyncMode = 1; // sync TSF in INFRASTRUCTURE mode
-		csr.field.bBeaconGen  = 0; // do NOT generate BEACON
+		csr.field.TsfSyncMode = 1; /* sync TSF in INFRASTRUCTURE mode*/
+		csr.field.bBeaconGen  = 0; /* do NOT generate BEACON*/
 		csr.field.bTBTTEnable = 1;
 	}
-#endif // CONFIG_STA_SUPPORT //	
+#endif /* CONFIG_STA_SUPPORT */	
 	RTMP_IO_WRITE32(pAd, BCN_TIME_CFG, csr.word);
 }
 
@@ -3097,6 +2006,9 @@ VOID AsicEnableIbssSync(
 	UINT i;
 	ULONG beaconBaseLocation = 0;
 	USHORT			beaconLen = pAd->BeaconTxWI.MPDUtotalByteCount;
+#ifdef SPECIFIC_BCN_BUF_SUPPORT	
+	unsigned long irqFlag = 0;
+#endif /* SPECIFIC_BCN_BUF_SUPPORT */
 
 #ifdef RT_BIG_ENDIAN
 	TXWI_STRUC		localTxWI;
@@ -3104,7 +2016,7 @@ VOID AsicEnableIbssSync(
 	NdisMoveMemory((PUCHAR)&localTxWI, (PUCHAR)&pAd->BeaconTxWI, TXWI_SIZE);
 	RTMPWIEndianChange((PUCHAR)&localTxWI, TYPE_TXWI);
 	beaconLen = localTxWI.MPDUtotalByteCount;
-#endif // RT_BIG_ENDIAN //
+#endif /* RT_BIG_ENDIAN */
 
 	DBGPRINT(RT_DEBUG_TRACE, ("--->AsicEnableIbssSync(MPDUtotalByteCount=%d, beaconLen=%d)\n", pAd->BeaconTxWI.MPDUtotalByteCount, beaconLen));
 
@@ -3118,46 +2030,53 @@ VOID AsicEnableIbssSync(
 	RTMP_IO_WRITE32(pAd, BCN_TIME_CFG, csr9.word);
 
 	{
-		beaconBaseLocation = HW_BEACON_BASE0;
+		beaconBaseLocation = HW_BEACON_BASE0(pAd);
 	}
 
+#ifdef SPECIFIC_BCN_BUF_SUPPORT
+	RTMP_MAC_SHR_MSEL_LOCK(pAd, HIGHER_SHRMEM, irqFlag);
+#endif /* SPECIFIC_BCN_BUF_SUPPORT */
 
 #ifdef RTMP_MAC_PCI
-	// move BEACON TXD and frame content to on-chip memory
+	/* move BEACON TXD and frame content to on-chip memory*/
 	ptr = (PUCHAR)&pAd->BeaconTxWI;
-	for (i=0; i<TXWI_SIZE; i+=4)  // 16-byte TXWI field
+	for (i=0; i<TXWI_SIZE; i+=4)  /* 16-byte TXWI field*/
 	{
 		UINT32 longptr =  *ptr + (*(ptr+1)<<8) + (*(ptr+2)<<16) + (*(ptr+3)<<24);
-		RTMP_IO_WRITE32(pAd, HW_BEACON_BASE0 + i, longptr);
+		RTMP_IO_WRITE32(pAd, HW_BEACON_BASE0(pAd) + i, longptr);
 		ptr += 4;
 	}
 
-	// start right after the 16-byte TXWI field
+	/* start right after the 16-byte TXWI field*/
 	ptr = pAd->BeaconBuf;
-	for (i=0; i< pAd->BeaconTxWI.MPDUtotalByteCount; i+=4)
+	/* for (i=0; i< pAd->BeaconTxWI.MPDUtotalByteCount; i+=4) */
+	for (i=0; i< beaconLen; i+=4)
 	{
 		UINT32 longptr =  *ptr + (*(ptr+1)<<8) + (*(ptr+2)<<16) + (*(ptr+3)<<24);
-		RTMP_IO_WRITE32(pAd, HW_BEACON_BASE0 + TXWI_SIZE + i, longptr);
+		RTMP_IO_WRITE32(pAd, HW_BEACON_BASE0(pAd) + TXWI_SIZE + i, longptr);
 		ptr +=4;
 	}
-#endif // RTMP_MAC_PCI //
+#endif /* RTMP_MAC_PCI */
 
 
 	{
-		// do nothing
+		/* do nothing*/
 	}
 
+#ifdef SPECIFIC_BCN_BUF_SUPPORT
+	RTMP_MAC_SHR_MSEL_UNLOCK(pAd, LOWER_SHRMEM, irqFlag);
+#endif /* SPECIFIC_BCN_BUF_SUPPORT */
 
-	//
-	// For Wi-Fi faily generated beacons between participating stations. 
-	// Set TBTT phase adaptive adjustment step to 8us (default 16us)
-	// don't change settings 2006-5- by Jerry
-	//RTMP_IO_WRITE32(pAd, TBTT_SYNC_CFG, 0x00001010);
 	
-	// start sending BEACON
-	csr9.field.BeaconInterval = pAd->CommonCfg.BeaconPeriod << 4; // ASIC register in units of 1/16 TU
+	/* For Wi-Fi faily generated beacons between participating stations. */
+	/* Set TBTT phase adaptive adjustment step to 8us (default 16us)*/
+	/* don't change settings 2006-5- by Jerry*/
+	/*RTMP_IO_WRITE32(pAd, TBTT_SYNC_CFG, 0x00001010);*/
+	
+	/* start sending BEACON*/
+	csr9.field.BeaconInterval = pAd->CommonCfg.BeaconPeriod << 4; /* ASIC register in units of 1/16 TU*/
 	csr9.field.bTsfTicking = 1;
-	csr9.field.TsfSyncMode = 2; // sync TSF in IBSS mode
+	csr9.field.TsfSyncMode = 2; /* sync TSF in IBSS mode*/
 	csr9.field.bTBTTEnable = 1;
 	csr9.field.bBeaconGen = 1;
 	RTMP_IO_WRITE32(pAd, BCN_TIME_CFG, csr9.word);
@@ -3198,26 +2117,26 @@ VOID AsicSetEdcaParm(
 				CLIENT_STATUS_CLEAR_FLAG(&pAd->MacTab.Content[i], fCLIENT_STATUS_WMM_CAPABLE);
 		}
 
-		//========================================================
-		//      MAC Register has a copy .
-		//========================================================
-//#ifndef WIFI_TEST
+		/*========================================================*/
+		/*      MAC Register has a copy .*/
+		/*========================================================*/
+/*#ifndef WIFI_TEST*/
 		if( pAd->CommonCfg.bEnableTxBurst )		
 		{
-			// For CWC test, change txop from 0x30 to 0x20 in TxBurst mode
-			Ac0Cfg.field.AcTxop = 0x20; // Suggest by John for TxBurst in HT Mode
+			/* For CWC test, change txop from 0x30 to 0x20 in TxBurst mode*/
+			Ac0Cfg.field.AcTxop = 0x20; /* Suggest by John for TxBurst in HT Mode*/
 		}
 		else
-			Ac0Cfg.field.AcTxop = 0;	// QID_AC_BE
-//#else
-//		Ac0Cfg.field.AcTxop = 0;	// QID_AC_BE
-//#endif					
+			Ac0Cfg.field.AcTxop = 0;	/* QID_AC_BE*/
+/*#else*/
+/*		Ac0Cfg.field.AcTxop = 0;	 QID_AC_BE*/
+/*#endif					*/
 		Ac0Cfg.field.Cwmin = CW_MIN_IN_BITS;
 		Ac0Cfg.field.Cwmax = CW_MAX_IN_BITS;
 		Ac0Cfg.field.Aifsn = 2;
 		RTMP_IO_WRITE32(pAd, EDCA_AC0_CFG, Ac0Cfg.word);
 
-		Ac1Cfg.field.AcTxop = 0;	// QID_AC_BK
+		Ac1Cfg.field.AcTxop = 0;	/* QID_AC_BK*/
 		Ac1Cfg.field.Cwmin = CW_MIN_IN_BITS;
 		Ac1Cfg.field.Cwmax = CW_MAX_IN_BITS;
 		Ac1Cfg.field.Aifsn = 2;
@@ -3225,13 +2144,13 @@ VOID AsicSetEdcaParm(
 
 		if (pAd->CommonCfg.PhyMode == PHY_11B)
 		{
-			Ac2Cfg.field.AcTxop = 192;	// AC_VI: 192*32us ~= 6ms
-			Ac3Cfg.field.AcTxop = 96;	// AC_VO: 96*32us  ~= 3ms
+			Ac2Cfg.field.AcTxop = 192;	/* AC_VI: 192*32us ~= 6ms*/
+			Ac3Cfg.field.AcTxop = 96;	/* AC_VO: 96*32us  ~= 3ms*/
 		}
 		else
 		{
-			Ac2Cfg.field.AcTxop = 96;	// AC_VI: 96*32us ~= 3ms
-			Ac3Cfg.field.AcTxop = 48;	// AC_VO: 48*32us ~= 1.5ms
+			Ac2Cfg.field.AcTxop = 96;	/* AC_VI: 96*32us ~= 3ms*/
+			Ac3Cfg.field.AcTxop = 48;	/* AC_VO: 48*32us ~= 1.5ms*/
 		}
 		Ac2Cfg.field.Cwmin = CW_MIN_IN_BITS;
 		Ac2Cfg.field.Cwmax = CW_MAX_IN_BITS;
@@ -3242,21 +2161,21 @@ VOID AsicSetEdcaParm(
 		Ac3Cfg.field.Aifsn = 2;
 		RTMP_IO_WRITE32(pAd, EDCA_AC3_CFG, Ac3Cfg.word);
 
-		//========================================================
-		//      DMA Register has a copy too.
-		//========================================================
-		csr0.field.Ac0Txop = 0;		// QID_AC_BE
-		csr0.field.Ac1Txop = 0;		// QID_AC_BK
+		/*========================================================*/
+		/*      DMA Register has a copy too.*/
+		/*========================================================*/
+		csr0.field.Ac0Txop = 0;		/* QID_AC_BE*/
+		csr0.field.Ac1Txop = 0;		/* QID_AC_BK*/
 		RTMP_IO_WRITE32(pAd, WMM_TXOP0_CFG, csr0.word);
 		if (pAd->CommonCfg.PhyMode == PHY_11B)
 		{
-			csr1.field.Ac2Txop = 192;		// AC_VI: 192*32us ~= 6ms
-			csr1.field.Ac3Txop = 96;		// AC_VO: 96*32us  ~= 3ms
+			csr1.field.Ac2Txop = 192;		/* AC_VI: 192*32us ~= 6ms*/
+			csr1.field.Ac3Txop = 96;		/* AC_VO: 96*32us  ~= 3ms*/
 		}
 		else
 		{
-			csr1.field.Ac2Txop = 96;		// AC_VI: 96*32us ~= 3ms
-			csr1.field.Ac3Txop = 48;		// AC_VO: 48*32us ~= 1.5ms
+			csr1.field.Ac2Txop = 96;		/* AC_VI: 96*32us ~= 3ms*/
+			csr1.field.Ac3Txop = 48;		/* AC_VO: 48*32us ~= 1.5ms*/
 		}
 		RTMP_IO_WRITE32(pAd, WMM_TXOP1_CFG, csr1.word);
 
@@ -3278,32 +2197,28 @@ VOID AsicSetEdcaParm(
 
 		NdisZeroMemory(&pAd->CommonCfg.APEdcaParm, sizeof(EDCA_PARM));
 
-#ifdef WMM_ACM_SUPPORT
-		/* no ACM function due to no WMM */
-		ACMP_EnableFlagReset(pAd, 0, 0, 0, 0);
-#endif // WMM_ACM_SUPPORT //
 	}
 	else
 	{
 		OPSTATUS_SET_FLAG(pAd, fOP_STATUS_WMM_INUSED);
-		//========================================================
-		//      MAC Register has a copy.
-		//========================================================
-		//
-		// Modify Cwmin/Cwmax/Txop on queue[QID_AC_VI], Recommend by Jerry 2005/07/27
-		// To degrade our VIDO Queue's throughput for WiFi WMM S3T07 Issue.
-		//
-		//pEdcaParm->Txop[QID_AC_VI] = pEdcaParm->Txop[QID_AC_VI] * 7 / 10; // rt2860c need this		
+		/*========================================================*/
+		/*      MAC Register has a copy.*/
+		/*========================================================*/
+		
+		/* Modify Cwmin/Cwmax/Txop on queue[QID_AC_VI], Recommend by Jerry 2005/07/27*/
+		/* To degrade our VIDO Queue's throughput for WiFi WMM S3T07 Issue.*/
+		
+		/*pEdcaParm->Txop[QID_AC_VI] = pEdcaParm->Txop[QID_AC_VI] * 7 / 10;  rt2860c need this		*/
 
 		Ac0Cfg.field.AcTxop =  pEdcaParm->Txop[QID_AC_BE];
 		Ac0Cfg.field.Cwmin= pEdcaParm->Cwmin[QID_AC_BE];
 		Ac0Cfg.field.Cwmax = pEdcaParm->Cwmax[QID_AC_BE];
-		Ac0Cfg.field.Aifsn = pEdcaParm->Aifsn[QID_AC_BE]; //+1;
+		Ac0Cfg.field.Aifsn = pEdcaParm->Aifsn[QID_AC_BE]; /*+1;*/
 
 		Ac1Cfg.field.AcTxop =  pEdcaParm->Txop[QID_AC_BK];
-		Ac1Cfg.field.Cwmin = pEdcaParm->Cwmin[QID_AC_BK]; //+2; 
+		Ac1Cfg.field.Cwmin = pEdcaParm->Cwmin[QID_AC_BK]; /*+2; */
 		Ac1Cfg.field.Cwmax = pEdcaParm->Cwmax[QID_AC_BK];
-		Ac1Cfg.field.Aifsn = pEdcaParm->Aifsn[QID_AC_BK]; //+1;
+		Ac1Cfg.field.Aifsn = pEdcaParm->Aifsn[QID_AC_BK]; /*+1;*/
 
 
 		Ac2Cfg.field.AcTxop = (pEdcaParm->Txop[QID_AC_VI] * 6) / 10;
@@ -3318,26 +2233,24 @@ VOID AsicSetEdcaParm(
 		Ac2Cfg.field.Cwmax = pEdcaParm->Cwmax[QID_AC_VI];
 		}
 		Ac2Cfg.field.Aifsn = pEdcaParm->Aifsn[QID_AC_VI] + 1;
-#ifdef CONFIG_STA_SUPPORT
-#endif // CONFIG_STA_SUPPORT //
 		
 #ifdef INF_AMAZON_SE
 #ifdef CONFIG_AP_SUPPORT
 		IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
-			Ac2Cfg.field.Aifsn = 0x3; //for WiFi WMM A1-T07.
-#endif // CONFIG_AP_SUPPORT //
-#endif // INF_AMAZON_SE //
+			Ac2Cfg.field.Aifsn = 0x3; /*for WiFi WMM A1-T07.*/
+#endif /* CONFIG_AP_SUPPORT */
+#endif /* INF_AMAZON_SE */
 
 #ifdef CONFIG_STA_SUPPORT
 		IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
 		{
-			// Tuning for Wi-Fi WMM S06
+			/* Tuning for Wi-Fi WMM S06*/
 			if (pAd->CommonCfg.bWiFiTest && 
 				pEdcaParm->Aifsn[QID_AC_VI] == 10)
 				Ac2Cfg.field.Aifsn -= 1; 
 
-			// Tuning for TGn Wi-Fi 5.2.32
-			// STA TestBed changes in this item: conexant legacy sta ==> broadcom 11n sta
+			/* Tuning for TGn Wi-Fi 5.2.32*/
+			/* STA TestBed changes in this item: conexant legacy sta ==> broadcom 11n sta*/
 			if (STA_TGN_WIFI_ON(pAd) && 
 				pEdcaParm->Aifsn[QID_AC_VI] == 10)
 			{
@@ -3346,14 +2259,14 @@ VOID AsicSetEdcaParm(
 			}
 			
 		}
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 
 		Ac3Cfg.field.AcTxop = pEdcaParm->Txop[QID_AC_VO];
 		Ac3Cfg.field.Cwmin = pEdcaParm->Cwmin[QID_AC_VO];
 		Ac3Cfg.field.Cwmax = pEdcaParm->Cwmax[QID_AC_VO];
 		Ac3Cfg.field.Aifsn = pEdcaParm->Aifsn[QID_AC_VO];
 
-//#ifdef WIFI_TEST
+/*#ifdef WIFI_TEST*/
 		if (pAd->CommonCfg.bWiFiTest)
 		{
 			if (Ac3Cfg.field.AcTxop == 102)
@@ -3365,7 +2278,7 @@ VOID AsicSetEdcaParm(
 			Ac2Cfg.field.AcTxop = pEdcaParm->Txop[QID_AC_VI];
 			} /* End of if */
 		}
-//#endif // WIFI_TEST //
+/*#endif  WIFI_TEST */
 
 		RTMP_IO_WRITE32(pAd, EDCA_AC0_CFG, Ac0Cfg.word);
 		RTMP_IO_WRITE32(pAd, EDCA_AC1_CFG, Ac1Cfg.word);
@@ -3373,9 +2286,9 @@ VOID AsicSetEdcaParm(
 		RTMP_IO_WRITE32(pAd, EDCA_AC3_CFG, Ac3Cfg.word);
 
 
-		//========================================================
-		//      DMA Register has a copy too.
-		//========================================================
+		/*========================================================*/
+		/*      DMA Register has a copy too.*/
+		/*========================================================*/
 		csr0.field.Ac0Txop = Ac0Cfg.field.AcTxop;
 		csr0.field.Ac1Txop = Ac1Cfg.field.AcTxop;
 		RTMP_IO_WRITE32(pAd, WMM_TXOP0_CFG, csr0.word);
@@ -3391,11 +2304,11 @@ VOID AsicSetEdcaParm(
 #ifdef CONFIG_AP_SUPPORT
 		IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
 			CwminCsr.field.Cwmin3 = pEdcaParm->Cwmin[QID_AC_VO];
-#endif // CONFIG_AP_SUPPORT //
+#endif /* CONFIG_AP_SUPPORT */
 #ifdef CONFIG_STA_SUPPORT
 		IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
-			CwminCsr.field.Cwmin3 = pEdcaParm->Cwmin[QID_AC_VO] - 1; //for TGn wifi test
-#endif // CONFIG_STA_SUPPORT //
+			CwminCsr.field.Cwmin3 = pEdcaParm->Cwmin[QID_AC_VO] - 1; /*for TGn wifi test*/
+#endif /* CONFIG_STA_SUPPORT */
 		RTMP_IO_WRITE32(pAd, WMM_CWMIN_CFG, CwminCsr.word);
 
 		CwmaxCsr.word = 0;
@@ -3406,31 +2319,31 @@ VOID AsicSetEdcaParm(
 		RTMP_IO_WRITE32(pAd, WMM_CWMAX_CFG, CwmaxCsr.word);
 
 		AifsnCsr.word = 0;
-		AifsnCsr.field.Aifsn0 = Ac0Cfg.field.Aifsn; //pEdcaParm->Aifsn[QID_AC_BE];
-		AifsnCsr.field.Aifsn1 = Ac1Cfg.field.Aifsn; //pEdcaParm->Aifsn[QID_AC_BK];
+		AifsnCsr.field.Aifsn0 = Ac0Cfg.field.Aifsn; /*pEdcaParm->Aifsn[QID_AC_BE];*/
+		AifsnCsr.field.Aifsn1 = Ac1Cfg.field.Aifsn; /*pEdcaParm->Aifsn[QID_AC_BK];*/
 #ifdef CONFIG_STA_SUPPORT
-#endif // CONFIG_STA_SUPPORT //
-		AifsnCsr.field.Aifsn2 = Ac2Cfg.field.Aifsn; //pEdcaParm->Aifsn[QID_AC_VI];
+#endif /* CONFIG_STA_SUPPORT */
+		AifsnCsr.field.Aifsn2 = Ac2Cfg.field.Aifsn; /*pEdcaParm->Aifsn[QID_AC_VI];*/
 #ifdef INF_AMAZON_SE
 #ifdef CONFIG_AP_SUPPORT
 		IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
 		{
-			AifsnCsr.field.Aifsn3 = Ac3Cfg.field.Aifsn; //pEdcaParm->Aifsn[QID_AC_VO]
-			AifsnCsr.field.Aifsn2 = 0x2; //pEdcaParm->Aifsn[QID_AC_VI]; //for WiFi WMM A1-T07.
+			AifsnCsr.field.Aifsn3 = Ac3Cfg.field.Aifsn; /*pEdcaParm->Aifsn[QID_AC_VO]*/
+			AifsnCsr.field.Aifsn2 = 0x2; /*pEdcaParm->Aifsn[QID_AC_VI]; for WiFi WMM A1-T07.*/
 		}
-#endif // CONFIG_AP_SUPPORT //
-#endif // INF_AMAZON_SE //
+#endif /* CONFIG_AP_SUPPORT */
+#endif /* INF_AMAZON_SE */
 
 #ifdef CONFIG_STA_SUPPORT
 		IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
 		{
-			// Tuning for Wi-Fi WMM S06
+			/* Tuning for Wi-Fi WMM S06*/
 			if (pAd->CommonCfg.bWiFiTest &&
 				pEdcaParm->Aifsn[QID_AC_VI] == 10)
 				AifsnCsr.field.Aifsn2 = Ac2Cfg.field.Aifsn - 4;
 
-			// Tuning for TGn Wi-Fi 5.2.32
-			// STA TestBed changes in this item: connexant legacy sta ==> broadcom 11n sta
+			/* Tuning for TGn Wi-Fi 5.2.32*/
+			/* STA TestBed changes in this item: connexant legacy sta ==> broadcom 11n sta*/
 			if (STA_TGN_WIFI_ON(pAd) && 
 				pEdcaParm->Aifsn[QID_AC_VI] == 10)
 			{
@@ -3441,18 +2354,18 @@ VOID AsicSetEdcaParm(
 			if (INFRA_ON(pAd))
 				CLIENT_STATUS_SET_FLAG(&pAd->MacTab.Content[BSSID_WCID], fCLIENT_STATUS_WMM_CAPABLE);
 		}
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 
 #ifdef CONFIG_AP_SUPPORT
 		IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
-			AifsnCsr.field.Aifsn3 = Ac3Cfg.field.Aifsn; //pEdcaParm->Aifsn[QID_AC_VO]
-#endif // CONFIG_AP_SUPPORT //
+			AifsnCsr.field.Aifsn3 = Ac3Cfg.field.Aifsn; /*pEdcaParm->Aifsn[QID_AC_VO]*/
+#endif /* CONFIG_AP_SUPPORT */
 #ifdef CONFIG_STA_SUPPORT
 		IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
 		{
-			AifsnCsr.field.Aifsn3 = Ac3Cfg.field.Aifsn - 1; //pEdcaParm->Aifsn[QID_AC_VO]; //for TGn wifi test
+			AifsnCsr.field.Aifsn3 = Ac3Cfg.field.Aifsn - 1; /*pEdcaParm->Aifsn[QID_AC_VO]; for TGn wifi test*/
 		}
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 		RTMP_IO_WRITE32(pAd, WMM_AIFSN_CFG, AifsnCsr.word);
 
 		NdisMoveMemory(&pAd->CommonCfg.APEdcaParm, pEdcaParm, sizeof(EDCA_PARM));
@@ -3485,12 +2398,6 @@ VOID AsicSetEdcaParm(
 									 pEdcaParm->bACM[3]));
 		}
 
-#ifdef WMM_ACM_SUPPORT
-		ACMP_EnableFlagReset(pAd, pEdcaParm->bACM[0],
-							pEdcaParm->bACM[1],
-							pEdcaParm->bACM[2],
-							pEdcaParm->bACM[3]);
-#endif // WMM_ACM_SUPPORT //
 	}
 }
 
@@ -3513,7 +2420,7 @@ VOID 	AsicSetSlotTime(
 #ifdef CONFIG_STA_SUPPORT
 	if (pAd->CommonCfg.Channel > 14)
 		bUseShortSlotTime = TRUE;
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 
 	if (bUseShortSlotTime && OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_SHORT_SLOT_INUSED))
 		return;
@@ -3530,15 +2437,15 @@ VOID 	AsicSetSlotTime(
 #ifdef CONFIG_STA_SUPPORT
 	IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
 	{
-		// force using short SLOT time for FAE to demo performance when TxBurst is ON
+		/* force using short SLOT time for FAE to demo performance when TxBurst is ON*/
 		if (((pAd->StaActive.SupportedPhyInfo.bHtEnable == FALSE) && (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_WMM_INUSED)))
 #ifdef DOT11_N_SUPPORT
 			|| ((pAd->StaActive.SupportedPhyInfo.bHtEnable == TRUE) && (pAd->CommonCfg.BACapability.field.Policy == BA_NOTUSE))
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 			)
 		{
-			// In this case, we will think it is doing Wi-Fi test
-			// And we will not set to short slot when bEnableTxBurst is TRUE.
+			/* In this case, we will think it is doing Wi-Fi test*/
+			/* And we will not set to short slot when bEnableTxBurst is TRUE.*/
 		}
 		else if (pAd->CommonCfg.bEnableTxBurst)
 		{
@@ -3546,13 +2453,13 @@ VOID 	AsicSetSlotTime(
 			SlotTime = 9;
 		}
 	}
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 
-	//
-	// For some reasons, always set it to short slot time.
-	// 
-	// ToDo: Should consider capability with 11B
-	//
+	
+	/* For some reasons, always set it to short slot time.*/
+	/* */
+	/* ToDo: Should consider capability with 11B*/
+	
 #ifdef CONFIG_STA_SUPPORT 
 	IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
 	{
@@ -3562,7 +2469,7 @@ VOID 	AsicSetSlotTime(
 			SlotTime = 20;
 		}
 	}
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 
 	RTMP_IO_READ32(pAd, BKOFF_SLOT_CFG, &RegValue);
 	RegValue = RegValue & 0xFFFFFF00;
@@ -3588,11 +2495,11 @@ VOID AsicAddSharedKeyEntry(
 	IN UCHAR		 	KeyIdx,
 	IN PCIPHER_KEY		pCipherKey)
 {
-	ULONG offset; //, csr0;
+	ULONG offset; /*, csr0;*/
 	SHAREDKEY_MODE_STRUC csr1;
 #ifdef RTMP_MAC_PCI
 	INT   i;
-#endif // RTMP_MAC_PCI //
+#endif /* RTMP_MAC_PCI */
 
 	PUCHAR		pKey = pCipherKey->Key;
 	PUCHAR		pTxMic = pCipherKey->TxMic;
@@ -3600,7 +2507,7 @@ VOID AsicAddSharedKeyEntry(
 	UCHAR		CipherAlg = pCipherKey->CipherAlg;
 
 	DBGPRINT(RT_DEBUG_TRACE, ("AsicAddSharedKeyEntry BssIndex=%d, KeyIdx=%d\n", BssIndex,KeyIdx));
-//============================================================================================
+/*============================================================================================*/
 
 	DBGPRINT(RT_DEBUG_TRACE,("AsicAddSharedKeyEntry: %s key #%d\n", CipherName[CipherAlg], BssIndex*4 + KeyIdx));
 	DBGPRINT_RAW(RT_DEBUG_TRACE, (" 	Key = %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
@@ -3615,10 +2522,10 @@ VOID AsicAddSharedKeyEntry(
 		DBGPRINT_RAW(RT_DEBUG_TRACE, (" 	Tx MIC Key = %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
 			pTxMic[0],pTxMic[1],pTxMic[2],pTxMic[3],pTxMic[4],pTxMic[5],pTxMic[6],pTxMic[7]));
 	}
-//============================================================================================
-	//
-	// fill key material - key + TX MIC + RX MIC
-	//
+/*============================================================================================*/
+	
+	/* fill key material - key + TX MIC + RX MIC*/
+	
 #ifdef RTMP_MAC_PCI
 	offset = SHARED_KEY_TABLE_BASE + (4*BssIndex + KeyIdx)*HW_KEY_ENTRY_SIZE;
 	for (i=0; i<MAX_LEN_OF_SHARE_KEY; i++) 
@@ -3643,12 +2550,12 @@ VOID AsicAddSharedKeyEntry(
 			RTMP_IO_WRITE8(pAd, offset + i, pRxMic[i]);
 		}
 	}
-#endif // RTMP_MAC_PCI //
+#endif /* RTMP_MAC_PCI */
 
 
-	//
-	// Update cipher algorithm. WSTA always use BSS0
-	//
+	
+	/* Update cipher algorithm. WSTA always use BSS0*/
+	
 	RTMP_IO_READ32(pAd, SHARED_KEY_MODE_BASE+4*(BssIndex/2), &csr1.word);
 	DBGPRINT(RT_DEBUG_TRACE,("Read: SHARED_KEY_MODE_BASE at this Bss[%d] KeyIdx[%d]= 0x%x \n", BssIndex,KeyIdx, csr1.word));
 	if ((BssIndex%2) == 0)
@@ -3678,13 +2585,13 @@ VOID AsicAddSharedKeyEntry(
 		
 }
 
-//	IRQL = DISPATCH_LEVEL
+/*	IRQL = DISPATCH_LEVEL*/
 VOID AsicRemoveSharedKeyEntry(
 	IN PRTMP_ADAPTER pAd,
 	IN UCHAR		 BssIndex,
 	IN UCHAR		 KeyIdx)
 {
-	//ULONG SecCsr0;
+	/*ULONG SecCsr0;*/
 	SHAREDKEY_MODE_STRUC csr1;
 
 	DBGPRINT(RT_DEBUG_TRACE,("AsicRemoveSharedKeyEntry: #%d \n", BssIndex*4 + KeyIdx));
@@ -3808,7 +2715,7 @@ VOID	AsicUpdateWcidAttributeEntry(
 			WCIDAttri.field.WAPI_MCBC = 1;
 		WCIDAttri.field.WAPIKeyIdx = ((KeyIdx == 0) ? 0 : 1); 
 	}
-#endif // WAPI_SUPPORT //
+#endif /* WAPI_SUPPORT */
 	
 	/* Assign Key Table selection */		
 	WCIDAttri.field.KeyTab = KeyTabFlag;
@@ -3843,16 +2750,22 @@ VOID AsicAddPairwiseKeyEntry(
 	PUCHAR		 pTxMic = pCipherKey->TxMic;
 	PUCHAR		 pRxMic = pCipherKey->RxMic;
 	UCHAR		CipherAlg = pCipherKey->CipherAlg;
+#ifdef SPECIFIC_BCN_BUF_SUPPORT
+	unsigned long irqFlag = 0;
+#endif /* SPECIFIC_BCN_BUF_SUPPORT */
 
+#ifdef SPECIFIC_BCN_BUF_SUPPORT
+	RTMP_MAC_SHR_MSEL_LOCK(pAd, LOWER_SHRMEM, irqFlag);
+#endif /* SPECIFIC_BCN_BUF_SUPPORT */
 	
-	// EKEY
+	/* EKEY*/
 	offset = PAIRWISE_KEY_TABLE_BASE + (WCID * HW_KEY_ENTRY_SIZE);
 #ifdef RTMP_MAC_PCI
 	for (i=0; i<MAX_LEN_OF_PEER_KEY; i++)
 	{
 		RTMP_IO_WRITE8(pAd, offset + i, pKey[i]);
 	}
-#endif // RTMP_MAC_PCI //
+#endif /* RTMP_MAC_PCI */
 	for (i=0; i<MAX_LEN_OF_PEER_KEY; i+=4)
 	{
 		UINT32 Value;
@@ -3861,7 +2774,7 @@ VOID AsicAddPairwiseKeyEntry(
 
 	offset += MAX_LEN_OF_PEER_KEY;
 	
-	//  MIC KEY
+	/*  MIC KEY*/
 	if (pTxMic)
 	{
 #ifdef RTMP_MAC_PCI
@@ -3869,7 +2782,7 @@ VOID AsicAddPairwiseKeyEntry(
 		{
 			RTMP_IO_WRITE8(pAd, offset+i, pTxMic[i]);
 		}
-#endif // RTMP_MAC_PCI //
+#endif /* RTMP_MAC_PCI */
 	}
 	offset += 8;
 	if (pRxMic)
@@ -3879,9 +2792,12 @@ VOID AsicAddPairwiseKeyEntry(
 		{
 			RTMP_IO_WRITE8(pAd, offset+i, pRxMic[i]);
 		}
-#endif // RTMP_MAC_PCI //
+#endif /* RTMP_MAC_PCI */
 	}
 
+#ifdef SPECIFIC_BCN_BUF_SUPPORT
+	RTMP_MAC_SHR_MSEL_UNLOCK(pAd, LOWER_SHRMEM, irqFlag);
+#endif /* SPECIFIC_BCN_BUF_SUPPORT*/
 
 	DBGPRINT(RT_DEBUG_TRACE,("AsicAddPairwiseKeyEntry: WCID #%d Alg=%s\n",WCID, CipherName[CipherAlg]));
 	DBGPRINT(RT_DEBUG_TRACE,("	Key = %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
@@ -3928,7 +2844,22 @@ BOOLEAN AsicSendCommandToMcu(
 	IN UCHAR		 Arg1)
 {
 	if (pAd->chipOps.sendCommandToMcu)
-		return pAd->chipOps.sendCommandToMcu(pAd, Command, Token, Arg0, Arg1);
+		return pAd->chipOps.sendCommandToMcu(pAd, Command, Token, Arg0, Arg1, TRUE);
+	else
+		return FALSE;
+}
+
+
+BOOLEAN AsicSendCommandToMcuBBP(
+	IN PRTMP_ADAPTER pAd,
+	IN UCHAR		 Command,
+	IN UCHAR		 Token,
+	IN UCHAR		 Arg0,
+	IN UCHAR		 Arg1,
+	IN BOOLEAN		FlgIsNeedLocked)
+{
+	if (pAd->chipOps.sendCommandToMcu)
+		return pAd->chipOps.sendCommandToMcu(pAd, Command, Token, Arg0, Arg1, FlgIsNeedLocked);
 	else
 		return FALSE;
 }
@@ -3952,13 +2883,13 @@ VOID AsicTurnOffRFClk(
 	else
 	{
 #if defined(RT28xx) || defined(RT2880) || defined(RT2883)
-		// RF R2 bit 18 = 0
+		/* RF R2 bit 18 = 0*/
 		UINT32			R1 = 0, R2 = 0, R3 = 0;
 		UCHAR			index;
 		RTMP_RF_REGS	*RFRegTable;
 	
 		RFRegTable = RF2850RegTable;
-#endif // defined(RT28xx) || defined(RT2880) || defined(RT2883) //
+#endif /* defined(RT28xx) || defined(RT2880) || defined(RT2883) */
 
 		switch (pAd->RfIcType)
 		{
@@ -3968,7 +2899,7 @@ VOID AsicTurnOffRFClk(
 			case RFIC_2850:
 			case RFIC_2720:
 			case RFIC_2750:
-#endif // defined(RT28xx) || defined(RT2880) //
+#endif /* defined(RT28xx) || defined(RT2880) */
 				for (index = 0; index < NUM_OF_2850_CHNL; index++)
 				{
 					if (Channel == RFRegTable[index].Channel)
@@ -3980,9 +2911,9 @@ VOID AsicTurnOffRFClk(
 						RTMP_RF_IO_WRITE32(pAd, R1);
 						RTMP_RF_IO_WRITE32(pAd, R2);
 
-						// Program R1b13 to 1, R3/b18,19 to 0, R2b18 to 0. 
-						// Set RF R2 bit18=0, R3 bit[18:19]=0
-						//if (pAd->StaCfg.bRadio == FALSE)
+						/* Program R1b13 to 1, R3/b18,19 to 0, R2b18 to 0. */
+						/* Set RF R2 bit18=0, R3 bit[18:19]=0*/
+						/*if (pAd->StaCfg.bRadio == FALSE)*/
 						if (1)
 						{
 							RTMP_RF_IO_WRITE32(pAd, R3);
@@ -3997,7 +2928,7 @@ VOID AsicTurnOffRFClk(
 					}
 				}
 				break;
-#endif // defined(RT28xx) || defined(RT2880) || defined(RT2883) //
+#endif /* defined(RT28xx) || defined(RT2880) || defined(RT2883) */
 			default:
 				DBGPRINT(RT_DEBUG_TRACE, ("AsicTurnOffRFClk#%d : Unkonwn RFIC=%d\n",
 											Channel, pAd->RfIcType));
@@ -4030,8 +2961,97 @@ VOID AsicUpdateWAPIPN(
 	}
 	
 }
-#endif // WAPI_SUPPORT //
+#endif /* WAPI_SUPPORT */
 
 
 
+#ifdef VCORECAL_SUPPORT
+VOID AsicVCORecalibration(
+	IN PRTMP_ADAPTER pAd)
+{
+	UCHAR BbpR49 = 0, Tssi = 0;
+#if defined (RT5350)
+	UCHAR BbpR47 = 0;
+#endif
+#ifdef RALINK_ATE
+	if (ATE_ON(pAd))
+		return;
+#endif
+
+	if (pAd->chipCap.FlgIsVcoReCalSup == FALSE)
+		return;
+
+#ifdef RTMP_INTERNAL_TX_ALC
+#ifdef RT5350
+	if (pAd->TxPowerCtrl.bInternalTxALC == TRUE)
+	{
+	    //TSSI_REPORT_SEL = 0
+	    RTMP_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R47, &BbpR47);
+	    BbpR47 &= ~0x3;
+	    RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R47, BbpR47 );
+	}
+#endif /* RT5350 */
+#endif /* RTMP_INTERNAL_TX_ALC */
+
+	{
+		UINT32	TxPinCfg = 0;
+		UCHAR RFValue = 0;
+
+		RTMP_IO_READ32(pAd, TX_PIN_CFG, &TxPinCfg);
+		TxPinCfg &= 0xFCFFFFF0;
+		RTMP_IO_WRITE32(pAd, TX_PIN_CFG, TxPinCfg);
+
+		RT30xxReadRFRegister(pAd, RF_R03, (PUCHAR)&RFValue);
+		RFValue = RFValue | 0x80; /* bit 7=vcocal_en*/
+		RT30xxWriteRFRegister(pAd, RF_R03, (UCHAR)RFValue);
+
+		RtmpOsMsDelay(1);
+
+		RTMP_IO_READ32(pAd, TX_PIN_CFG, &TxPinCfg);
+		if (pAd->CommonCfg.Channel <= 14)
+		{
+			if (pAd->Antenna.field.TxPath == 1)
+				TxPinCfg |= 0x2;
+			else if (pAd->Antenna.field.TxPath == 2)
+				TxPinCfg |= 0xA;
+			else if (pAd->Antenna.field.TxPath == 3)
+				TxPinCfg |= 0x0200000A;
+		}
+		else
+		{
+			if (pAd->Antenna.field.TxPath == 1)
+				TxPinCfg |= 0x1;
+			else if (pAd->Antenna.field.TxPath == 2)
+				TxPinCfg |= 0x5;
+			else if (pAd->Antenna.field.TxPath == 3)
+				TxPinCfg |= 0x01000005;
+		}
+		RTMP_IO_WRITE32(pAd, TX_PIN_CFG, TxPinCfg);
+	}
+}
+#endif /* VCORECAL_SUPPORT */
+
+VOID RtmpUpdateFilterCoefficientControl(
+	IN PRTMP_ADAPTER	pAd,
+	IN UCHAR			Channel)
+{
+	UCHAR		BBPValue = 0;
+
+	if (Channel == 14)
+	{
+		if (pAd->CommonCfg.PhyMode == PHY_11B)
+		{
+			/* when Channel==14 && Mode==CCK && BandWidth==20M, BBP R4 bit5=1 */
+			RTMP_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R4, &BBPValue);
+			BBPValue |= 0x20; /* set bit5=1 */
+			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R4, BBPValue);
+		}
+		else
+		{
+			RTMP_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R4, &BBPValue);
+			BBPValue &= (~0x20);
+			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R4, BBPValue);
+		}
+	}
+}
 

@@ -48,7 +48,7 @@ static PUCHAR MATProto_ARP_Tx(MAT_STRUCT *pMatCfg, PNDIS_PACKET pSkb,PUCHAR pLay
 
 typedef struct _IPMacMappingEntry
 {
-	UINT	ipAddr;	// In network order
+	UINT	ipAddr;	/* In network order */
 	UCHAR	macAddr[MAC_ADDR_LEN];
 	ULONG	lastTime;
 	struct _IPMacMappingEntry *pNext;
@@ -58,8 +58,8 @@ typedef struct _IPMacMappingEntry
 typedef struct _IPMacMappingTable
 {
 	BOOLEAN			valid;
-	IPMacMappingEntry *hash[MAT_MAX_HASH_ENTRY_SUPPORT+1]; //0~63 for specific station, 64 for broadcast MacAddress
-	UCHAR			curMcastAddr[MAC_ADDR_LEN]; // The multicast mac addr for currecnt received packet destined to ipv4 multicast addr
+	IPMacMappingEntry *hash[MAT_MAX_HASH_ENTRY_SUPPORT+1]; /*0~63 for specific station, 64 for broadcast MacAddress */
+	UCHAR			curMcastAddr[MAC_ADDR_LEN]; /* The multicast mac addr for currecnt received packet destined to ipv4 multicast addr */
 }IPMacMappingTable;
 
 
@@ -100,12 +100,12 @@ VOID dumpIPMacTb(
 	
 	
 	if(index < 0)
-	{	// dump all.
+	{	/* dump all. */
 		startIdx = 0;
 		endIdx = MAT_MAX_HASH_ENTRY_SUPPORT;
 	}
 	else
-	{	// dump specific hash index.
+	{	/* dump specific hash index. */
 		startIdx = endIdx = index;
 	}
 
@@ -136,8 +136,8 @@ static inline NDIS_STATUS getDstIPFromIpPkt(
 	if (!pIpHdr)
 		return FALSE;
 	
-	NdisMoveMemory(dstIP, (pIpHdr + 16), 4); //shift 16 for IP header len before DstIP.
-//	DBGPRINT(RT_DEBUG_TRACE, ("%s(): Get the dstIP=0x%x\n", __FUNCTION__, *dstIP));
+	NdisMoveMemory(dstIP, (pIpHdr + 16), 4); /*shift 16 for IP header len before DstIP. */
+/*	DBGPRINT(RT_DEBUG_TRACE, ("%s(): Get the dstIP=0x%x\n", __FUNCTION__, *dstIP)); */
 	
 	return TRUE;
 }
@@ -150,8 +150,8 @@ static inline NDIS_STATUS getSrcIPFromIpPkt(
 	if (!pIpHdr)
 		return FALSE;
 	
-	NdisMoveMemory(pSrcIP, (pIpHdr + 12), 4); //shift 12 for IP header len before DstIP.
-//	DBGPRINT(RT_DEBUG_TRACE, ("%s(): Get the srcIP=0x%x\n", __FUNCTION__, *pSrcIP));
+	NdisMoveMemory(pSrcIP, (pIpHdr + 12), 4); /*shift 12 for IP header len before DstIP. */
+/*	DBGPRINT(RT_DEBUG_TRACE, ("%s(): Get the srcIP=0x%x\n", __FUNCTION__, *pSrcIP)); */
 	
 	return TRUE;
 	
@@ -182,24 +182,24 @@ static NDIS_STATUS IPMacTableUpdate(
 	{
 		NdisGetSystemUpTime(&now);
 		
-		// Find a existed IP-MAC Mapping entry
+		/* Find a existed IP-MAC Mapping entry */
 		if (ipAddr == pEntry->ipAddr)
 		{
 			/*	DBGPRINT(RT_DEBUG_TRACE, ("%s(): Got the Mac(%02x:%02x:%02x:%02x:%02x:%02x) of mapped IP(%d.%d.%d.%d)\n",
 						__FUNCTION__, pEntry->macAddr[0],pEntry->macAddr[1],pEntry->macAddr[2], pEntry->macAddr[3],pEntry->macAddr[4],
 						pEntry->macAddr[5], (ipAddr>>24) & 0xff, (ipAddr>>16) & 0xff, (ipAddr>>8) & 0xff, ipAddr & 0xff)); 
 			*/
-			// compare is useless. So we directly copy it into the entry.
+			/* compare is useless. So we directly copy it into the entry. */
 			NdisMoveMemory(pEntry->macAddr, pMacAddr, 6);
 			pEntry->lastTime = now;
 			return TRUE;
 		}
 		else
-		{	// handle the age-out situation
-			//if ((Now - pEntry->lastTime) > MAT_TB_ENTRY_AGEOUT_TIME)
+		{	/* handle the age-out situation */
+			/*if ((Now - pEntry->lastTime) > MAT_TB_ENTRY_AGEOUT_TIME) */
 			if (RTMP_TIME_AFTER(now, pEntry->lastTime + MAT_TB_ENTRY_AGEOUT_TIME))
 			{
-				// Remove the aged entry
+				/* Remove the aged entry */
 				if (pEntry == pIPMacTable->hash[hashIdx])
 				{
 					pIPMacTable->hash[hashIdx]= pEntry->pNext;
@@ -223,7 +223,7 @@ static NDIS_STATUS IPMacTableUpdate(
 	}
 
 
-	// Allocate a new IPMacMapping entry and insert into the hash
+	/* Allocate a new IPMacMapping entry and insert into the hash */
 	pNewEntry = (IPMacMappingEntry *)MATDBEntryAlloc(pMatCfg, sizeof(IPMacMappingEntry));
 	if (pNewEntry != NULL)
 	{	
@@ -233,16 +233,16 @@ static NDIS_STATUS IPMacTableUpdate(
 		NdisGetSystemUpTime(&pNewEntry->lastTime);
 
 		if (pIPMacTable->hash[hashIdx] == NULL)
-		{	// Hash list is empty, directly assign it.
+		{	/* Hash list is empty, directly assign it. */
 			pIPMacTable->hash[hashIdx] = pNewEntry;
 		} 
 		else 
 		{
-			// Ok, we insert the new entry into the root of hash[hashIdx]
+			/* Ok, we insert the new entry into the root of hash[hashIdx] */
 			pNewEntry->pNext = pIPMacTable->hash[hashIdx];
 			pIPMacTable->hash[hashIdx] = pNewEntry;
 		}
-		//dumpIPMacTb(pMatCfg, hashIdx); //for debug
+		/*dumpIPMacTb(pMatCfg, hashIdx); //for debug */
 
 		pMatCfg->nodeCount++;
 
@@ -270,7 +270,7 @@ static PUCHAR IPMacTableLookUp(
 	if (!pIPMacTable->valid)
 		return NULL;
 	
-	//if multicast ip, need converting multicast group address to ethernet address.    	
+	/*if multicast ip, need converting multicast group address to ethernet address. */
 	ip = ntohl(ipAddr);	
 	if (IS_MULTICAST_IP(ip))	
 	{
@@ -279,10 +279,10 @@ static PUCHAR IPMacTableLookUp(
 		return pIPMacTable->curMcastAddr;	
 	}
 
-	// Use hash to find out the location of that entry and get the Mac address.
+	/* Use hash to find out the location of that entry and get the Mac address. */
 	hashIdx = MAT_IP_ADDR_HASH_INDEX(ipAddr);
 
-//	spin_lock_irqsave(&IPMacTabLock, irqFlag);
+/*	spin_lock_irqsave(&IPMacTabLock, irqFlag); */
 	pEntry = pIPMacTable->hash[hashIdx];
 	while(pEntry)
 	{
@@ -294,7 +294,7 @@ static PUCHAR IPMacTableLookUp(
 					(ipAddr>>24) & 0xff, (ipAddr>>16) & 0xff, (ipAddr>>8) & 0xff, ipAddr & 0xff)); 
 */
 			
-			//Update the lastTime to prevent the aging before pDA processed!
+			/*Update the lastTime to prevent the aging before pDA processed! */
 			NdisGetSystemUpTime(&pEntry->lastTime);
 			
 			return pEntry->macAddr;
@@ -303,8 +303,10 @@ static PUCHAR IPMacTableLookUp(
 			pEntry = pEntry->pNext;
 	}
 	
-	// We didn't find any matched Mac address, our policy is treat it as 
-	// broadcast packet and send to all.
+	/*
+		We didn't find any matched Mac address, our policy is treat it as
+		broadcast packet and send to all.
+	*/
 	return pIPMacTable->hash[IPMAC_TB_HASH_INDEX_OF_BCAST]->macAddr;
 	
 }
@@ -336,7 +338,8 @@ static NDIS_STATUS IPMacTable_RemoveAll(
 		}
 	}
 
-	kfree(pIPMacTable);
+/*	kfree(pIPMacTable); */
+	os_free_mem(NULL, pIPMacTable);
 	pMatCfg->MatTableSet.IPMacTable = NULL;
 	
 	return TRUE;
@@ -357,7 +360,8 @@ static NDIS_STATUS IPMacTable_init(
 	}
 	else
 	{
-		pMatCfg->MatTableSet.IPMacTable = kmalloc(sizeof(IPMacMappingTable), GFP_KERNEL);
+/*		pMatCfg->MatTableSet.IPMacTable = kmalloc(sizeof(IPMacMappingTable), GFP_KERNEL); */
+		os_alloc_mem_suspend(NULL, (UCHAR **)&(pMatCfg->MatTableSet.IPMacTable), sizeof(IPMacMappingTable));
 		if (pMatCfg->MatTableSet.IPMacTable)
 		{
 			pIPMacTable = (IPMacMappingTable *)pMatCfg->MatTableSet.IPMacTable;
@@ -372,7 +376,7 @@ static NDIS_STATUS IPMacTable_init(
 	
 	if (pIPMacTable->valid == FALSE)
 	{
-		//Set the last hash entry (hash[64]) as our default broadcast Mac address
+		/*Set the last hash entry (hash[64]) as our default broadcast Mac address */
 		pEntry = (IPMacMappingEntry *)MATDBEntryAlloc(pMatCfg, sizeof(IPMacMappingEntry));
 		if (!pEntry)
 		{
@@ -380,7 +384,7 @@ static NDIS_STATUS IPMacTable_init(
 			return FALSE;
 		}
 		
-		//pEntry->ipAddr = 0;
+		/*pEntry->ipAddr = 0; */
 		NdisZeroMemory(pEntry, sizeof(IPMacMappingEntry));
 		NdisMoveMemory(&pEntry->macAddr[0], &BROADCAST_ADDR[0], 6);
 		pEntry->pNext = NULL;
@@ -421,30 +425,32 @@ static PUCHAR MATProto_ARP_Rx(
 	
 	pArpHdr = pLayerHdr;
 
-//dumpPkt(RTPKT_TO_OSPKT(pSkb)->data, RTPKT_TO_OSPKT(pSkb)->len);		
-	// We just take care about the target(Mac/IP address) fields.
+/*dumpPkt(RTPKT_TO_OSPKT(pSkb)->data, RTPKT_TO_OSPKT(pSkb)->len); */
+	/* We just take care about the target(Mac/IP address) fields. */
 	tgtMac = pArpHdr + 18;
 	tgtIP = tgtMac + 6;
 		
-	// isUcastMac = !(00:00:00:00:00:00|| mcastMac);
+	/* isUcastMac = !(00:00:00:00:00:00|| mcastMac); */
 	isUcastMac = ((tgtMac[0]|tgtMac[1]|tgtMac[2]|tgtMac[3]|tgtMac[4]|tgtMac[5])!=0);
-	isUcastMac &= ((tgtMac[0] && 0x1)==0);
+	isUcastMac &= ((tgtMac[0] & 0x1)==0);
 
-	// isGoodIP = ip address is not 0.0.0.0
+	/* isGoodIP = ip address is not 0.0.0.0 */
 	isGoodIP = (*(UINT *)tgtIP != 0);
 	
 		
 	if (isUcastMac && isGoodIP)
 		pRealMac = IPMacTableLookUp(pMatCfg, *(UINT *)tgtIP);
 		
-	// For need replaced mac, we need to replace the targetMAC as correct one to make 
-	// the real receiver can receive that.
+	/*
+		For need replaced mac, we need to replace the targetMAC as correct one to make
+		the real receiver can receive that.
+	*/
 	if (isUcastMac && pRealMac)
 		NdisMoveMemory(tgtMac, pRealMac, MAC_ADDR_LEN);
 
 	if (pRealMac == NULL)
 		pRealMac = &BROADCAST_ADDR[0];
-//		pRealMac = pIPMacTable->hash[IPMAC_TB_HASH_INDEX_OF_BCAST]->macAddr;
+/*		pRealMac = pIPMacTable->hash[IPMAC_TB_HASH_INDEX_OF_BCAST]->macAddr; */
 	
 	return pRealMac;
 }
@@ -457,27 +463,29 @@ static PUCHAR MATProto_ARP_Tx(
 {
 	PUCHAR	pSMac, pSIP;
 	BOOLEAN isUcastMac, isGoodIP;
-	struct arphdr *arpHdr;
+	NET_PRO_ARP_HDR *arpHdr;
 	PUCHAR pPktHdr;
 	PNDIS_PACKET newSkb = NULL;
 
 	pPktHdr = GET_OS_PKT_DATAPTR(pSkb);
 	
-	arpHdr = (struct arphdr *)pLayerHdr;
+	arpHdr = (NET_PRO_ARP_HDR *)pLayerHdr;
 
-	// Check the arp header.
-	// We just handle ether type hardware address and IPv4 internet 
-	// address type and opcode is  ARP reuqest/response.
+	/*
+		Check the arp header.
+		We just handle ether type hardware address and IPv4 internet
+		address type and opcode is  ARP reuqest/response.
+	*/
 	if ((arpHdr->ar_hrd != OS_HTONS(ARPHRD_ETHER)) || (arpHdr->ar_pro != OS_HTONS(ETH_P_IP)) ||
 		(arpHdr->ar_op != OS_HTONS(ARPOP_REPLY) && arpHdr->ar_op != OS_HTONS(ARPOP_REQUEST)))
 		return NULL;
 
-	// We just take care about the sender(Mac/IP address) fields.
+	/* We just take care about the sender(Mac/IP address) fields. */
 	pSMac =(PUCHAR)(pLayerHdr + 8);
 	pSIP = (PUCHAR)(pSMac + MAC_ADDR_LEN);
 	
 	isUcastMac = IS_UCAST_MAC(pSMac);
-	isGoodIP = IS_GOOD_IP(get_unaligned((PUINT) pSIP));
+	isGoodIP = IS_GOOD_IP(get_unaligned32((PUINT) pSIP));
 	
 /*	
 	DBGPRINT(RT_DEBUG_TRACE,("%s(): ARP Pkt=>senderIP=%d.%d.%d.%d, senderMac=%02x:%02x:%02x:%02x:%02x:%02x\n",
@@ -485,15 +493,17 @@ static PUCHAR MATProto_ARP_Tx(
 			pSMac[0],pSMac[1],pSMac[2],pSMac[3],pSMac[4],pSMac[5]));	
 */
 	if (isUcastMac && isGoodIP)
-		IPMacTableUpdate(pMatCfg, pSMac, get_unaligned((PUINT) pSIP));
+		IPMacTableUpdate(pMatCfg, pSMac, get_unaligned32((PUINT) pSIP));
 
-	// For outgoing unicast mac, we need to replace the senderMAC as ourself to make 
-	// the receiver can send to us.
+	/*
+		For outgoing unicast mac, we need to replace the senderMAC as ourself to make
+		the receiver can send to us.
+	*/
 	if (isUcastMac)
 	{
 		if(OS_PKT_CLONED(pSkb)) 
 		{
-			newSkb = (PNDIS_PACKET)skb_copy(RTPKT_TO_OSPKT(pSkb), GFP_ATOMIC);
+			newSkb = (PNDIS_PACKET)OS_PKT_COPY(pSkb);
 			if(newSkb) 
 			{
 				if (IS_VLAN_PACKET(GET_OS_PKT_DATAPTR(newSkb)))
@@ -542,7 +552,7 @@ static PUCHAR MATProto_IP_Rx(
 	PUCHAR	 pMacAddr;
 	UINT   	dstIP;
 	
-	// Fetch the IP addres from the packet header.
+	/* Fetch the IP addres from the packet header. */
 	getDstIPFromIpPkt(pLayerHdr, &dstIP);
 	pMacAddr = IPMacTableLookUp(pMatCfg, dstIP); 
 	
@@ -567,11 +577,11 @@ static PUCHAR MATProto_IP_Tx(
 	pSrcIP = pLayerHdr + 12;
 
 
-	needUpdate = NEED_UPDATE_IPMAC_TB(pSrcMac, get_unaligned((PUINT)(pSrcIP)));
+	needUpdate = NEED_UPDATE_IPMAC_TB(pSrcMac, get_unaligned32((PUINT)(pSrcIP)));
 	if (needUpdate)
-		IPMacTableUpdate(pMatCfg, pSrcMac, get_unaligned((PUINT)(pSrcIP)));
+		IPMacTableUpdate(pMatCfg, pSrcMac, get_unaligned32((PUINT)(pSrcIP)));
 
-	//For UDP packet, we need to check about the DHCP packet, to modify the flag of DHCP discovey/request as broadcast.
+	/*For UDP packet, we need to check about the DHCP packet, to modify the flag of DHCP discovey/request as broadcast. */
 	if (*(pLayerHdr + 9) == 0x11)
 	{
 		PUCHAR udpHdr;
@@ -581,7 +591,7 @@ static PUCHAR MATProto_IP_Tx(
 		srcPort = OS_NTOHS(get_unaligned((PUINT16)(udpHdr)));
 		dstPort = OS_NTOHS(get_unaligned((PUINT16)(udpHdr+2)));
 		
-		if (srcPort==68 && dstPort==67) //It's a DHCP packet
+		if (srcPort==68 && dstPort==67) /*It's a DHCP packet */
 		{
 			PUCHAR bootpHdr;
 			UINT16 bootpFlag;	
@@ -589,7 +599,7 @@ static PUCHAR MATProto_IP_Tx(
 			bootpHdr = udpHdr + 8;
 			bootpFlag = OS_NTOHS(get_unaligned((PUINT16)(bootpHdr+10)));
 			DBGPRINT(RT_DEBUG_TRACE, ("is bootp packet! bootpFlag=0x%x\n", bootpFlag));
-			if (bootpFlag != 0x8000) //check if it's a broadcast request.
+			if (bootpFlag != 0x8000) /*check if it's a broadcast request. */
 			{
 				PUCHAR dhcpHdr;
 				
@@ -601,8 +611,8 @@ static PUCHAR MATProto_IP_Tx(
 				{	
 					DBGPRINT(RT_DEBUG_TRACE, ("dhcp magic macthed!\n"));	
 					bootpFlag = OS_HTONS(0x8000);
-					NdisMoveMemory((bootpHdr+10), &bootpFlag, 2);	//Set the bootp flag as broadcast
-					NdisZeroMemory((udpHdr+6), 2); //modify the UDP chksum as zero
+					NdisMoveMemory((bootpHdr+10), &bootpFlag, 2);	/*Set the bootp flag as broadcast */
+					NdisZeroMemory((udpHdr+6), 2); /*modify the UDP chksum as zero */
 				}
 			}	
 		}
@@ -623,24 +633,25 @@ static NDIS_STATUS MATProto_IP_Init(
 }
 
 
-static inline void IPintToIPstr(int ipint, char Ipstr[20])
+static inline void IPintToIPstr(int ipint, char Ipstr[20], ULONG BufLen)
 {
 	 int temp = 0;
 	 
 	 temp = ipint & 0x000FF;
-	 sprintf(Ipstr, "%d.", temp);
+	 snprintf(Ipstr, BufLen, "%d.", temp);
 	 temp = (ipint>>8) & 0x000FF;
-	 sprintf(Ipstr, "%s%d.", Ipstr, temp);
+	 snprintf(Ipstr, BufLen, "%s%d.", Ipstr, temp);
 	 temp = (ipint>>16) & 0x000FF;
-	 sprintf(Ipstr, "%s%d.", Ipstr, temp);
+	 snprintf(Ipstr, BufLen, "%s%d.", Ipstr, temp);
 	 temp = (ipint>>24) & 0x000FF;
-	 sprintf(Ipstr, "%s%d", Ipstr, temp);
+	 snprintf(Ipstr, BufLen, "%s%d", Ipstr, temp);
 }
 
 
 VOID getIPMacTbInfo(
 	IN MAT_STRUCT *pMatCfg, 
-	IN char *pOutBuf)
+	IN char *pOutBuf,
+	IN ULONG BufLen)
 {
 	IPMacMappingTable *pIPMacTable;
 	IPMacMappingEntry *pHead;
@@ -655,7 +666,7 @@ VOID getIPMacTbInfo(
 		return;
 	}
 		
-	// dump all.
+	/* dump all. */
 	startIdx = 0;
 	endIdx = MAT_MAX_HASH_ENTRY_SUPPORT;
 
@@ -666,10 +677,11 @@ VOID getIPMacTbInfo(
 		pHead = pIPMacTable->hash[startIdx];
 		while(pHead)
 		{
-			if (strlen(pOutBuf) > (IW_PRIV_SIZE_MASK - 30))
+/*			if (strlen(pOutBuf) > (IW_PRIV_SIZE_MASK - 30)) */
+			if (RtmpOsCmdDisplayLenCheck(strlen(pOutBuf), 30) == FALSE)
 			    break;
 			NdisZeroMemory(Ipstr, 20);
-			IPintToIPstr(pHead->ipAddr, Ipstr);
+			IPintToIPstr(pHead->ipAddr, Ipstr, sizeof(Ipstr));
 			sprintf(pOutBuf+strlen(pOutBuf), "%-18s%02x:%02x:%02x:%02x:%02x:%02x\n",
 				Ipstr, pHead->macAddr[0],pHead->macAddr[1],pHead->macAddr[2],
 				pHead->macAddr[3],pHead->macAddr[4],pHead->macAddr[5]);
@@ -678,5 +690,5 @@ VOID getIPMacTbInfo(
 	}
 }
 
-#endif // MAT_SUPPORT //
+#endif /* MAT_SUPPORT */
 

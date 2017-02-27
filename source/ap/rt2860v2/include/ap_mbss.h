@@ -35,7 +35,7 @@
 
 #define MBSS_EXTERN
 
-#endif // MODULE_MBSS //
+#endif /* MODULE_MBSS */
 
 
 /*
@@ -62,29 +62,25 @@
 	}
 
 /* Public function list */
-MBSS_EXTERN VOID RT28xx_MBSS_Init(
-	IN PRTMP_ADAPTER ad_p,
-	IN PNET_DEV main_dev_p);
-
-MBSS_EXTERN VOID RT28xx_MBSS_Close(
-	IN PRTMP_ADAPTER ad_p);
-
-MBSS_EXTERN VOID RT28xx_MBSS_Remove(
-	IN PRTMP_ADAPTER ad_p);
-
-INT MBSS_VirtualIF_Open(
-	IN	PNET_DEV			dev_p);
-INT MBSS_VirtualIF_Close(
-	IN	PNET_DEV			dev_p);
-INT MBSS_VirtualIF_PacketSend(
-	IN PNDIS_PACKET			skb_p,
-	IN PNET_DEV				dev_p);
-INT MBSS_VirtualIF_Ioctl(
-	IN PNET_DEV				dev_p, 
-	IN OUT struct ifreq 	*rq_p, 
-	IN INT cmd);
 INT	Show_MbssInfo_Display_Proc(
-	IN	PRTMP_ADAPTER	pAd,
-	IN	PSTRING			arg);
+	IN	PRTMP_ADAPTER				pAd,
+	IN	PSTRING						arg);
+
+VOID MBSS_Init(
+	IN PRTMP_ADAPTER				pAd,
+	IN RTMP_OS_NETDEV_OP_HOOK		*pNetDevOps);
+
+VOID MBSS_Remove(
+	IN PRTMP_ADAPTER				pAd);
+
+INT MBSS_Open(
+	IN	PNET_DEV					pDev);
+
+INT MBSS_Close(
+	IN	PNET_DEV					pDev);
+
+INT32 RT28xx_MBSS_IdxGet(
+	IN PRTMP_ADAPTER	pAd,
+	IN PNET_DEV			pDev);
 
 /* End of ap_mbss.h */

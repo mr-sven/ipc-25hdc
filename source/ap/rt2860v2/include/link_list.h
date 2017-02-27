@@ -104,5 +104,5 @@ static inline PLIST_ENTRY delEntryList(
 	return pCurEntry;
 }
 
-#endif // ___LINK_LIST_H__ //
+#endif /* ___LINK_LIST_H__ */
 

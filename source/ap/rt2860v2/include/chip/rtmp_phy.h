@@ -99,21 +99,21 @@
 #define	RF_R63					    63
 
 
-// value domain of pAd->RfIcType
-#define RFIC_2820                   1       // 2.4G 2T3R
-#define RFIC_2850                   2       // 2.4G/5G 2T3R
-#define RFIC_2720                   3       // 2.4G 1T2R
-#define RFIC_2750                   4       // 2.4G/5G 1T2R
-#define RFIC_3020                   5       // 2.4G 1T1R
-#define RFIC_2020                   6       // 2.4G B/G
-#define RFIC_3021                   7       // 2.4G 1T2R
-#define RFIC_3022                   8       // 2.4G 2T2R
-#define RFIC_3052                   9       // 2.4G/5G 2T2R
-#define RFIC_2853					10		// 2.4G.5G 3T3R
-#define RFIC_3320                   11      // 2.4G 1T1R with PA (RT3350/RT3370/RT3390)
-#define RFIC_3322                   12      // 2.4G 2T2R with PA (RT3352/RT3371/RT3372/RT3391/RT3392)
-#define RFIC_3053                   13      // 2.4G/5G 3T3R (RT3883/RT3563/RT3573/RT3593/RT3662)
-#define RFIC_3853                   13      // 2.4G/5G 3T3R (RT3883/RT3563/RT3573/RT3593/RT3662)
+/* value domain of pAd->RfIcType */
+#define RFIC_2820                   1       /* 2.4G 2T3R */
+#define RFIC_2850                   2       /* 2.4G/5G 2T3R */
+#define RFIC_2720                   3       /* 2.4G 1T2R */
+#define RFIC_2750                   4       /* 2.4G/5G 1T2R */
+#define RFIC_3020                   5       /* 2.4G 1T1R */
+#define RFIC_2020                   6       /* 2.4G B/G */
+#define RFIC_3021                   7       /* 2.4G 1T2R */
+#define RFIC_3022                   8       /* 2.4G 2T2R */
+#define RFIC_3052                   9       /* 2.4G/5G 2T2R */
+#define RFIC_2853					10		/* 2.4G.5G 3T3R */
+#define RFIC_3320                   11      /* 2.4G 1T1R with PA (RT3350/RT3370/RT3390) */
+#define RFIC_3322                   12      /* 2.4G 2T2R with PA (RT3352/RT3371/RT3372/RT3391/RT3392) */
+#define RFIC_3053                   13      /* 2.4G/5G 3T3R (RT3883/RT3563/RT3573/RT3593/RT3662) */
+#define RFIC_3853                   13      /* 2.4G/5G 3T3R (RT3883/RT3563/RT3573/RT3593/RT3662) */
 #define RFIC_UNKNOWN				0xff
 
 #define RFIC_IS_5G_BAND(__pAd)			\
@@ -128,16 +128,16 @@
 /*
 	BBP sections
 */
-#define BBP_R0			0  // version
-#define BBP_R1			1  // TSSI
-#define BBP_R2			2  // TX configure
+#define BBP_R0			0  /* version */
+#define BBP_R1			1  /* TSSI */
+#define BBP_R2			2  /* TX configure */
 #define BBP_R3			3
 #define BBP_R4			4
 #define BBP_R5			5
 #define BBP_R6			6
-#define BBP_R14			14 // RX configure
+#define BBP_R14			14 /* RX configure */
 #define BBP_R16			16
-#define BBP_R17			17 // RX sensibility
+#define BBP_R17			17 /* RX sensibility */
 #define BBP_R18			18
 #define BBP_R21			21
 #define BBP_R22			22
@@ -147,14 +147,16 @@
 #define BBP_R27			27
 #define BBP_R31			31
 #define BBP_R47			47
-#define BBP_R49			49 //TSSI
+#define BBP_R49			49 /*TSSI */
 #define BBP_R50			50
 #define BBP_R51			51
 #define BBP_R52			52
 #define BBP_R53			53
 #define BBP_R54			54
 #define BBP_R55			55
-#define BBP_R62			62 // Rx SQ0 Threshold HIGH
+#define BBP_R60			60
+#define BBP_R57			57
+#define BBP_R62			62 /* Rx SQ0 Threshold HIGH */
 #define BBP_R63			63
 #define BBP_R64			64
 #define BBP_R65			65
@@ -162,9 +164,10 @@
 #define BBP_R67			67
 #define BBP_R68			68
 #define BBP_R69			69
-#define BBP_R70			70 // Rx AGC SQ CCK Xcorr threshold
+#define BBP_R70			70 /* Rx AGC SQ CCK Xcorr threshold */
 #define BBP_R73			73
 #define BBP_R75			75
+#define BBP_R76			76
 #define BBP_R77			77
 #define BBP_R78			78
 #define BBP_R79			79
@@ -177,11 +180,13 @@
 #define BBP_R88			88
 #define BBP_R91			91
 #define BBP_R92			92
-#define BBP_R94			94 // Tx Gain Control
+#define BBP_R94			94 /* Tx Gain Control */
 #define BBP_R103		103
 #define BBP_R104		104
 #define BBP_R105		105
 #define BBP_R106		106
+#define BBP_R107		107
+#define BBP_R108		108
 #define BBP_R109		109
 #define BBP_R110		110
 #define BBP_R113		113
@@ -197,15 +202,21 @@
 #define BBP_R123		123
 #define BBP_R126		126
 #define BBP_R127		127
+#define BBP_R128		128
 #define BBP_R137		137
-#define BBP_R138		138 // add by johnli, RF power sequence setup, ADC dynamic on/off control
+#define BBP_R138		138 /* add by johnli, RF power sequence setup, ADC dynamic on/off control */
 #define BBP_R140		140
 #define BBP_R141		141
 #define BBP_R142		142
 #define BBP_R143		143
 #define BBP_R148		148
-
-#define BBP_R160		160 // RT3883 Tx BF control
+#define BBP_R150		150
+#define BBP_R151		151
+#define BBP_R152		152
+#define BBP_R153		153
+#define BBP_R154		154
+#define BBP_R155		155
+#define BBP_R160		160 /* RT3883 Tx BF control */
 #define BBP_R161		161
 #define BBP_R162		162
 #define BBP_R163		163
@@ -228,22 +239,23 @@
 #define BBP_R189		189
 #define BBP_R190		190
 #define BBP_R191		191
+#define BBP_R253		253
+#define BBP_R255		255
+
+#define BBPR94_DEFAULT	0x06 /* Add 1 value will gain 1db */
 
 
-#define BBPR94_DEFAULT	0x06 // Add 1 value will gain 1db
-
-
-//
-// BBP R49 TSSI (Transmit Signal Strength Indicator)
-//
+/* */
+/* BBP R49 TSSI (Transmit Signal Strength Indicator) */
+/* */
 #ifdef RT_BIG_ENDIAN
 typedef union _BBP_R49_STRUC {
 	struct
 	{
-		UCHAR	adc5_in_sel:1; // 0: TSSI (from the external components, old version), 1: PSI (internal components, new version - RT3390)
-		UCHAR	bypassTSSIAverage:1; // 0: the average TSSI (the average of the 16 samples), 1: the current TSSI
-		UCHAR	Reserved:1; // Reserved field
-		UCHAR	TSSI:5; // TSSI value
+		UCHAR	adc5_in_sel:1; /* 0: TSSI (from the external components, old version), 1: PSI (internal components, new version - RT3390) */
+		UCHAR	bypassTSSIAverage:1; /* 0: the average TSSI (the average of the 16 samples), 1: the current TSSI */
+		UCHAR	Reserved:1; /* Reserved field */
+		UCHAR	TSSI:5; /* TSSI value */
 	} field;
 
 	UCHAR		byte;
@@ -252,28 +264,28 @@ typedef union _BBP_R49_STRUC {
 typedef union _BBP_R49_STRUC {
 	struct
 	{
-		UCHAR	TSSI:5; // TSSI value
-		UCHAR	Reserved:1; // Reserved field
-		UCHAR	bypassTSSIAverage:1; // 0: the average TSSI (the average of the 16 samples), 1: the current TSSI
-		UCHAR	adc5_in_sel:1; // 0: TSSI (from the external components, old version), 1: PSI (internal components, new version - RT3390)
+		UCHAR	TSSI:5; /* TSSI value */
+		UCHAR	Reserved:1; /* Reserved field */
+		UCHAR	bypassTSSIAverage:1; /* 0: the average TSSI (the average of the 16 samples), 1: the current TSSI */
+		UCHAR	adc5_in_sel:1; /* 0: TSSI (from the external components, old version), 1: PSI (internal components, new version - RT3390) */
 	} field;
 	
 	UCHAR		byte;
 } BBP_R49_STRUC, *PBBP_R49_STRUC;
 #endif
 
-//
-// BBP R105 (FEQ control, MLD control and SIG remodulation)
-//
+/* */
+/* BBP R105 (FEQ control, MLD control and SIG remodulation) */
+/* */
 #ifdef RT_BIG_ENDIAN
 typedef union _BBP_R105_STRUC {
 	struct
 	{
-		UCHAR	Reserve1:4; // Reserved field
-		UCHAR	EnableSIGRemodulation:1; // Enable the channel estimation updates based on remodulation of L-SIG and HT-SIG symbols.
-		UCHAR	MLDFor2Stream:1; // Apply Maximum Likelihood Detection (MLD) for 2 stream case (reserved field if single RX)
-		UCHAR	IndependentFeedForwardCompensation:1; // Apply independent feed-forward compensation for independent stream.
-		UCHAR	DetectSIGOnPrimaryChannelOnly:1; // Under 40 MHz band, detect SIG on primary channel only.
+		UCHAR	Reserve1:4; /* Reserved field */
+		UCHAR	EnableSIGRemodulation:1; /* Enable the channel estimation updates based on remodulation of L-SIG and HT-SIG symbols. */
+		UCHAR	MLDFor2Stream:1; /* Apply Maximum Likelihood Detection (MLD) for 2 stream case (reserved field if single RX) */
+		UCHAR	IndependentFeedForwardCompensation:1; /* Apply independent feed-forward compensation for independent stream. */
+		UCHAR	DetectSIGOnPrimaryChannelOnly:1; /* Under 40 MHz band, detect SIG on primary channel only. */
 	} field;
 
 	UCHAR		byte;
@@ -282,27 +294,27 @@ typedef union _BBP_R105_STRUC {
 typedef union _BBP_R105_STRUC {
 	struct
 	{
-		UCHAR	DetectSIGOnPrimaryChannelOnly:1; // Under 40 MHz band, detect SIG on primary channel only.
-		UCHAR	IndependentFeedForwardCompensation:1; // Apply independent feed-forward compensation for independent stream.
-		UCHAR	MLDFor2Stream:1; // Apply Maximum Likelihood Detection (MLD) for 2 stream case (reserved field if single RX)
-		UCHAR	EnableSIGRemodulation:1; // Enable the channel estimation updates based on remodulation of L-SIG and HT-SIG symbols.
-		UCHAR	Reserve1:4; // Reserved field
+		UCHAR	DetectSIGOnPrimaryChannelOnly:1; /* Under 40 MHz band, detect SIG on primary channel only. */
+		UCHAR	IndependentFeedForwardCompensation:1; /* Apply independent feed-forward compensation for independent stream. */
+		UCHAR	MLDFor2Stream:1; /* Apply Maximum Likelihood Detection (MLD) for 2 stream case (reserved field if single RX) */
+		UCHAR	EnableSIGRemodulation:1; /* Enable the channel estimation updates based on remodulation of L-SIG and HT-SIG symbols. */
+		UCHAR	Reserve1:4; /* Reserved field */
 	} field;
 	
 	UCHAR		byte;
 } BBP_R105_STRUC, *PBBP_R105_STRUC;
 #endif
 
-//
-// BBP R106 (GI remover)
-//
+/* */
+/* BBP R106 (GI remover) */
+/* */
 #ifdef RT_BIG_ENDIAN
 typedef union _BBP_R106_STRUC {
 	struct
 	{
-		UCHAR	EnableLowPowerFSD:1; // enable/disable the low power FSD
-		UCHAR	ShortGI_Offset40:4; // Delay GI remover when the short GI is detected in 40MHz band (40M sampling rate)
-		UCHAR	ShortGI_Offset20:3; // Delay GI remover when the short GI is detected in 20MHz band (20M sampling rate)
+		UCHAR	EnableLowPowerFSD:1; /* enable/disable the low power FSD */
+		UCHAR	ShortGI_Offset40:4; /* Delay GI remover when the short GI is detected in 40MHz band (40M sampling rate) */
+		UCHAR	ShortGI_Offset20:3; /* Delay GI remover when the short GI is detected in 20MHz band (20M sampling rate) */
 	} field;
 
 	UCHAR		byte;
@@ -311,24 +323,24 @@ typedef union _BBP_R106_STRUC {
 typedef union _BBP_R106_STRUC {
 	struct
 	{
-		UCHAR	ShortGI_Offset20:3; // Delay GI remover when the short GI is detected in 20MHz band (20M sampling rate)
-		UCHAR	ShortGI_Offset40:4; // Delay GI remover when the short GI is detected in 40MHz band (40M sampling rate)
-		UCHAR	EnableLowPowerFSD:1; // enable/disable the low power FSD
+		UCHAR	ShortGI_Offset20:3; /* Delay GI remover when the short GI is detected in 20MHz band (20M sampling rate) */
+		UCHAR	ShortGI_Offset40:4; /* Delay GI remover when the short GI is detected in 40MHz band (40M sampling rate) */
+		UCHAR	EnableLowPowerFSD:1; /* enable/disable the low power FSD */
 	} field;
 	
 	UCHAR		byte;
 } BBP_R106_STRUC, *PBBP_R106_STRUC;
 #endif
 
-//
-// BBP R109 (Tx power control in 0.1dB step)
-//
+/* */
+/* BBP R109 (Tx power control in 0.1dB step) */
+/* */
 #ifdef RT_BIG_ENDIAN
 typedef union _BBP_R109_STRUC {
 	struct
 	{
-		UCHAR	Tx1PowerCtrl:4; // Tx1 power control in 0.1dB step (valid: 0~10)
-		UCHAR	Tx0PowerCtrl:4; // Tx0 power control in 0.1dB step (valid: 0~10)
+		UCHAR	Tx1PowerCtrl:4; /* Tx1 power control in 0.1dB step (valid: 0~10) */
+		UCHAR	Tx0PowerCtrl:4; /* Tx0 power control in 0.1dB step (valid: 0~10) */
 	} field;
 
 	UCHAR		byte;
@@ -337,23 +349,23 @@ typedef union _BBP_R109_STRUC {
 typedef union _BBP_R109_STRUC {
 	struct
 	{
-		UCHAR	Tx0PowerCtrl:4; // Tx0 power control in 0.1dB step (valid: 0~10)
-		UCHAR	Tx1PowerCtrl:4; // Tx0 power control in 0.1dB step (valid: 0~10)
+		UCHAR	Tx0PowerCtrl:4; /* Tx0 power control in 0.1dB step (valid: 0~10) */
+		UCHAR	Tx1PowerCtrl:4; /* Tx0 power control in 0.1dB step (valid: 0~10) */
 	} field;
 	
 	UCHAR		byte;
 } BBP_R109_STRUC, *PBBP_R109_STRUC;
 #endif
 
-//
-// BBP R110 (Tx power control in 0.1dB step)
-//
+/* */
+/* BBP R110 (Tx power control in 0.1dB step) */
+/* */
 #ifdef RT_BIG_ENDIAN
 typedef union _BBP_R110_STRUC {
 	struct
 	{
-		UCHAR	Tx2PowerCtrl:4; // Tx2 power control in 0.1dB step (valid: 0~10)
-		UCHAR	AllTxPowerCtrl:4; // All transmitters' fine power control in 0.1dB (valid: 0~10)
+		UCHAR	Tx2PowerCtrl:4; /* Tx2 power control in 0.1dB step (valid: 0~10) */
+		UCHAR	AllTxPowerCtrl:4; /* All transmitters' fine power control in 0.1dB (valid: 0~10) */
 	} field;
 
 	UCHAR		byte;
@@ -362,37 +374,111 @@ typedef union _BBP_R110_STRUC {
 typedef union _BBP_R110_STRUC {
 	struct
 	{
-		UCHAR	AllTxPowerCtrl:4; // All transmitters' fine power control in 0.1dB (valid: 0~10)
-		UCHAR	Tx2PowerCtrl:4; // Tx2 power control in 0.1dB step (valid: 0~10)
+		UCHAR	AllTxPowerCtrl:4; /* All transmitters' fine power control in 0.1dB (valid: 0~10) */
+		UCHAR	Tx2PowerCtrl:4; /* Tx2 power control in 0.1dB step (valid: 0~10) */
 	} field;
 	
 	UCHAR		byte;
 } BBP_R110_STRUC, *PBBP_R110_STRUC;
 #endif
 
+/* */
+/* BBP R179 (Test config #1) */
+/* */
+#ifdef RT_BIG_ENDIAN
+typedef union _BBP_R179_STRUC {
+	struct
+	{
+		UCHAR	DataIndex1:8; /* Data index #1 */
+	} field;
+
+	UCHAR		byte;
+} BBP_R179_STRUC, *PBBP_R179_STRUC;
+#else
+typedef union _BBP_R179_STRUC {
+	struct
+	{
+		UCHAR	DataIndex1:8; /* Data index #1 */
+	} field;
+	
+	UCHAR		byte;
+} BBP_R179_STRUC, *PBBP_R179_STRUC;
+#endif /* RT_BIG_ENDIAN */
+
+/* */
+/* BBP R180 (Test config #2) */
+/* */
+#ifdef RT_BIG_ENDIAN
+typedef union _BBP_R180_STRUC {
+	struct
+	{
+		UCHAR	DataIndex2:8; /* Data index #2 */
+	} field;
+
+	UCHAR		byte;
+} BBP_R180_STRUC, *PBBP_R180_STRUC;
+#else
+typedef union _BBP_R180_STRUC {
+	struct
+	{
+		UCHAR	DataIndex2:8; /* Data index #2 */
+	} field;
+	
+	UCHAR		byte;
+} BBP_R180_STRUC, *PBBP_R180_STRUC;
+#endif /* RT_BIG_ENDIAN */
+
+/* */
+/* BBP R182 (Test data port) */
+/* */
+#ifdef RT_BIG_ENDIAN
+typedef union _BBP_R182_STRUC {
+	struct
+	{
+		UCHAR	DataArray:8; /* Data array indexed by BBP R179 and R180 */
+	} field;
+
+	UCHAR		byte;
+} BBP_R182_STRUC, *PBBP_R182_STRUC;
+#else
+typedef union _BBP_R182_STRUC {
+	struct
+	{
+		UCHAR	DataArray:8; /* Data array indexed by BBP R179 and R180 */
+	} field;
+	
+	UCHAR		byte;
+} BBP_R182_STRUC, *PBBP_R182_STRUC;
+#endif /* RT_BIG_ENDIAN */
 
 #ifdef RTMP_RBUS_SUPPORT
-// TODO: for this definition, need to modify it!!
-	//#define MAX_BBP_ID	255
+/* TODO: for this definition, need to modify it!! */
+	/*#define MAX_BBP_ID	255 */
 	#define MAX_BBP_ID	200
 	#define MAX_BBP_MSG_SIZE	4096
+
+#if defined(RT3352) || defined(RT5350)
+	#undef MAX_BBP_ID
+	#define MAX_BBP_ID	255
+#endif /* RT3352 */
 #else
 	#define MAX_BBP_ID	136
+
 	#define MAX_BBP_MSG_SIZE	2048
-#endif // RTMP_RBUS_SUPPORT //
+#endif /* RTMP_RBUS_SUPPORT */
 
 
-//
-// BBP & RF are using indirect access. Before write any value into it.
-// We have to make sure there is no outstanding command pending via checking busy bit.
-//
-#define MAX_BUSY_COUNT  100         // Number of retry before failing access BBP & RF indirect register
+/* */
+/* BBP & RF are using indirect access. Before write any value into it. */
+/* We have to make sure there is no outstanding command pending via checking busy bit. */
+/* */
+#define MAX_BUSY_COUNT  100         /* Number of retry before failing access BBP & RF indirect register */
 
-//#define PHY_TR_SWITCH_TIME          5  // usec
+/*#define PHY_TR_SWITCH_TIME          5  // usec */
 
-//#define BBP_R17_LOW_SENSIBILITY     0x50
-//#define BBP_R17_MID_SENSIBILITY     0x41
-//#define BBP_R17_DYNAMIC_UP_BOUND    0x40
+/*#define BBP_R17_LOW_SENSIBILITY     0x50 */
+/*#define BBP_R17_MID_SENSIBILITY     0x41 */
+/*#define BBP_R17_DYNAMIC_UP_BOUND    0x40 */
 
 #define RSSI_FOR_VERY_LOW_SENSIBILITY   -35
 #define RSSI_FOR_LOW_SENSIBILITY		-58
@@ -426,7 +512,7 @@ typedef union _BBP_R110_STRUC {
     	printk("RF:%x\n", _V);			\
 	}									\
 }
-#endif // RTMP_MAC_PCI //
+#endif /* RTMP_MAC_PCI */
 
 
 
@@ -448,10 +534,10 @@ typedef union _BBP_R110_STRUC {
 #ifdef RELASE_INCLUDE
 /*
 	The RTMP_PCIE_PS_L3_BBP_IO_READ8 is used to support PCIE power-saving solution3.
-	"brc =AsicSendCommandToMcu" is used to avoid any muc command is executed during
+	"brc =AsicSendCommandToMcuBBP" is used to avoid any muc command is executed during
 	RF_OFF command.
 */
-#endif // RELASE_INCLUDE //
+#endif /* RELASE_INCLUDE */
 
 	
 #ifdef CONFIG_STA_SUPPORT
@@ -465,6 +551,9 @@ typedef union _BBP_R110_STRUC {
 	BBP_CSR_CFG_STRUC	BbpCsr;									\
 	int					_busyCnt, _secCnt, _regID;					\
 	BOOLEAN					brc;									\
+	ULONG __IrqFlags = 0;										\
+																\
+	RTMP_MAC_SHR_MSEL_PROTECT_LOCK(_pAd, __IrqFlags);			\
 	_regID = ((_bViaMCU) == TRUE ? H2M_BBP_AGENT : BBP_CSR_CFG);	\
 	BbpCsr.field.Busy = IDLE;										\
 	if (((_pAd)->bPCIclkOff == FALSE)								\
@@ -484,7 +573,7 @@ typedef union _BBP_R110_STRUC {
 			RTMP_IO_WRITE32(_pAd, _regID, BbpCsr.word);			\
 			if ((_bViaMCU) == TRUE)								\
 			{													\
-				brc =AsicSendCommandToMcu(_pAd, 0x80, 0xff, 0x0, 0x0); \
+				brc =AsicSendCommandToMcuBBP(_pAd, 0x80, 0xff, 0x0, 0x0, FALSE); \
 				RTMPusecDelay(1000);							\
 			}							\
 	               if (brc == TRUE) 										\
@@ -514,17 +603,20 @@ typedef union _BBP_R110_STRUC {
 	                DBGPRINT_ERR(("RTMP_PCIE_PS_L3_BBP_IO_READ8(viaMCU=%d) read R%d fail(reason:clk=%d,busy=%x)\n", (_bViaMCU), _bbpID,(_pAd)->bPCIclkOff ,BbpCsr.field.Busy));      \
 			*(_pV) = (_pAd)->BbpWriteLatch[_bbpID];               \
 	}																	\
+	RTMP_MAC_SHR_MSEL_PROTECT_UNLOCK(_pAd, __IrqFlags);	\
 }while(0)
 #else
 #define IS_SUPPORT_PCIE_PS_L3(_pAd) FALSE
 #define RTMP_PCIE_PS_L3_BBP_IO_READ8(_pAd, _bbpID, _pV, _bViaMCU)
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 
 #define _RTMP_BBP_IO_READ8(_pAd, _bbpID, _pV, _bViaMCU)			\
 	do{															\
 		BBP_CSR_CFG_STRUC  BbpCsr;								\
 		int   _busyCnt, _secCnt, _regID;                               			\
+		ULONG __IrqFlags = 0;									\
 																\
+		RTMP_MAC_SHR_MSEL_PROTECT_LOCK(_pAd, __IrqFlags);		\
 		_regID = ((_bViaMCU) == TRUE ? H2M_BBP_AGENT : BBP_CSR_CFG);	\
 		for (_busyCnt=0; _busyCnt<MAX_BUSY_COUNT; _busyCnt++)      \
 		{                                                   							\
@@ -539,7 +631,7 @@ typedef union _BBP_R110_STRUC {
 			RTMP_IO_WRITE32(_pAd, _regID, BbpCsr.word);     \
 			if ((_bViaMCU) == TRUE)							\
 			{													\
-				AsicSendCommandToMcu(_pAd, 0x80, 0xff, 0x0, 0x0); \
+				AsicSendCommandToMcuBBP(_pAd, 0x80, 0xff, 0x0, 0x0, FALSE); \
 				RTMPusecDelay(1000);	\
 			}							\
 			for (_secCnt=0; _secCnt<MAX_BUSY_COUNT; _secCnt++)       \
@@ -566,6 +658,7 @@ typedef union _BBP_R110_STRUC {
 				RTMP_IO_WRITE32(_pAd, _regID, BbpCsr.word);				\
 			}				\
 		}													\
+		RTMP_MAC_SHR_MSEL_PROTECT_UNLOCK(_pAd, __IrqFlags);	\
 	}while(0)
 
 /*
@@ -606,6 +699,8 @@ typedef union _BBP_R110_STRUC {
 		BBP_CSR_CFG_STRUC  BbpCsr;							\
 		int             k, _busyCnt=0, _regID;						\
 		BOOLEAN					brc;					\
+		ULONG				__IrqFlags = 0;						\
+		RTMP_MAC_SHR_MSEL_PROTECT_LOCK(_pAd, __IrqFlags);		\
 		_regID = ((_bViaMCU) == TRUE ? H2M_BBP_AGENT : BBP_CSR_CFG);			\
 			if (((_pAd)->bPCIclkOff == FALSE)					\
 			&& ((_pAd)->brt30xxBanMcuCmd == FALSE))								\
@@ -615,10 +710,10 @@ typedef union _BBP_R110_STRUC {
 					AsicResetBBPAgent(_pAd);									\
 					_pAd->AccessBBPFailCount = 0;								\
 				}																\
-				for (_busyCnt=0; _busyCnt<MAX_BUSY_COUNT; _busyCnt++)  \
+				for (_busyCnt=1; _busyCnt<MAX_BUSY_COUNT; _busyCnt++)  \
 				{                                                  						 \
 					RTMP_IO_READ32((_pAd), _regID, &BbpCsr.word);     \
-					if ((BbpCsr.field.Busy == BUSY) || (_busyCnt % 10 == 0))	\
+					if ((BbpCsr.field.Busy == BUSY) && (_busyCnt % 10 == 0))	\
 					{															\
 						BbpCsr.field.Busy = IDLE;								\
 						RTMP_IO_WRITE32(_pAd, H2M_BBP_AGENT, BbpCsr.word);		\
@@ -633,7 +728,7 @@ typedef union _BBP_R110_STRUC {
 					RTMP_IO_WRITE32((_pAd), _regID, BbpCsr.word);     \
 					if ((_bViaMCU) == TRUE)									\
 					{														\
-						brc =AsicSendCommandToMcu(_pAd, 0x80, 0xff, 0x0, 0x0);		\
+						brc =AsicSendCommandToMcuBBP(_pAd, 0x80, 0xff, 0x0, 0x0, FALSE);		\
 						if ((_pAd)->OpMode == OPMODE_AP)						\
 							RTMPusecDelay(1000);							\
 					}														\
@@ -670,19 +765,22 @@ typedef union _BBP_R110_STRUC {
 				(_pAd)->AccessBBPFailCount++;					\
 				DBGPRINT_ERR(("BBP write R%d=0x%x fail. BusyCnt= %d.bPCIclkOff = %d. \n", _regID, BbpCsr.word, _busyCnt, (_pAd)->bPCIclkOff ));	\
 			}																	\
+		RTMP_MAC_SHR_MSEL_PROTECT_UNLOCK(_pAd, __IrqFlags);	\
 	}while(0)
 #else
 #define RTMP_PCIE_PS_L3_BBP_IO_WRITE8(_pAd, _bbpID, _pV, _bViaMCU)
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 
 #define _RTMP_BBP_IO_WRITE8(_pAd, _bbpID, _pV, _bViaMCU)			\
 	do{															\
 		BBP_CSR_CFG_STRUC  BbpCsr;                             \
 		int             _busyCnt=0, _regID;                               			\
 		BOOLEAN					brc;			\
+		ULONG				__IrqFlags = 0;						\
 																\
+		RTMP_MAC_SHR_MSEL_PROTECT_LOCK(_pAd, __IrqFlags);		\
 		_regID = ((_bViaMCU) == TRUE ? H2M_BBP_AGENT : BBP_CSR_CFG);	\
-		for (_busyCnt=0; _busyCnt<MAX_BUSY_COUNT; _busyCnt++)  \
+		for (_busyCnt=1; _busyCnt<MAX_BUSY_COUNT; _busyCnt++)  \
 		{                                                   \
 			RTMP_IO_READ32((_pAd), _regID, &BbpCsr.word);     \
 			if (BbpCsr.field.Busy == BUSY)                  \
@@ -692,6 +790,7 @@ typedef union _BBP_R110_STRUC {
 						BbpCsr.field.Busy = IDLE;\
 						RTMP_IO_WRITE32(_pAd, H2M_BBP_AGENT, BbpCsr.word);\
 					}\
+					printk("*");\
 				continue;                                   \
 			}\
 			BbpCsr.word = 0;                                \
@@ -703,7 +802,7 @@ typedef union _BBP_R110_STRUC {
 			RTMP_IO_WRITE32((_pAd), _regID, BbpCsr.word);     \
 			if ((_bViaMCU) == TRUE)									\
 			{														\
-				brc = AsicSendCommandToMcu(_pAd, 0x80, 0xff, 0x0, 0x0);		\
+				brc = AsicSendCommandToMcuBBP(_pAd, 0x80, 0xff, 0x0, 0x0, FALSE);		\
 				if ((_pAd)->OpMode == OPMODE_AP)						\
 					RTMPusecDelay(1000);							\
 				if (brc == FALSE) \
@@ -725,6 +824,7 @@ typedef union _BBP_R110_STRUC {
 				RTMP_IO_WRITE32(_pAd, H2M_BBP_AGENT, BbpCsr.word);	\
 			}														\
 		}                                                   								\
+		RTMP_MAC_SHR_MSEL_PROTECT_UNLOCK(_pAd, __IrqFlags);	\
 	}while(0)
 
 
@@ -758,13 +858,39 @@ typedef union _BBP_R110_STRUC {
 #define RTMP_BBP_IO_READ8_BY_REG_ID		_RTMP_BBP_IO_READ8_BY_REG_ID
 #define RTMP_BBP_IO_WRITE8				_RTMP_BBP_IO_WRITE8
 #define RTMP_BBP_IO_WRITE8_BY_REG_ID	_RTMP_BBP_IO_WRITE8_BY_REG_ID
-#endif // VENDOR_FEATURE3_SUPPORT //
+#endif /* VENDOR_FEATURE3_SUPPORT */
 	
+#if defined(RT2883) || defined(RT3883) || defined (RT35xx)|| defined(DFS_HARDWARE_SUPPORT)
+
+#define RTMP_DFS_IO_READ8(_A, _I, _V)                   \
+{                                                       \
+	BBP_IO_WRITE8_BY_REG_ID(_A, BBP_R140, _I);          \
+	BBP_IO_READ8_BY_REG_ID(_A, BBP_R141, _V);           \
+}
+
+#define RTMP_DFS_IO_WRITE8(_A, _I, _V)                  \
+{                                                       \
+	BBP_IO_WRITE8_BY_REG_ID(_A, BBP_R140, _I);          \
+	BBP_IO_WRITE8_BY_REG_ID(_A, BBP_R141, _V);          \
+}
+
+#define RTMP_CARRIER_IO_READ8(_A, _I, _V)               \
+{                                                       \
+	BBP_IO_WRITE8_BY_REG_ID(_A, BBP_R184, _I);          \
+	BBP_IO_READ8_BY_REG_ID(_A, BBP_R185, _V);           \
+}
+#define RTMP_CARRIER_IO_WRITE8(_A, _I, _V)              \
+{                                                       \
+	BBP_IO_WRITE8_BY_REG_ID(_A, BBP_R184, _I);          \
+	BBP_IO_WRITE8_BY_REG_ID(_A, BBP_R185, _V);          \
+}
+
+#endif /* defined(RT2883) || defined(RT3883) || defined (RT35xx) */
 	
-#endif // RTMP_MAC_PCI //
+#endif /* RTMP_MAC_PCI */
 
 
 
 
-#endif // __RTMP_PHY_H__ //
+#endif /* __RTMP_PHY_H__ */
 

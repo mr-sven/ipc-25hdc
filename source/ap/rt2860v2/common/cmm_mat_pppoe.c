@@ -111,7 +111,6 @@ PPPoE Session Stage(Ethernet protocol type = 0x8864):
 #define PPPOE_TAG_ID_HOST_UNIQ	0x0103
 #define PPPOE_TAG_ID_AC_COOKIE	0x0104
 
-//#define APCLI_MAX_HOST_UNIQ_LEN 16
 #define PPPoE_SES_ENTRY_AGEOUT_TIME 3000
 
 /* Data structure used for PPPoE discovery stage */
@@ -119,11 +118,11 @@ PPPoE Session Stage(Ethernet protocol type = 0x8864):
 typedef struct _UidMacMappingEntry
 {
 	UCHAR isServer;
-	UCHAR uIDAddByUs;				 // If the host-uniq or AC-cookie is add by our driver, set it as 1, else set as 0.
-	UCHAR uIDStr[PPPOE_DIS_UID_LEN]; // String used for identify who sent this pppoe packet in discovery stage.
-	UCHAR macAddr[MAC_ADDR_LEN];	 // Mac address associated to this uid string.
+	UCHAR uIDAddByUs;				 /* If the host-uniq or AC-cookie is add by our driver, set it as 1, else set as 0. */
+	UCHAR uIDStr[PPPOE_DIS_UID_LEN]; /* String used for identify who sent this pppoe packet in discovery stage. */
+	UCHAR macAddr[MAC_ADDR_LEN];	 /* Mac address associated to this uid string. */
 	ULONG lastTime;
-	struct _UidMacMappingEntry *pNext;	//Pointer to next entry in link-list of Uid hash table.
+	struct _UidMacMappingEntry *pNext;	/*Pointer to next entry in link-list of Uid hash table. */
 }UidMacMappingEntry, *PUidMacMappingEntry;
 
 typedef struct _UidMacMappingTable
@@ -132,12 +131,12 @@ typedef struct _UidMacMappingTable
 	UidMacMappingEntry *uidHash[MAT_MAX_HASH_ENTRY_SUPPORT];
 }UidMacMappingTable;
 
-// "Host-Uniq <-> Mac Address" Mapping table used for PPPoE Discovery stage
+/* "Host-Uniq <-> Mac Address" Mapping table used for PPPoE Discovery stage */
 
 /* Data struct used for PPPoE session stage */
 typedef struct _SesMacMappingEntry
 {
-	UINT16	sessionID;	// In network order
+	UINT16	sessionID;	/* In network order */
 	UCHAR	outMacAddr[MAC_ADDR_LEN];
 	UCHAR	inMacAddr[MAC_ADDR_LEN];
 	ULONG 	lastTime;
@@ -150,7 +149,7 @@ typedef struct _SesMacMappingTable
 	SesMacMappingEntry *sesHash[MAT_MAX_HASH_ENTRY_SUPPORT];
 }SesMacMappingTable;
 
-// Declaration of protocol handler for PPPoE Discovery stage
+/* Declaration of protocol handler for PPPoE Discovery stage */
 struct _MATProtoOps MATProtoPPPoEDisHandle =
 {
 	.init = MATProto_PPPoEDis_Init,
@@ -159,7 +158,7 @@ struct _MATProtoOps MATProtoPPPoEDisHandle =
 	.exit = MATProto_PPPoEDis_Exit,
 };
 
-// Declaration of protocol handler for PPPoE Session stage
+/* Declaration of protocol handler for PPPoE Session stage */
 struct _MATProtoOps MATProtoPPPoESesHandle =
 {
 	.init = MATProto_PPPoESes_Init,
@@ -186,12 +185,12 @@ NDIS_STATUS dumpSesMacTb(
 	}
 	
 	if(hashIdx < 0)
-	{	// dump all.
+	{	/* dump all. */
 		startIdx = 0;
 		endIdx = MAT_MAX_HASH_ENTRY_SUPPORT - 1;
 	}
 	else
-	{	// dump specific hash index.
+	{	/* dump specific hash index. */
 		startIdx = endIdx = hashIdx;
 	}
 
@@ -230,12 +229,12 @@ NDIS_STATUS dumpUidMacTb(MAT_STRUCT *pMatCfg, int hashIdx)
 	}
 	
 	if(hashIdx < 0)
-	{	// dump all.
+	{	/* dump all. */
 		startIdx = 0;
 		endIdx = MAT_MAX_HASH_ENTRY_SUPPORT-1;
 	}
 	else
-	{	// dump specific hash index.
+	{	/* dump specific hash index. */
 		startIdx = endIdx = hashIdx;
 	}
 
@@ -286,7 +285,8 @@ static NDIS_STATUS UidMacTable_RemoveAll(
 		}
 	}
 
-	kfree(pMatCfg->MatTableSet.UidMacTable);
+/*	kfree(pMatCfg->MatTableSet.UidMacTable); */
+	os_free_mem(NULL, pMatCfg->MatTableSet.UidMacTable);
 	pMatCfg->MatTableSet.UidMacTable = NULL;
 
 	return TRUE;
@@ -317,7 +317,8 @@ static NDIS_STATUS SesMacTable_RemoveAll(
 		}
 	}
 
-	kfree(pMatCfg->MatTableSet.SesMacTable);
+/*	kfree(pMatCfg->MatTableSet.SesMacTable); */
+	os_free_mem(NULL, pMatCfg->MatTableSet.SesMacTable);
 	pMatCfg->MatTableSet.SesMacTable = NULL;
 	
 	return TRUE;
@@ -353,9 +354,11 @@ static PUidMacMappingEntry UidMacTableUpdate(
 	}
 	else
 	{
-		// We assume the station just have one role,i.e., just a PPPoE server or just a PPPoE client.
-		// For a packet send by server, we use the destination MAC as our uIDStr
-		// For a packet send by client, we use the source MAC as our uIDStr.
+		/*
+			We assume the station just have one role,i.e., just a PPPoE server or just a PPPoE client.
+			For a packet send by server, we use the destination MAC as our uIDStr
+			For a packet send by client, we use the source MAC as our uIDStr.
+		*/
 		pUIDStr = isServer ? pOutMac: pInMac;
 		tagLen = MAC_ADDR_LEN;
 		uIDAddByUs = 1;
@@ -365,7 +368,7 @@ static PUidMacMappingEntry UidMacTableUpdate(
 		hashVal ^= (pUIDStr[i] & 0xff);
 	hashIdx = hashVal % MAT_MAX_HASH_ENTRY_SUPPORT;
 	
-	//First, check if the hashIdx exists
+	/*First, check if the hashIdx exists */
 	if (hashIdx < MAT_MAX_HASH_ENTRY_SUPPORT)
 	{
 		pEntry = pPrev = pUidMacTable->uidHash[hashIdx];
@@ -373,10 +376,10 @@ static PUidMacMappingEntry UidMacTableUpdate(
 		{
 			NdisGetSystemUpTime(&now);
 			
-			// Find the existed UidMac Mapping entry
+			/* Find the existed UidMac Mapping entry */
 			if (NdisEqualMemory(pUIDStr, pEntry->uIDStr, tagLen) && IS_EQUAL_MAC(pEntry->macAddr, pInMac))
     		{
-				// Update info of this entry
+				/* Update info of this entry */
 				pEntry->isServer = isServer;
 				pEntry->uIDAddByUs = uIDAddByUs;
 				pEntry->lastTime = now;
@@ -384,10 +387,10 @@ static PUidMacMappingEntry UidMacTableUpdate(
 				return pEntry;
 			}
 			else
-        	{	// handle the age-out situation
+        	{	/* handle the age-out situation */
 				if (RTMP_TIME_AFTER(now, (pEntry->lastTime + MAT_TB_ENTRY_AGEOUT_TIME)))
 				{
-					// Remove the aged entry from the uidHash
+					/* Remove the aged entry from the uidHash */
 					if (pEntry == pUidMacTable->uidHash[hashIdx])
 					{
 						pUidMacTable->uidHash[hashIdx]= pEntry->pNext;
@@ -398,7 +401,7 @@ static PUidMacMappingEntry UidMacTableUpdate(
 						pPrev->pNext = pEntry->pNext;
 					}
 
-					//After remove this entry from macHash list and uidHash list, now free it!
+					/*After remove this entry from macHash list and uidHash list, now free it! */
 					MATDBEntryFree(pMatCfg, (PUCHAR)pEntry);
 					pMatCfg->nodeCount--;
 					pEntry = (pPrev == NULL ? NULL: pPrev->pNext);
@@ -413,7 +416,7 @@ static PUidMacMappingEntry UidMacTableUpdate(
 	}
 
 
-	// Allocate a new UidMacMapping entry and insert into the double-hash
+	/* Allocate a new UidMacMapping entry and insert into the double-hash */
 	pNewEntry = (UidMacMappingEntry *)MATDBEntryAlloc(pMatCfg, sizeof(UidMacMappingEntry));
 	if (pNewEntry)
 	{	
@@ -426,18 +429,18 @@ static PUidMacMappingEntry UidMacTableUpdate(
 		pNewEntry->pNext = NULL;
 		NdisGetSystemUpTime(&pNewEntry->lastTime);
 		
-		// Update mac-side hash link list
+		/* Update mac-side hash link list */
 		if (pUidMacTable->uidHash[hashIdx] == NULL)
-		{	// Hash list is empty, directly assign it.
+		{	/* Hash list is empty, directly assign it. */
 			pUidMacTable->uidHash[hashIdx] = pNewEntry;
 		}
 		else 
 		{
-			// Ok, we insert the new entry into the root of uidHash[hashIdx]
+			/* Ok, we insert the new entry into the root of uidHash[hashIdx] */
 			pNewEntry->pNext = pUidMacTable->uidHash[hashIdx];
 			pUidMacTable->uidHash[hashIdx] = pNewEntry;
 		}
-		//dumpUidMacTb(pMatCfg, hashIdx); //for debug
+		/*dumpUidMacTb(pMatCfg, hashIdx); //for debug */
 		
 		pMatCfg->nodeCount++;
 
@@ -463,7 +466,7 @@ static PUidMacMappingEntry UidMacTableLookUp(
 	if ((!pUidMacTable) || (!pUidMacTable->valid))
 		return NULL;
 
-	// Use hash to find out the location of that entry and get the Mac address.
+	/* Use hash to find out the location of that entry and get the Mac address. */
 	len = tagLen;
 	while(len)
 		hashValue ^= pTagInfo[--len];
@@ -479,7 +482,7 @@ static PUidMacMappingEntry UidMacTableLookUp(
 					pEntry->macAddr[3],pEntry->macAddr[4],pEntry->macAddr[5],
 					(ipAddr>>24) & 0xff, (ipAddr>>16) & 0xff, (ipAddr>>8) & 0xff, ipAddr & 0xff)); 
 */			
-			//Update the lastTime to prevent the aging before pDA processed!
+			/*Update the lastTime to prevent the aging before pDA processed! */
 			NdisGetSystemUpTime(&pEntry->lastTime);
 			
 			return pEntry;
@@ -488,7 +491,7 @@ static PUidMacMappingEntry UidMacTableLookUp(
 			pEntry = pEntry->pNext;
 	}
 	
-	// We didn't find any matched Mac address.
+	/* We didn't find any matched Mac address. */
 	return NULL;
 	
 }
@@ -508,7 +511,7 @@ static PUCHAR getInMacByOutMacFromSesMacTb(
 	if (!pSesMacTable->valid)
 		return NULL;
 	
-	// Use hash to find out the location of that entry and get the Mac address.
+	/* Use hash to find out the location of that entry and get the Mac address. */
 	hashIdx = sesID % MAT_MAX_HASH_ENTRY_SUPPORT;
 
 	pEntry = pSesMacTable->sesHash[hashIdx];
@@ -520,7 +523,7 @@ static PUCHAR getInMacByOutMacFromSesMacTb(
 				__FUNCTION__, pEntry->inMacAddr[0],pEntry->inMacAddr[1],pEntry->inMacAddr[2],
 				pEntry->inMacAddr[3],pEntry->inMacAddr[4],pEntry->inMacAddr[5]));
 
-			//Update the lastTime to prevent the aging before pDA processed!
+			/*Update the lastTime to prevent the aging before pDA processed! */
 			NdisGetSystemUpTime(&pEntry->lastTime);
 
 			return pEntry->inMacAddr;
@@ -531,7 +534,7 @@ static PUCHAR getInMacByOutMacFromSesMacTb(
 		}
 	}
 
-	// We didn't find any matched Mac address, just return and didn't do any modification
+	/* We didn't find any matched Mac address, just return and didn't do any modification */
 	return NULL;
 }
 		
@@ -568,21 +571,21 @@ static NDIS_STATUS SesMacTableUpdate(
 	{
 		NdisGetSystemUpTime(&now);
 		
-		// Find a existed IP-MAC Mapping entry
+		/* Find a existed IP-MAC Mapping entry */
 		if ((sesID == pEntry->sessionID) && 
 			 IS_EQUAL_MAC(pEntry->inMacAddr, inMacAddr) && 
 			 IS_EQUAL_MAC(pEntry->outMacAddr, outMacAddr))
     	{
-			// compare is useless. So we directly copy it into the entry.
+			/* compare is useless. So we directly copy it into the entry. */
 			pEntry->lastTime = now;
 			
 	        return TRUE;
 		}
         else
-        {	// handle the age-out situation
+        {	/* handle the age-out situation */
 			if (RTMP_TIME_AFTER(now, (pEntry->lastTime + PPPoE_SES_ENTRY_AGEOUT_TIME)))
         	{
-        		// Remove the aged entry
+        		/* Remove the aged entry */
 				if (pEntry == pSesMacTable->sesHash[hashIdx])
 				{
 					pSesMacTable->sesHash[hashIdx]= pEntry->pNext;
@@ -605,7 +608,7 @@ static NDIS_STATUS SesMacTableUpdate(
 	}
 	
 
-	// Allocate a new IPMacMapping entry and insert into the hash
+	/* Allocate a new IPMacMapping entry and insert into the hash */
 	pNewEntry = (SesMacMappingEntry *)MATDBEntryAlloc(pMatCfg, sizeof(SesMacMappingEntry));
 	if (pNewEntry != NULL)
 	{	
@@ -616,17 +619,17 @@ static NDIS_STATUS SesMacTableUpdate(
 		NdisGetSystemUpTime(&pNewEntry->lastTime);
 
 		if (pSesMacTable->sesHash[hashIdx] == NULL)
-		{	// Hash list is empty, directly assign it.
+		{	/* Hash list is empty, directly assign it. */
 			pSesMacTable->sesHash[hashIdx] = pNewEntry;
 		} 
 		else 
 		{
-			// Ok, we insert the new entry into the root of hash[hashIdx]
+			/* Ok, we insert the new entry into the root of hash[hashIdx] */
 			pNewEntry->pNext = pSesMacTable->sesHash[hashIdx];
 			pSesMacTable->sesHash[hashIdx] = pNewEntry;
 		}
 			
-		//dumpSesMacTb(pMatCfg, hashIdx);
+		/*dumpSesMacTb(pMatCfg, hashIdx); */
 		pMatCfg->nodeCount++;
 
 		return TRUE;
@@ -657,12 +660,12 @@ static PUCHAR MATProto_PPPoEDis_Rx(
 	if (*(pData) != 0x11)
 		return NULL;
 	
-	// Check the Code type.
+	/* Check the Code type. */
 	pData++;
 	switch(*pData)
 	{
 		case PPPOE_CODE_PADO:
-			//It's a packet send by a PPPoE server which behind of our device.
+			/*It's a packet send by a PPPoE server which behind of our device. */
 			findTag = PPPOE_TAG_ID_HOST_UNIQ;
 			break;
 		case PPPOE_CODE_PADS:
@@ -672,11 +675,11 @@ static PUCHAR MATProto_PPPoEDis_Rx(
 			pSrvMac = (PUCHAR)(GET_OS_PKT_DATAPTR(pSkb) + 6);
 			break;
 		case PPPOE_CODE_PADR:
-			//It's a packet send by a PPPoE client which in front of our device.
+			/*It's a packet send by a PPPoE client which in front of our device. */
 			findTag = PPPOE_TAG_ID_AC_COOKIE;
 			break;
 		case PPPOE_CODE_PADI:
-			//Do nothing! Just forward this packet to upper layer directly.
+			/*Do nothing! Just forward this packet to upper layer directly. */
 			return NULL;
 		case PPPOE_CODE_PADT:
 			isPADT = 1;
@@ -686,7 +689,7 @@ static PUCHAR MATProto_PPPoEDis_Rx(
 		return NULL;
 	}
 
-	// Ignore the Code field(length=1)
+	/* Ignore the Code field(length=1) */
 	pData ++;
 	if (needUpdateSesTb || isPADT)
 		sesID = OS_NTOHS(get_unaligned((PUINT16)(pData)));
@@ -696,16 +699,16 @@ static PUCHAR MATProto_PPPoEDis_Rx(
 		pInMac = getInMacByOutMacFromSesMacTb(pMatCfg, pOutMac, sesID);
 		return pInMac;
 	}
-	// Ignore the session ID field.(length = 2)
+	/* Ignore the session ID field.(length = 2) */
 	pData += 2;
 
-	// Get the payload length, ignore the payload length field.(length = 2)
+	/* Get the payload length, ignore the payload length field.(length = 2) */
 	payloadLen = OS_NTOHS(get_unaligned((PUINT16)(pData)));
 	pPayloadLen = pData;
 	pData += 2; 
 
 
-	// First parsing the PPPoE paylod to find out the required tag(e.g., x0103 or 0x0104)
+	/* First parsing the PPPoE paylod to find out the required tag(e.g., x0103 or 0x0104) */
 	leftLen = payloadLen;
 	while (leftLen)
 	{
@@ -715,7 +718,7 @@ static PUCHAR MATProto_PPPoEDis_Rx(
 		if (tagID== findTag && tagLen>0)
 		{
 			
-			//shift to the tag value field.
+			/*shift to the tag value field. */
 			pTagContent = pData + 4; 
 			tagLen = tagLen > PPPOE_DIS_UID_LEN ? PPPOE_DIS_UID_LEN : tagLen;
 			break;
@@ -728,12 +731,12 @@ static PUCHAR MATProto_PPPoEDis_Rx(
 	}
 	
 
-	// Now update our pppoe discovery table "UidMacTable"
+	/* Now update our pppoe discovery table "UidMacTable" */
 	if (pTagContent)
 	{
 		pEntry  = UidMacTableLookUp(pMatCfg, pTagContent, tagLen);
 
-		// Remove the AC-Cookie or host-uniq if we ever add the field for this session.
+		/* Remove the AC-Cookie or host-uniq if we ever add the field for this session. */
 		if (pEntry)
 		{
 			if (pEntry->uIDAddByUs)
@@ -741,16 +744,18 @@ static PUCHAR MATProto_PPPoEDis_Rx(
 				PUCHAR tagHead, nextTagHead;
 				UINT removedTagLen, tailLen;
 
-				removedTagLen = 4 + tagLen;  	//The total length tag ID/info we want to remove.
-				tagHead = pTagContent - 4;	//The start address of the tag we want to remove in sk bufffer 
-				tailLen = GET_OS_PKT_LEN(pSkb) - (pTagContent - (PUCHAR)(GET_OS_PKT_DATAPTR(pSkb))) - removedTagLen; //Total left bytes we want to move.
+				removedTagLen = 4 + tagLen;  	/*The total length tag ID/info we want to remove. */
+				tagHead = pTagContent - 4;	/*The start address of the tag we want to remove in sk bufffer */
+				tailLen = GET_OS_PKT_LEN(pSkb) - (pTagContent - (PUCHAR)(GET_OS_PKT_DATAPTR(pSkb))) - removedTagLen; /*Total left bytes we want to move. */
 				if (tailLen)
 				{
-					nextTagHead = pTagContent + tagLen;	//The start address of next tag ID/info in sk buffer.
+					nextTagHead = pTagContent + tagLen;	/*The start address of next tag ID/info in sk buffer. */
 					memmove(tagHead, nextTagHead, tailLen);
 				}
-				SET_OS_PKT_DATATAIL(pSkb, GET_OS_PKT_DATATAIL(pSkb), (-removedTagLen));
-				GET_OS_PKT_LEN(pSkb) -= removedTagLen;
+/*				SET_OS_PKT_DATATAIL(pSkb, GET_OS_PKT_DATATAIL(pSkb), (-removedTagLen)); */
+/*				GET_OS_PKT_LEN(pSkb) -= removedTagLen; */
+				OS_PKT_TAIL_ADJUST(pSkb, removedTagLen);
+
 				*((UINT16 *)pPayloadLen) = OS_HTONS(payloadLen - removedTagLen);
 			}
 
@@ -803,28 +808,28 @@ static PUCHAR MATProto_PPPoEDis_Tx(
 	pData = pLayerHdr;
 
 
-	// Check the pppoe version and Type. It should be 0x11
+	/* Check the pppoe version and Type. It should be 0x11 */
 	if (*(pData) != 0x11)
 		return NULL;
 
-	// Check the Code type.
+	/* Check the Code type. */
 	pData++;
 	switch(*pData)
 	{
-		// Send by pppoe client
+		/* Send by pppoe client */
 		case PPPOE_CODE_PADI:
 		case PPPOE_CODE_PADR:
 			findTag = PPPOE_TAG_ID_HOST_UNIQ;
 			break;
-		// Send by pppoe server
+		/* Send by pppoe server */
 		case PPPOE_CODE_PADO:
 		case PPPOE_CODE_PADS:
 			isServer = 1;
 			findTag = PPPOE_TAG_ID_AC_COOKIE;
-			if (*pData == PPPOE_CODE_PADS)  // For PADS, we need record the session ID.
+			if (*pData == PPPOE_CODE_PADS)  /* For PADS, we need record the session ID. */
 				needUpdateSesTb = 1;
 			break;
-		// Both server and client can send this packet
+		/* Both server and client can send this packet */
 		case PPPOE_CODE_PADT:
 			/* TODO:
 				currently we didn't handle PADT packet. We just leave the 
@@ -836,25 +841,25 @@ static PUCHAR MATProto_PPPoEDis_Tx(
 			return NULL;
 	}
 	
-	// 
-	// Ignore the Code field(length=1) and if it's a PADS packet, we
-	// should hold the session ID and for latter to update our table.
-	//
+	/*
+		Ignore the Code field(length=1) and if it's a PADS packet, we
+		should hold the session ID and for latter to update our table.
+	*/
 	pData ++;
 	if (needUpdateSesTb)
 		sesID = OS_NTOHS(get_unaligned((PUINT16)(pData)));
 
-	// Ignore the session ID field.(length = 2)
+	/* Ignore the session ID field.(length = 2) */
 	pData += 2;
 
-	// Get the payload length, and  shift the payload length field(length = 2) to next field.
+	/* Get the payload length, and  shift the payload length field(length = 2) to next field. */
 	payloadLen = OS_NTOHS(get_unaligned((PUINT16)(pData)));
 	pPayloadLen = pData;
 	offset = pPayloadLen - (PUCHAR)(GET_OS_PKT_DATAPTR(pSkb));
 	pData += 2; 
 
 
-	// First parsing the PPPoE paylod to find out the required tag(e.g., x0103 or 0x0104)
+	/* First parsing the PPPoE paylod to find out the required tag(e.g., x0103 or 0x0104) */
 	leftLen = payloadLen;
 	while (leftLen)
 	{
@@ -864,9 +869,9 @@ static PUCHAR MATProto_PPPoEDis_Tx(
 		if (tagID== findTag && tagLen>0)
 		{
 			
-			// Move the pointer to the tag value field. 4 = 2(TAG ID) + 2(TAG_LEN)
+			/* Move the pointer to the tag value field. 4 = 2(TAG ID) + 2(TAG_LEN) */
 			pTagContent = pData + 4; 
-//			tagLen = tagLen > PPPOE_DIS_UID_LEN ? PPPOE_DIS_UID_LEN : tagLen;
+/*			tagLen = tagLen > PPPOE_DIS_UID_LEN ? PPPOE_DIS_UID_LEN : tagLen; */
 			break;
 		} 
 		else
@@ -877,7 +882,7 @@ static PUCHAR MATProto_PPPoEDis_Tx(
 	}
 	
 
-	// Now update our pppoe discovery table "UidMacTable"
+	/* Now update our pppoe discovery table "UidMacTable" */
 	pEntry  = UidMacTableUpdate(pMatStruct, pSrcMac, pDstMac, pTagContent, tagLen, isServer);
 	
 	if (pEntry && (pTagContent == NULL))
@@ -885,14 +890,18 @@ static PUCHAR MATProto_PPPoEDis_Tx(
 		PUCHAR tailHead;
 
 		if(OS_PKT_CLONED(pSkb))
-			pModSkb = (PNDIS_PACKET)skb_copy(RTPKT_TO_OSPKT(pSkb), MEM_ALLOC_FLAG);
+		{
+/*			pModSkb = (PNDIS_PACKET)skb_copy(RTPKT_TO_OSPKT(pSkb), MEM_ALLOC_FLAG); */
+			pModSkb = (PNDIS_PACKET)OS_PKT_COPY(RTPKT_TO_OSPKT(pSkb));
+		}
 		else
 			pModSkb = (PNDIS_PACKET)RTPKT_TO_OSPKT(pSkb);
 
 		if(!pModSkb)
 			return NULL;
 		
-		tailHead = skb_put(RTPKT_TO_OSPKT(pModSkb), (PPPOE_DIS_UID_LEN + 4));
+/*		tailHead = skb_put(RTPKT_TO_OSPKT(pModSkb), (PPPOE_DIS_UID_LEN + 4)); */
+		tailHead = OS_PKT_TAIL_BUF_EXTEND(pModSkb, (PPPOE_DIS_UID_LEN + 4));
 		if (tailHead)
 		{
 			pPayloadLen = GET_OS_PKT_DATAPTR(pModSkb) + offset;
@@ -901,7 +910,7 @@ static PUCHAR MATProto_PPPoEDis_Tx(
 				tailHead = pPPPPoETail;
 				
 			if (pEntry->isServer)
-			{	//Append the AC-Cookie tag info in the tail of the pppoe packet.
+			{	/*Append the AC-Cookie tag info in the tail of the pppoe packet. */
 				tailHead[0] = 0x01;
 				tailHead[1] = 0x04;
 				tailHead[2] = 0x00;
@@ -910,7 +919,7 @@ static PUCHAR MATProto_PPPoEDis_Tx(
 				NdisMoveMemory(tailHead, pEntry->uIDStr, PPPOE_DIS_UID_LEN);
 			} 
 			else 
-			{	//Append the host-uniq tag info in the tail of the pppoe packet.
+			{	/*Append the host-uniq tag info in the tail of the pppoe packet. */
 				tailHead[0] = 0x01;
 				tailHead[1] = 0x03;
 				tailHead[2] = 0x00;
@@ -939,7 +948,8 @@ static NDIS_STATUS MATProto_PPPoEDis_Init(
 	pUidMacTable = (UidMacMappingTable *)pMatCfg->MatTableSet.UidMacTable;
 	if (!pUidMacTable)
 	{
-		pMatCfg->MatTableSet.UidMacTable = (VOID *)kmalloc(sizeof(UidMacMappingTable), GFP_KERNEL);
+/*		pMatCfg->MatTableSet.UidMacTable = (VOID *)kmalloc(sizeof(UidMacMappingTable), GFP_KERNEL); */
+		os_alloc_mem_suspend(NULL, (UCHAR **)&(pMatCfg->MatTableSet.UidMacTable), sizeof(UidMacMappingTable));
 		if (pMatCfg->MatTableSet.UidMacTable)
 		{
 			pUidMacTable = (UidMacMappingTable *)pMatCfg->MatTableSet.UidMacTable;
@@ -956,7 +966,8 @@ static NDIS_STATUS MATProto_PPPoEDis_Init(
 	pSesMacTable = (SesMacMappingTable *)pMatCfg->MatTableSet.SesMacTable;
 	if (!pSesMacTable)
 	{
-		pMatCfg->MatTableSet.SesMacTable = (VOID *)kmalloc(sizeof(SesMacMappingTable), GFP_KERNEL);
+/*		pMatCfg->MatTableSet.SesMacTable = (VOID *)kmalloc(sizeof(SesMacMappingTable), GFP_KERNEL); */
+		os_alloc_mem_suspend(NULL, (UCHAR **)&(pMatCfg->MatTableSet.SesMacTable), sizeof(SesMacMappingTable));
 		if (pMatCfg->MatTableSet.SesMacTable)
 		{
 			pSesMacTable = (SesMacMappingTable *)pMatCfg->MatTableSet.SesMacTable;
@@ -1005,19 +1016,19 @@ static PUCHAR MATProto_PPPoESes_Rx(
 	srcMac = (GET_OS_PKT_DATAPTR(pSkb) + 6);
 	pData = pLayerHdr;
 
-	//skip the first two bytes.(version/Type/Code)
+	/*skip the first two bytes.(version/Type/Code) */
 	pData += 2;
 
-	//get the session ID
+	/*get the session ID */
 	sesID = OS_NTOHS(get_unaligned((PUINT16)(pData)));
 
-	// Try to find the dstMac from SesMacHash table.
+	/* Try to find the dstMac from SesMacHash table. */
 	dstMac = getInMacByOutMacFromSesMacTb(pMatCfg, srcMac, sesID);
 
 	return dstMac;
 }
 
-// PPPoE Session stage Tx handler
+/* PPPoE Session stage Tx handler */
 static PUCHAR MATProto_PPPoESes_Tx(
 	IN MAT_STRUCT 		*pMatStruct,
 	IN PNDIS_PACKET 		pSkb,
@@ -1047,5 +1058,5 @@ static NDIS_STATUS MATProto_PPPoESes_Exit(
 	return TRUE;
 }
 
-#endif // MAT_SUPPORT //
+#endif /* MAT_SUPPORT */
 

@@ -50,7 +50,7 @@
 
 		if (HandRst != 0)
 		{
-			// pass the packet to upper layer
+			/* pass the packet to upper layer */
 			skb->protocol = eth_type_trans(skb, skb->dev);
 			netif_rx(skb);
 		}
@@ -63,7 +63,7 @@ UINT32 BG_FTPH_PacketFromApHandle(
 extern UINT32 (*RALINK_FP_Handle)(PNDIS_PACKET pPacket);
 #else
 UINT32 (*RALINK_FP_Handle)(PNDIS_PACKET pPacket);
-#endif // BG_FT_OPEN_SUPPORT //
+#endif /* BG_FT_OPEN_SUPPORT */
 
 
 
@@ -189,7 +189,7 @@ LabelPassToUpperLayer:
 } /* End of BG_FTPH_PacketFromApHandle */
 
 
-#endif // CONFIG_BRIDGE || CONFIG_BRIDGE_MODULE //
-#endif // BG_FT_SUPPORT //
+#endif /* CONFIG_BRIDGE || CONFIG_BRIDGE_MODULE */
+#endif /* BG_FT_SUPPORT */
 
 /* End of bg_ftph.c */

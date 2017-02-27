@@ -40,7 +40,7 @@ typedef struct _CLIWDS_PROXY_ENTRY {
 	UCHAR Addr[MAC_ADDR_LEN];
 } CLIWDS_PROXY_ENTRY, *PCLIWDS_PROXY_ENTRY;
 
-#endif // CLIENT_WDS //
+#endif /* CLIENT_WDS */
 
-#endif // __CLIENT_WDS_CMM_H__ //
+#endif /* __CLIENT_WDS_CMM_H__ */
 

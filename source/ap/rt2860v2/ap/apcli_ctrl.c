@@ -86,12 +86,6 @@ static VOID ApCliCtrlDeAuthAction(
 	IN PRTMP_ADAPTER pAd, 
 	IN MLME_QUEUE_ELEM *Elem);
 
-#ifdef APCLI_AUTO_CONNECT_SUPPORT
-static VOID ApCliCtrlSwitchCandidateAP(
-	IN PRTMP_ADAPTER pAd, 
-	IN MLME_QUEUE_ELEM *Elem);
-#endif /* APCLI_AUTO_CONNECT_SUPPORT */
-	
 /*
     ==========================================================================
     Description:
@@ -114,39 +108,36 @@ VOID ApCliCtrlStateMachineInit(
 		(STATE_MACHINE_FUNC)Drop, APCLI_CTRL_DISCONNECTED,
 		APCLI_CTRL_MACHINE_BASE);
 
-	// disconnected state
+	/* disconnected state */
 	StateMachineSetAction(Sm, APCLI_CTRL_DISCONNECTED, APCLI_CTRL_JOIN_REQ, (STATE_MACHINE_FUNC)ApCliCtrlJoinReqAction);
-#ifdef APCLI_AUTO_CONNECT_SUPPORT
-	StateMachineSetAction(Sm, APCLI_CTRL_SEARCHING, APCLI_CTRL_SWITCH_CANDIDATE_AP_REQ, (STATE_MACHINE_FUNC) ApCliCtrlSwitchCandidateAP);
-#endif /* APCLI_AUTO_CONNECT_SUPPORT */
 
-	// probe state
+	/* probe state */
 	StateMachineSetAction(Sm, APCLI_CTRL_PROBE, APCLI_CTRL_PROBE_RSP, (STATE_MACHINE_FUNC)ApCliCtrlProbeRspAction);
 	StateMachineSetAction(Sm, APCLI_CTRL_PROBE, APCLI_CTRL_JOIN_REQ_TIMEOUT, (STATE_MACHINE_FUNC)ApCliCtrlJoinReqTimeoutAction);
 	StateMachineSetAction(Sm, APCLI_CTRL_PROBE, APCLI_CTRL_DISCONNECT_REQ, (STATE_MACHINE_FUNC)ApCliCtrlDisconnectReqAction);
 
-	// auth state
+	/* auth state */
 	StateMachineSetAction(Sm, APCLI_CTRL_AUTH, APCLI_CTRL_AUTH_RSP, (STATE_MACHINE_FUNC)ApCliCtrlAuthRspAction);
 	StateMachineSetAction(Sm, APCLI_CTRL_AUTH, APCLI_CTRL_AUTH_REQ_TIMEOUT, (STATE_MACHINE_FUNC)ApCliCtrlAuthReqTimeoutAction);
 	StateMachineSetAction(Sm, APCLI_CTRL_AUTH, APCLI_CTRL_DISCONNECT_REQ, (STATE_MACHINE_FUNC)ApCliCtrlDisconnectReqAction);
  	StateMachineSetAction(Sm, APCLI_CTRL_AUTH, APCLI_CTRL_PEER_DISCONNECT_REQ, (STATE_MACHINE_FUNC)ApCliCtrlPeerDeAssocReqAction);
 
-	// auth2 state
+	/* auth2 state */
 	StateMachineSetAction(Sm, APCLI_CTRL_AUTH_2, APCLI_CTRL_AUTH_RSP, (STATE_MACHINE_FUNC)ApCliCtrlAuth2RspAction);
 	StateMachineSetAction(Sm, APCLI_CTRL_AUTH_2, APCLI_CTRL_AUTH_REQ_TIMEOUT, (STATE_MACHINE_FUNC)ApCliCtrlAuth2ReqTimeoutAction);
 	StateMachineSetAction(Sm, APCLI_CTRL_AUTH_2, APCLI_CTRL_DISCONNECT_REQ, (STATE_MACHINE_FUNC)ApCliCtrlDisconnectReqAction);
  	StateMachineSetAction(Sm, APCLI_CTRL_AUTH_2, APCLI_CTRL_PEER_DISCONNECT_REQ, (STATE_MACHINE_FUNC)ApCliCtrlPeerDeAssocReqAction);
 
-	// assoc state
+	/* assoc state */
 	StateMachineSetAction(Sm, APCLI_CTRL_ASSOC, APCLI_CTRL_ASSOC_RSP, (STATE_MACHINE_FUNC)ApCliCtrlAssocRspAction);
 	StateMachineSetAction(Sm, APCLI_CTRL_ASSOC, APCLI_CTRL_ASSOC_REQ_TIMEOUT, (STATE_MACHINE_FUNC)ApCliCtrlAssocReqTimeoutAction);
 	StateMachineSetAction(Sm, APCLI_CTRL_ASSOC, APCLI_CTRL_DISCONNECT_REQ, (STATE_MACHINE_FUNC)ApCliCtrlDeAssocAction);
  	StateMachineSetAction(Sm, APCLI_CTRL_ASSOC, APCLI_CTRL_PEER_DISCONNECT_REQ, (STATE_MACHINE_FUNC)ApCliCtrlPeerDeAssocReqAction);
 
-	// deassoc state
+	/* deassoc state */
 	StateMachineSetAction(Sm, APCLI_CTRL_DEASSOC, APCLI_CTRL_DEASSOC_RSP, (STATE_MACHINE_FUNC)ApCliCtrlDeAssocRspAction);
 
-	// connected state
+	/* connected state */
 	StateMachineSetAction(Sm, APCLI_CTRL_CONNECTED, APCLI_CTRL_DISCONNECT_REQ, (STATE_MACHINE_FUNC)ApCliCtrlDeAuthAction);
  	StateMachineSetAction(Sm, APCLI_CTRL_CONNECTED, APCLI_CTRL_PEER_DISCONNECT_REQ, (STATE_MACHINE_FUNC)ApCliCtrlPeerDeAssocReqAction);
 
@@ -173,7 +164,7 @@ static VOID ApCliCtrlJoinReqAction(
 	PULONG pCurrState = &pAd->ApCfg.ApCliTab[ifIndex].CtrlCurrState;
 #ifdef WSC_AP_SUPPORT
 	PWSC_CTRL	pWpsCtrl = &pAd->ApCfg.ApCliTab[ifIndex].WscControl;
-#endif // WSC_AP_SUPPORT //
+#endif /* WSC_AP_SUPPORT */
 
 	DBGPRINT(RT_DEBUG_TRACE, ("(%s) Start Probe Req.\n", __FUNCTION__));
 	if (ifIndex >= MAX_APCLI_NUM)
@@ -199,9 +190,9 @@ static VOID ApCliCtrlJoinReqAction(
         NdisZeroMemory(JoinReq.Ssid, MAX_LEN_OF_SSID);
         JoinReq.SsidLen = pAd->ApCfg.ApCliTab[ifIndex].WscControl.WscSsid.SsidLength;
 		NdisMoveMemory(JoinReq.Ssid, pAd->ApCfg.ApCliTab[ifIndex].WscControl.WscSsid.Ssid, JoinReq.SsidLen);
-		if (pWpsCtrl->WscMode == 1) // PIN
+		if (pWpsCtrl->WscMode == 1) /* PIN */
 		{
-			bss_idx = BssSsidTableSearchBySSID(&pAd->ScanTab, (PCHAR)JoinReq.Ssid, JoinReq.SsidLen);
+			bss_idx = BssSsidTableSearchBySSID(&pAd->ScanTab, (PUCHAR)(JoinReq.Ssid), JoinReq.SsidLen);
 			if (bss_idx == BSS_NOT_FOUND)
 			{
 				ApSiteSurvey(pAd, NULL, SCAN_WSC_ACTIVE, FALSE);
@@ -229,7 +220,7 @@ static VOID ApCliCtrlJoinReqAction(
 						else
 							Set_HtExtcha_Proc(pAd, "0");
 					}
-					sprintf(ChStr, "%d", pAd->ScanTab.BssEntry[bss_idx].Channel);
+					snprintf(ChStr, sizeof(ChStr), "%d", pAd->ScanTab.BssEntry[bss_idx].Channel);
 					Set_Channel_Proc(pAd, ChStr);
 					/*
 						ApStop will call WscStop, we need to reset WscConfMode, WscMode & bWscTrigger here.
@@ -246,7 +237,7 @@ static VOID ApCliCtrlJoinReqAction(
 		}
     }
     else
-#endif // WSC_AP_SUPPORT //
+#endif /* WSC_AP_SUPPORT */
 	if (pApCliEntry->CfgSsidLen != 0)
 	{
 		JoinReq.SsidLen = pApCliEntry->CfgSsidLen;
@@ -292,44 +283,10 @@ static VOID ApCliCtrlJoinReqTimeoutAction(
 		return;
 	}
 
-#ifdef APCLI_AUTO_CONNECT_SUPPORT
-	pApCliEntry = &pAd->ApCfg.ApCliTab[ifIndex];
-	pApCliEntry->ProbeReqCnt++;
-	DBGPRINT(RT_DEBUG_TRACE, ("(%s) Probe Req Timeout. ProbeReqCnt=%d\n",
-				__FUNCTION__, pApCliEntry->ProbeReqCnt));
-
-	if (pApCliEntry->ProbeReqCnt > 7)
-	{
-		/*
-			if exceed the APCLI_MAX_PROBE_RETRY_NUM (7),
-			switch to try next candidate AP.
-		*/
-		*pCurrState = APCLI_CTRL_DISCONNECTED;
-		NdisZeroMemory(pAd->MlmeAux.Bssid, MAC_ADDR_LEN);
-		NdisZeroMemory(pAd->MlmeAux.Ssid, MAX_LEN_OF_SSID);
-		pApCliEntry->ProbeReqCnt = 0;
-		
-		if (pAd->ApCfg.ApCliAutoConnectRunning == TRUE)
-		{
-			*pCurrState = APCLI_CTRL_SEARCHING;
-			
-			/* Reset status here in case interfaces are called down in the progress */
-			pAd->ApCfg.ApCliAutoConnectRunning = FALSE;
-			NdisZeroMemory(pApCliEntry->CfgApCliBssid, MAC_ADDR_LEN);
-			
-			MlmeEnqueue(pAd, 
-						APCLI_CTRL_STATE_MACHINE,
-						APCLI_CTRL_SWITCH_CANDIDATE_AP_REQ,
-						0, NULL, ifIndex);
-		}
-		return;
-	}
-#endif /* APCLI_AUTO_CONNECT_SUPPORT */
-
-	// stay in same state.
+	/* stay in same state. */
 	*pCurrState = APCLI_CTRL_PROBE;
 
-	// retry Probe Req.
+	/* retry Probe Req. */
 	DBGPRINT(RT_DEBUG_TRACE, ("(%s) Retry Probe Req.\n", __FUNCTION__));
 
 	pApCliEntry = &pAd->ApCfg.ApCliTab[ifIndex];
@@ -350,7 +307,7 @@ static VOID ApCliCtrlJoinReqTimeoutAction(
 		NdisMoveMemory(JoinReq.Ssid, pAd->ApCfg.ApCliTab[ifIndex].WscControl.WscSsid.Ssid, JoinReq.SsidLen);
     }
     else
-#endif // WSC_AP_SUPPORT //
+#endif /* WSC_AP_SUPPORT */
 	if (pApCliEntry->CfgSsidLen != 0)
 	{
 		JoinReq.SsidLen = pApCliEntry->CfgSsidLen;
@@ -393,21 +350,21 @@ static VOID ApCliCtrlProbeRspAction(
 		DBGPRINT(RT_DEBUG_TRACE, ("(%s) Probe respond success.\n", __FUNCTION__));
 		DBGPRINT(RT_DEBUG_TRACE, ("(%s) Apcli-Interface Ssid=%s.\n", __FUNCTION__, pApCliEntry->Ssid));
 		DBGPRINT(RT_DEBUG_TRACE, ("(%s) Apcli-Interface Bssid=%02x:%02x:%02x:%02x:%02x:%02x.\n", __FUNCTION__,
-			pAd->MlmeAux.Bssid[0],
-			pAd->MlmeAux.Bssid[1],
-			pAd->MlmeAux.Bssid[2],
-			pAd->MlmeAux.Bssid[3],
-			pAd->MlmeAux.Bssid[4],
-			pAd->MlmeAux.Bssid[5]));
+			pAd->ApCliMlmeAux.Bssid[0],
+			pAd->ApCliMlmeAux.Bssid[1],
+			pAd->ApCliMlmeAux.Bssid[2],
+			pAd->ApCliMlmeAux.Bssid[3],
+			pAd->ApCliMlmeAux.Bssid[4],
+			pAd->ApCliMlmeAux.Bssid[5]));
 
 		*pCurrState = APCLI_CTRL_AUTH;
 
 		pApCliEntry->AuthReqCnt = 0;
 
-		COPY_MAC_ADDR(AuthReq.Addr, pAd->MlmeAux.Bssid);
+		COPY_MAC_ADDR(AuthReq.Addr, pAd->ApCliMlmeAux.Bssid);
 
-		// start Authentication Req.		
-		// If AuthMode is Auto, try shared key first
+		/* start Authentication Req. */
+		/* If AuthMode is Auto, try shared key first */
 		if ((pAd->ApCfg.ApCliTab[ifIndex].AuthMode == Ndis802_11AuthModeShared) ||
 				(pAd->ApCfg.ApCliTab[ifIndex].AuthMode == Ndis802_11AuthModeAutoSwitch))
 		{		
@@ -425,21 +382,6 @@ static VOID ApCliCtrlProbeRspAction(
 	{
 		DBGPRINT(RT_DEBUG_TRACE, ("(%s) Probe respond fail.\n", __FUNCTION__));
 		*pCurrState = APCLI_CTRL_DISCONNECTED;
-#ifdef APCLI_AUTO_CONNECT_SUPPORT
-		if (pAd->ApCfg.ApCliAutoConnectRunning == TRUE)
-		{
-			*pCurrState = APCLI_CTRL_SEARCHING;
-
-			/* Reset status here in case interfaces are called down in the progress */
-			pAd->ApCfg.ApCliAutoConnectRunning = FALSE;
-			NdisZeroMemory(pApCliEntry->CfgApCliBssid, MAC_ADDR_LEN);
-		
-			MlmeEnqueue(pAd,
-						APCLI_CTRL_STATE_MACHINE,
-						APCLI_CTRL_SWITCH_CANDIDATE_AP_REQ,
-						0, NULL, ifIndex);
-		}
-#endif /* APCLI_AUTO_CONNECT_SUPPORT */
 	}
 
 	return;
@@ -475,7 +417,7 @@ static VOID ApCliCtrlAuthRspAction(
 
 		pApCliEntry->AssocReqCnt = 0;
 
-		AssocParmFill(pAd, &AssocReq, pAd->MlmeAux.Bssid, pAd->MlmeAux.CapabilityInfo,
+		AssocParmFill(pAd, &AssocReq, pAd->ApCliMlmeAux.Bssid, pAd->ApCliMlmeAux.CapabilityInfo,
 			ASSOC_TIMEOUT, /*pAd->PortCfg.DefaultListenCount*/5);
 		MlmeEnqueue(pAd, APCLI_ASSOC_STATE_MACHINE, APCLI_MT2_MLME_ASSOC_REQ,
 			sizeof(MLME_ASSOC_REQ_STRUCT), &AssocReq, ifIndex);
@@ -488,35 +430,19 @@ static VOID ApCliCtrlAuthRspAction(
 
 			*pCurrState = APCLI_CTRL_AUTH_2;
 
-			// start Second Authentication Req.
+			/* start Second Authentication Req. */
 			DBGPRINT(RT_DEBUG_TRACE, ("(%s) Start Second Auth Rep.\n", __FUNCTION__));
-			COPY_MAC_ADDR(AuthReq.Addr, pAd->MlmeAux.Bssid);
+			COPY_MAC_ADDR(AuthReq.Addr, pAd->ApCliMlmeAux.Bssid);
 			AuthReq.Alg = Ndis802_11AuthModeOpen;
 			AuthReq.Timeout = AUTH_TIMEOUT;
 			MlmeEnqueue(pAd, APCLI_AUTH_STATE_MACHINE, APCLI_MT2_MLME_AUTH_REQ,
 			sizeof(MLME_AUTH_REQ_STRUCT), &AuthReq, ifIndex);
 		} else
 		{
-			NdisZeroMemory(pAd->MlmeAux.Bssid, MAC_ADDR_LEN);
-			NdisZeroMemory(pAd->MlmeAux.Ssid, MAX_LEN_OF_SSID);
+			NdisZeroMemory(pAd->ApCliMlmeAux.Bssid, MAC_ADDR_LEN);
+			NdisZeroMemory(pAd->ApCliMlmeAux.Ssid, MAX_LEN_OF_SSID);
 			pApCliEntry->AuthReqCnt = 0;
 			*pCurrState = APCLI_CTRL_DISCONNECTED;
-			
-#ifdef APCLI_AUTO_CONNECT_SUPPORT
-			if (pAd->ApCfg.ApCliAutoConnectRunning == TRUE)
-			{
-				*pCurrState = APCLI_CTRL_SEARCHING;
-
-				/* Reset status here in case interfaces are called down in the progress */
-				pAd->ApCfg.ApCliAutoConnectRunning = FALSE;
-				NdisZeroMemory(pApCliEntry->CfgApCliBssid, MAC_ADDR_LEN);
-		
-				MlmeEnqueue(pAd,
-							APCLI_CTRL_STATE_MACHINE,
-							APCLI_CTRL_SWITCH_CANDIDATE_AP_REQ,
-							0, NULL, ifIndex);
-			}
-#endif /* APCLI_AUTO_CONNECT_SUPPORT */
 		}
 	}
 
@@ -552,30 +478,15 @@ static VOID ApCliCtrlAuth2RspAction(
 
 		pApCliEntry->AssocReqCnt = 0;
 
-		AssocParmFill(pAd, &AssocReq, pAd->MlmeAux.Bssid, pAd->MlmeAux.CapabilityInfo,
+		AssocParmFill(pAd, &AssocReq, pAd->ApCliMlmeAux.Bssid, pAd->ApCliMlmeAux.CapabilityInfo,
 			ASSOC_TIMEOUT, /*pAd->PortCfg.DefaultListenCount*/5);
 		MlmeEnqueue(pAd, APCLI_ASSOC_STATE_MACHINE, APCLI_MT2_MLME_ASSOC_REQ, 
 			sizeof(MLME_ASSOC_REQ_STRUCT), &AssocReq, ifIndex);
 	} else
 	{
-		DBGPRINT(RT_DEBUG_TRACE, ("(%s) Apcli Auth Rsp Failure.\n", __FUNCTION__));
+		DBGPRINT(RT_DEBUG_TRACE, ("(%s) Sta Auth Rsp Failure.\n", __FUNCTION__));
 
 		*pCurrState = APCLI_CTRL_DISCONNECTED;
-#ifdef APCLI_AUTO_CONNECT_SUPPORT
-		if (pAd->ApCfg.ApCliAutoConnectRunning == TRUE)
-		{
-			*pCurrState = APCLI_CTRL_SEARCHING;
-
-			/* Reset status here in case interfaces are called down in the progress */
-			pAd->ApCfg.ApCliAutoConnectRunning = FALSE;
-			NdisZeroMemory(pApCliEntry->CfgApCliBssid, MAC_ADDR_LEN);
-		
-			MlmeEnqueue(pAd,
-						APCLI_CTRL_STATE_MACHINE,
-						APCLI_CTRL_SWITCH_CANDIDATE_AP_REQ,
-						0, NULL, ifIndex);
-		}
-#endif /* APCLI_AUTO_CONNECT_SUPPORT */
 	}
 
 	return;
@@ -609,36 +520,19 @@ static VOID ApCliCtrlAuthReqTimeoutAction(
 	if (pApCliEntry->AuthReqCnt > 5)
 	{
 		*pCurrState = APCLI_CTRL_DISCONNECTED;
-		NdisZeroMemory(pAd->MlmeAux.Bssid, MAC_ADDR_LEN);
-		NdisZeroMemory(pAd->MlmeAux.Ssid, MAX_LEN_OF_SSID);
+		NdisZeroMemory(pAd->ApCliMlmeAux.Bssid, MAC_ADDR_LEN);
+		NdisZeroMemory(pAd->ApCliMlmeAux.Ssid, MAX_LEN_OF_SSID);
 		pApCliEntry->AuthReqCnt = 0;
-		
-#ifdef APCLI_AUTO_CONNECT_SUPPORT
-		if (pAd->ApCfg.ApCliAutoConnectRunning == TRUE)
-		{
-			*pCurrState = APCLI_CTRL_SEARCHING;
-
-			/* Reset status here in case interfaces are called down in the progress */
-			pAd->ApCfg.ApCliAutoConnectRunning = FALSE;
-			NdisZeroMemory(pApCliEntry->CfgApCliBssid, MAC_ADDR_LEN);
-			
-			MlmeEnqueue(pAd,
-						APCLI_CTRL_STATE_MACHINE,
-						APCLI_CTRL_SWITCH_CANDIDATE_AP_REQ,
-						0, NULL, ifIndex);
-		}
-#endif /* APCLI_AUTO_CONNECT_SUPPORT */
-
 		return;
 	}
 
-	// stay in same state.
+	/* stay in same state. */
 	*pCurrState = APCLI_CTRL_AUTH;
 
-	// retry Authentication.
+	/* retry Authentication. */
 	DBGPRINT(RT_DEBUG_TRACE, ("(%s) Retry Auth Req.\n", __FUNCTION__));
-	COPY_MAC_ADDR(AuthReq.Addr, pAd->MlmeAux.Bssid);
-	AuthReq.Alg = pAd->MlmeAux.Alg; //Ndis802_11AuthModeOpen;
+	COPY_MAC_ADDR(AuthReq.Addr, pAd->ApCliMlmeAux.Bssid);
+	AuthReq.Alg = pAd->ApCliMlmeAux.Alg; /*Ndis802_11AuthModeOpen; */
 	AuthReq.Timeout = AUTH_TIMEOUT;
 	MlmeEnqueue(pAd, APCLI_AUTH_STATE_MACHINE, APCLI_MT2_MLME_AUTH_REQ,
 		sizeof(MLME_AUTH_REQ_STRUCT), &AuthReq, ifIndex);
@@ -691,26 +585,9 @@ static VOID ApCliCtrlAssocRspAction(
 		else
 		{
 			DBGPRINT(RT_DEBUG_TRACE, ("(%s) apCliIf = %d, Insert Remote AP to MacTable failed.\n", __FUNCTION__,  ifIndex));
-			// Reset the apcli interface as disconnected and Invalid.
+			/* Reset the apcli interface as disconnected and Invalid. */
 			*pCurrState = APCLI_CTRL_DISCONNECTED;
 			pApCliEntry->Valid = FALSE;
-			
-#ifdef APCLI_AUTO_CONNECT_SUPPORT
-			if (pAd->ApCfg.ApCliAutoConnectRunning == TRUE)
-			{
-				*pCurrState = APCLI_CTRL_SEARCHING;
-				
-				/* Reset status here in case interfaces are called down in the progress */
-				pAd->ApCfg.ApCliAutoConnectRunning = FALSE;
-				NdisZeroMemory(pApCliEntry->CfgApCliBssid, MAC_ADDR_LEN);
-		
-				MlmeEnqueue(pAd,
-							APCLI_CTRL_STATE_MACHINE,
-							APCLI_CTRL_SWITCH_CANDIDATE_AP_REQ,
-							0, NULL, ifIndex);
-			}
-#endif /* APCLI_AUTO_CONNECT_SUPPORT */		
-
 		}
 	}
 	else
@@ -719,25 +596,8 @@ static VOID ApCliCtrlAssocRspAction(
 
 		*pCurrState = APCLI_CTRL_DISCONNECTED;
 
-		// set the apcli interface be valid.
+		/* set the apcli interface be valid. */
 		pApCliEntry->Valid = FALSE;
-		
-#ifdef APCLI_AUTO_CONNECT_SUPPORT
-		if (pAd->ApCfg.ApCliAutoConnectRunning == TRUE)
-		{
-			*pCurrState = APCLI_CTRL_SEARCHING;
-
-			/* Reset status here in case interfaces are called down in the progress */
-			pAd->ApCfg.ApCliAutoConnectRunning = FALSE;
-			NdisZeroMemory(pApCliEntry->CfgApCliBssid, MAC_ADDR_LEN);
-		
-			MlmeEnqueue(pAd,
-						APCLI_CTRL_STATE_MACHINE,
-						APCLI_CTRL_SWITCH_CANDIDATE_AP_REQ,
-						0, NULL, ifIndex);
-		}
-#endif /* APCLI_AUTO_CONNECT_SUPPORT */
-
 	}
 
 	return;
@@ -803,40 +663,23 @@ static VOID ApCliCtrlAssocReqTimeoutAction(
 
 	pApCliEntry = &pAd->ApCfg.ApCliTab[ifIndex];
 
-	// give up to retry authentication req after retry it 5 times.
+	/* give up to retry authentication req after retry it 5 times. */
 	pApCliEntry->AssocReqCnt++;
 	if (pApCliEntry->AssocReqCnt > 5)
 	{
 		*pCurrState = APCLI_CTRL_DISCONNECTED;
-		NdisZeroMemory(pAd->MlmeAux.Bssid, MAC_ADDR_LEN);
-		NdisZeroMemory(pAd->MlmeAux.Ssid, MAX_LEN_OF_SSID);
-		pApCliEntry->AssocReqCnt = 0;
-		
-#ifdef APCLI_AUTO_CONNECT_SUPPORT
-		if (pAd->ApCfg.ApCliAutoConnectRunning == TRUE)
-		{
-			*pCurrState = APCLI_CTRL_SEARCHING;
-
-			/* Reset status here in case interfaces are called down in the progress */
-			pAd->ApCfg.ApCliAutoConnectRunning = FALSE;
-			NdisZeroMemory(pApCliEntry->CfgApCliBssid, MAC_ADDR_LEN);
-		
-			MlmeEnqueue(pAd,
-						APCLI_CTRL_STATE_MACHINE,
-						APCLI_CTRL_SWITCH_CANDIDATE_AP_REQ,
-						0, NULL, ifIndex);
-		}
-#endif /* APCLI_AUTO_CONNECT_SUPPORT */
-
+		NdisZeroMemory(pAd->ApCliMlmeAux.Bssid, MAC_ADDR_LEN);
+		NdisZeroMemory(pAd->ApCliMlmeAux.Ssid, MAX_LEN_OF_SSID);
+		pApCliEntry->AuthReqCnt = 0;
 		return;
 	}
 
-	// stay in same state.
+	/* stay in same state. */
 	*pCurrState = APCLI_CTRL_ASSOC;
 
-	// retry Association Req.
+	/* retry Association Req. */
 	DBGPRINT(RT_DEBUG_TRACE, ("(%s) Retry Association Req.\n", __FUNCTION__));
-	AssocParmFill(pAd, &AssocReq, pAd->MlmeAux.Bssid, pAd->MlmeAux.CapabilityInfo,
+	AssocParmFill(pAd, &AssocReq, pAd->ApCliMlmeAux.Bssid, pAd->ApCliMlmeAux.CapabilityInfo,
 		ASSOC_TIMEOUT, /*pAd->PortCfg.DefaultListenCount*/5);
 	MlmeEnqueue(pAd, APCLI_ASSOC_STATE_MACHINE, APCLI_MT2_MLME_ASSOC_REQ, 
 		sizeof(MLME_ASSOC_REQ_STRUCT), &AssocReq, ifIndex);
@@ -868,14 +711,14 @@ static VOID ApCliCtrlDisconnectReqAction(
 	if (pApCliEntry->Valid)
 		ApCliLinkDown(pAd, ifIndex);
 
-	// set the apcli interface be invalid.
+	/* set the apcli interface be invalid. */
 	pApCliEntry->Valid = FALSE;
 
-	// clear MlmeAux.Ssid and Bssid.
-	NdisZeroMemory(pAd->MlmeAux.Bssid, MAC_ADDR_LEN);
-	pAd->MlmeAux.SsidLen = 0;
-	NdisZeroMemory(pAd->MlmeAux.Ssid, MAX_LEN_OF_SSID);
-	pAd->MlmeAux.Rssi = 0;
+	/* clear ApCliMlmeAux.Ssid and Bssid. */
+	NdisZeroMemory(pAd->ApCliMlmeAux.Bssid, MAC_ADDR_LEN);
+	pAd->ApCliMlmeAux.SsidLen = 0;
+	NdisZeroMemory(pAd->ApCliMlmeAux.Ssid, MAX_LEN_OF_SSID);
+	pAd->ApCliMlmeAux.Rssi = 0;
 
 	*pCurrState = APCLI_CTRL_DISCONNECTED;
 
@@ -906,37 +749,17 @@ static VOID ApCliCtrlPeerDeAssocReqAction(
 	if (pApCliEntry->Valid)
 		ApCliLinkDown(pAd, ifIndex);
 
-#ifdef APCLI_AUTO_CONNECT_SUPPORT 
-	if (pAd->ApCfg.ApCliAutoConnectRunning == TRUE)
-	{
-		PMAC_TABLE_ENTRY pMacEntry;
-		pMacEntry = &pAd->MacTab.Content[pApCliEntry->MacTabWCID];
-		*pCurrState = APCLI_CTRL_SEARCHING;
-
-		/* Reset status here in case interfaces are called down in the progress */
-		pAd->ApCfg.ApCliAutoConnectRunning = FALSE;
-		NdisZeroMemory(pApCliEntry->CfgApCliBssid, MAC_ADDR_LEN);
-		DBGPRINT(RT_DEBUG_TRACE, ("(%s) Searching state: Enqueue cmd Switch Candidate.\n", __FUNCTION__));
-		MlmeEnqueue(pAd,
-					APCLI_CTRL_STATE_MACHINE,
-					APCLI_CTRL_SWITCH_CANDIDATE_AP_REQ,
-					0, NULL, ifIndex);
-	}
-	else
-#else
-	{
-	// set the apcli interface be invalid.
+	/* set the apcli interface be invalid. */
 	pApCliEntry->Valid = FALSE;
 
-	// clear MlmeAux.Ssid and Bssid.
-	NdisZeroMemory(pAd->MlmeAux.Bssid, MAC_ADDR_LEN);
-	pAd->MlmeAux.SsidLen = 0;
-	NdisZeroMemory(pAd->MlmeAux.Ssid, MAX_LEN_OF_SSID);
-	pAd->MlmeAux.Rssi = 0;
+	/* clear ApCliMlmeAux.Ssid and Bssid. */
+	NdisZeroMemory(pAd->ApCliMlmeAux.Bssid, MAC_ADDR_LEN);
+	pAd->ApCliMlmeAux.SsidLen = 0;
+	NdisZeroMemory(pAd->ApCliMlmeAux.Ssid, MAX_LEN_OF_SSID);
+	pAd->ApCliMlmeAux.Rssi = 0;
 
 	*pCurrState = APCLI_CTRL_DISCONNECTED;
-	}
-#endif /* APCLI_AUTO_CONNECT_SUPPORT */	
+
 	return;
 }
 
@@ -963,21 +786,21 @@ static VOID ApCliCtrlDeAssocAction(
 
 	pApCliEntry = &pAd->ApCfg.ApCliTab[ifIndex];
 
-	DisassocParmFill(pAd, &DisassocReq, pAd->MlmeAux.Bssid, REASON_DISASSOC_STA_LEAVING);
+	DisassocParmFill(pAd, &DisassocReq, pAd->ApCliMlmeAux.Bssid, REASON_DISASSOC_STA_LEAVING);
 	MlmeEnqueue(pAd, APCLI_ASSOC_STATE_MACHINE, APCLI_MT2_MLME_DISASSOC_REQ,
 		sizeof(MLME_DISASSOC_REQ_STRUCT), &DisassocReq, ifIndex);
 
 	if (pApCliEntry->Valid)
 		ApCliLinkDown(pAd, ifIndex);
 
-	// set the apcli interface be invalid.
+	/* set the apcli interface be invalid. */
 	pApCliEntry->Valid = FALSE;
 
-	// clear MlmeAux.Ssid and Bssid.
-	NdisZeroMemory(pAd->MlmeAux.Bssid, MAC_ADDR_LEN);
-	pAd->MlmeAux.SsidLen = 0;
-	NdisZeroMemory(pAd->MlmeAux.Ssid, MAX_LEN_OF_SSID);
-	pAd->MlmeAux.Rssi = 0;
+	/* clear ApCliMlmeAux.Ssid and Bssid. */
+	NdisZeroMemory(pAd->ApCliMlmeAux.Bssid, MAC_ADDR_LEN);
+	pAd->ApCliMlmeAux.SsidLen = 0;
+	NdisZeroMemory(pAd->ApCliMlmeAux.Ssid, MAX_LEN_OF_SSID);
+	pAd->ApCliMlmeAux.Rssi = 0;
 
 	*pCurrState = APCLI_CTRL_DEASSOC;
 
@@ -1008,9 +831,9 @@ static VOID ApCliCtrlDeAuthAction(
 
 	pApCliEntry = &pAd->ApCfg.ApCliTab[ifIndex];
 
-	// Fill in the related information
+	/* Fill in the related information */
 	DeAuthFrame.Reason = (USHORT)REASON_DEAUTH_STA_LEAVING;
-	COPY_MAC_ADDR(DeAuthFrame.Addr, pAd->MlmeAux.Bssid);
+	COPY_MAC_ADDR(DeAuthFrame.Addr, pAd->ApCliMlmeAux.Bssid);
 	
 	MlmeEnqueue(pAd, 
 				  APCLI_AUTH_STATE_MACHINE, 
@@ -1022,86 +845,19 @@ static VOID ApCliCtrlDeAuthAction(
 	if (pApCliEntry->Valid)
 		ApCliLinkDown(pAd, ifIndex);
 
-	// set the apcli interface be invalid.
+	/* set the apcli interface be invalid. */
 	pApCliEntry->Valid = FALSE;
 
-	// clear MlmeAux.Ssid and Bssid.
-	NdisZeroMemory(pAd->MlmeAux.Bssid, MAC_ADDR_LEN);
-	pAd->MlmeAux.SsidLen = 0;
-	NdisZeroMemory(pAd->MlmeAux.Ssid, MAX_LEN_OF_SSID);
-	pAd->MlmeAux.Rssi = 0;
+	/* clear ApCliMlmeAux.Ssid and Bssid. */
+	NdisZeroMemory(pAd->ApCliMlmeAux.Bssid, MAC_ADDR_LEN);
+	pAd->ApCliMlmeAux.SsidLen = 0;
+	NdisZeroMemory(pAd->ApCliMlmeAux.Ssid, MAX_LEN_OF_SSID);
+	pAd->ApCliMlmeAux.Rssi = 0;
 
 	*pCurrState = APCLI_CTRL_DISCONNECTED;
 
 	return;
 }
 
-
-#ifdef APCLI_AUTO_CONNECT_SUPPORT
-/* 
-	===================================================
-	
-	Description:
-		If the previous selected entry connected failed, this function will
-		choose next entry to connect. The previous entry will be deleted.
-				
-	Arguments:
-		pAd: pointer to our adapter
-		Elem: NULL
-
-	Note:
-		Note that the table is sorted by Rssi in the "increasing" order, thus
-		the last entry in table has stringest Rssi.
-	===================================================
-*/
-static VOID ApCliCtrlSwitchCandidateAP(
-	IN PRTMP_ADAPTER pAd, 
-	IN MLME_QUEUE_ELEM *Elem)
-{
-	USHORT 			ifIndex = (USHORT)(Elem->Priv);
-	PULONG 			pCurrState = &pAd->ApCfg.ApCliTab[ifIndex].CtrlCurrState;
-	BSS_TABLE 		*pSsidBssTab = &pAd->MlmeAux.SsidBssTab;
-	BSS_ENTRY		*pBssEntry;
-	PAPCLI_STRUCT	pApCliEntry = &pAd->ApCfg.ApCliTab[ifIndex];
-
-	DBGPRINT(RT_DEBUG_TRACE, ("---> ApCliCtrlSwitchCandidateAP()\n"));
-	/*
-		delete (zero) the previous connected-failled entry and always 
-		connect to the last entry in talbe until the talbe is empty.
-	*/
-	
-	NdisZeroMemory(&pSsidBssTab->BssEntry[--pSsidBssTab->BssNr], sizeof(BSS_ENTRY));
-	pBssEntry = &pSsidBssTab->BssEntry[pSsidBssTab->BssNr -1];
-
-	if ((pSsidBssTab->BssNr > 0) && (pSsidBssTab->BssNr < MAX_LEN_OF_BSS_TABLE))
-	{
-		pAd->ApCfg.ApCliAutoConnectRunning = TRUE;
-		if (pAd->CommonCfg.Channel != pBssEntry->Channel)
-		{
-			/* Switch to the channel of candidate AP */
-                        UCHAR msg[4];
-			Set_ApCli_Enable_Proc(pAd, "0");
-                        sprintf(msg, "%d", pBssEntry->Channel);
-			DBGPRINT(RT_DEBUG_TRACE, ("Change to channle %u\n", pBssEntry->Channel));
-                        pAd->CommonCfg.Channel = pBssEntry->Channel;
-                        //AsicSwitchChannel(pAd, Channel, FALSE);               
-                        Set_Channel_Proc(pAd, msg);
-		}
-		/* set bssid to candidate AP */
-		NdisMoveMemory(pApCliEntry->CfgApCliBssid, pBssEntry->Bssid, MAC_ADDR_LEN);
-	}
-	else 
-	{
-		DBGPRINT(RT_DEBUG_TRACE, ("No candidate AP, the process is about to stop.\n"));
-		pAd->ApCfg.ApCliAutoConnectRunning = FALSE;
-		NdisZeroMemory(pApCliEntry->CfgApCliBssid, MAC_ADDR_LEN);
-		RtmpOSWirelessEventSend(pAd, IWEVCUSTOM, IW_APCLI_AUTO_CONN_FAIL, NULL, NULL, 0);
-	}
-	DBGPRINT(RT_DEBUG_TRACE, ("<--- ApCliCtrlSwitchCandidateAP()\n"));
-	Set_ApCli_Enable_Proc(pAd, "1");
-	*pCurrState = APCLI_CTRL_DISCONNECTED;
-}
-#endif /* APCLI_AUTO_CONNECT_SUPPORT */
-
-#endif // APCLI_SUPPORT //
+#endif /* APCLI_SUPPORT */
 

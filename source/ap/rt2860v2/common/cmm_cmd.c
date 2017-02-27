@@ -163,7 +163,7 @@ NDIS_STATUS RTEnqueueInternalCmd(
 			os_free_mem(pAd, cmdqelmt);
 		}
 		else
-			RTCMDUp(pAd);
+			RTCMDUp(&pAd->cmdQTask);
 	}
 	return(NDIS_STATUS_SUCCESS);
 }

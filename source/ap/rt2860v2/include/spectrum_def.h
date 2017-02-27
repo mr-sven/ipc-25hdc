@@ -51,7 +51,7 @@ typedef struct _MEASURE_REQ_ENTRY
 	ULONG lastTime;
 	BOOLEAN	Valid;
 	UINT8 DialogToken;
-	UINT8 MeasureDialogToken[3];	// 0:basic measure, 1: CCA measure, 2: RPI_Histogram measure.
+	UINT8 MeasureDialogToken[3];	/* 0:basic measure, 1: CCA measure, 2: RPI_Histogram measure. */
 } MEASURE_REQ_ENTRY, *PMEASURE_REQ_ENTRY;
 
 typedef struct _MEASURE_REQ_TAB
@@ -139,7 +139,7 @@ typedef union GNU_PACKED _MEASURE_REQ_MODE
 		UINT8 DurationMandatory:1;
 		UINT8 :3;
 	} field;
-#endif // RT_BIG_ENDIAN //
+#endif /* RT_BIG_ENDIAN */
 	UINT8 word;
 } MEASURE_REQ_MODE, *PMEASURE_REQ_MODE;
 
@@ -182,7 +182,7 @@ typedef union GNU_PACKED _MEASURE_BASIC_REPORT_MAP
 		UINT8 Unmeasure:1;
 		UINT8 Rev:3;
 	} field;
-#endif // RT_BIG_ENDIAN //
+#endif /* RT_BIG_ENDIAN */
 	UINT8 word;
 } MEASURE_BASIC_REPORT_MAP, *PMEASURE_BASIC_REPORT_MAP;
 
@@ -224,7 +224,7 @@ typedef union GNU_PACKED _MEASURE_REPORT_MODE
 		UINT8 Incapable:1;
 		UINT8 Refused:1;
 		UINT8 Rev:5;
-#endif // RT_BIG_ENDIAN //
+#endif /* RT_BIG_ENDIAN */
 	} field;
 	UINT8 word;
 } MEASURE_REPORT_MODE, *PMEASURE_REPORT_MODE;
@@ -245,5 +245,5 @@ typedef struct GNU_PACKED _QUIET_INFO
 	UINT16 QuietOffset;
 } QUIET_INFO, *PQUIET_INFO;
 
-#endif // __SPECTRUM_DEF_H__ //
+#endif /* __SPECTRUM_DEF_H__ */
 

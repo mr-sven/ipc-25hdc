@@ -23,9 +23,7 @@ OBJ := $(MOD_NAME).o
 #ifdef CONFIG_AP_SUPPORT
 
 RT28XX_AP_OBJ := \
-	../../ap/ap_mbss.o\
-	../../common/rtmp_init_inf.o\
-	../../os/linux/rt_profile.o\
+	../../ap/ap_mbss_inf.o\
 	../../os/linux/ap_ioctl.o\
 	../../os/linux/rt_main_dev.o
 
@@ -62,7 +60,6 @@ endif
 ifeq ($(CHIPSET),2870)
 RT28XX_AP_OBJ += \
 	../../common/rtusb_dev_id.o\
-	../../os/linux/rt_usb.o\
 	../../os/linux/usb_main_dev.o
 endif
 
@@ -70,7 +67,6 @@ endif
 ifeq ($(CHIPSET),2070)
 RT28XX_AP_OBJ += \
 	../../common/rtusb_dev_id.o\
-	../../os/linux/rt_usb.o\
 	../../os/linux/usb_main_dev.o
 endif
 
@@ -78,7 +74,6 @@ endif
 ifeq ($(CHIPSET),3070)
 RT28XX_AP_OBJ += \
 	../../common/rtusb_dev_id.o\
-	../../os/linux/rt_usb.o\
 	../../os/linux/usb_main_dev.o
 endif
 
@@ -93,7 +88,6 @@ endif
 ifeq ($(CHIPSET),3572)
 RT28XX_AP_OBJ += \
 	../../common/rtusb_dev_id.o\
-	../../os/linux/rt_usb.o\
 	../../os/linux/usb_main_dev.o
 endif
 
@@ -129,7 +123,6 @@ endif
 ifeq ($(CHIPSET),3370)
 RT28XX_AP_OBJ += \
 	../../common/rtusb_dev_id.o\
-	../../os/linux/rt_usb.o\
 	../../os/linux/usb_main_dev.o
 endif
 
@@ -137,14 +130,18 @@ endif
 
 #ifdef CONFIG_STA_SUPPORT
 RT28XX_STA_OBJ := \
-	../../common/rtmp_init_inf.o\
-	../../os/linux/rt_profile.o\
 	../../os/linux/sta_ioctl.o\
 	../../os/linux/rt_main_dev.o
 
 ifeq ($(HAS_MESH_SUPPORT),y)
 RT28XX_STA_OBJ += \
 	../../common/mesh_inf.o
+endif
+
+ifeq ($(HAS_P2P_SUPPORT), y)
+RT28XX_STA_OBJ += \
+	../../common/p2p_inf.o\
+	../../os/linux/ap_ioctl.o
 endif
 
 #ifdef RT2860
@@ -165,7 +162,6 @@ endif
 ifeq ($(CHIPSET),2870)
 RT28XX_STA_OBJ += \
 	../../common/rtusb_dev_id.o\
-	../../os/linux/rt_usb.o\
 	../../os/linux/usb_main_dev.o
 endif
 
@@ -173,7 +169,6 @@ endif
 ifeq ($(CHIPSET),2070)
 RT28XX_STA_OBJ += \
 	../../common/rtusb_dev_id.o\
-	../../os/linux/rt_usb.o\
 	../../os/linux/usb_main_dev.o
 endif
 
@@ -181,7 +176,6 @@ endif
 ifeq ($(CHIPSET),3070)
 RT28XX_STA_OBJ += \
 	../../common/rtusb_dev_id.o\
-	../../os/linux/rt_usb.o\
 	../../os/linux/usb_main_dev.o
 endif
 
@@ -196,7 +190,6 @@ endif
 ifeq ($(CHIPSET),3572)
 RT28XX_STA_OBJ += \
 	../../common/rtusb_dev_id.o\
-	../../os/linux/rt_usb.o\
 	../../os/linux/usb_main_dev.o
 endif
 
@@ -238,9 +231,8 @@ endif
 
 #ifdef CONFIG_APSTA_SUPPORT
 RT28XX_APSTA_OBJ := \
-	../../ap/ap_mbss.o\
-	../../common/rtmp_init_inf.o\
-	../../os/linux/rt_profile.o\
+	../../ap/ap_mbss_inf.o\
+	../../common/p2p_inf.o\
 	../../os/linux/ap_ioctl.o\
 	../../os/linux/sta_ioctl.o\
 	../../os/linux/rt_main_dev.o

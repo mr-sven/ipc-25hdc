@@ -27,5 +27,5 @@ VOID StopNetIfQueue(
 	IN PRTMP_ADAPTER pAd,
 	IN UCHAR QueIdx,
 	IN PNDIS_PACKET pPacket);
-#endif // __NET_IF_BLOCK_H__
+#endif /* __NET_IF_BLOCK_H__ */
 

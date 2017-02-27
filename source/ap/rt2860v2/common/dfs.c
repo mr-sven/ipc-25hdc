@@ -45,8 +45,8 @@ static BOOLEAN RadarSignalDetermination(
 	IN UINT32 RadarSignalDuration);
 
 static RADAR_DURATION_TABLE RadarSignalDurationTable[]=
-{//Pattern num, Session interval, Theorical duration, Tolerance
-	// CE.
+{/*Pattern num, Session interval, Theorical duration, Tolerance*/
+	/* CE.*/
 	{CE, 0x682A, 	0x10},
 	{CE, 0x186A0, 	0x100},
 	{CE, 0x1046A, 	0x100},
@@ -61,12 +61,12 @@ static RADAR_DURATION_TABLE RadarSignalDurationTable[]=
 	{CE, 0x1652,	0x10},
 	{CE, 0x1388,	0x10},
 	{CE, 0x2710,	0x10},
-	//FCC
+	/*FCC*/
 	{FCC, 0x6F90, 	0x10},
 	{FCC, ((0x11F8+0xBB8)/2), ((0x11F8-0xBB8)/2)},
 	{FCC, ((0x2710+0xFA0)/2), ((0x2710-0xFA0)/2)},
 	{FCC, 0x1a04,	0x10},
-	//Japan
+	/*Japan*/
 	{JAP, 0x6F9B,	0x10},
 	{JAP, 0x12C7B,	0x100},
 	{JAP, 0x6C81,	0x10},
@@ -75,10 +75,10 @@ static RADAR_DURATION_TABLE RadarSignalDurationTable[]=
 	{JAP, ((0x11F8+0xBB7)/2), ((0x11F8-0xBB7)/2)},
 	{JAP, ((0x2710+0xFA0)/2), ((0x2710-0xFA0)/2)},
 	{JAP, 0x12C7B,	0x100},
-	//Japan w53
+	/*Japan w53*/
 	{JAP_W53, 0x6F9B,	0x10},
 	{JAP_W53, 0x12C7B,	0x100},
-	//Japan w56
+	/*Japan w56*/
 	{JAP_W56, 0x6C81,	0x10},
 	{JAP_W56, 0x6F9B,	0x10},
 	{JAP_W56, 0x13880,	0x100},
@@ -89,31 +89,31 @@ static RADAR_DURATION_TABLE RadarSignalDurationTable[]=
 #define RD_TAB_SIZE (sizeof(RadarSignalDurationTable) / sizeof(RADAR_DURATION_TABLE))
 
 static RADAR_DURATION_TABLE RadarWidthSignalDurationTable[]=
-{ //Pattern num, Session interval, Theorical duration, Tolerance
-	//FCC
+{ /*Pattern num, Session interval, Theorical duration, Tolerance*/
+	/*FCC*/
 	{FCC, ((0x7D0+0x3E8)/2), ((0x7D0-0x3E8)/2)},
 	{JAP, ((0x7D0+0x3E8)/2), ((0x7D0-0x3E8)/2)},
 	{JAP_W56, ((0x7D0+0x3E8)/2), ((0x7D0-0x3E8)/2)},
 };
 #define RD_WIDTH_TAB_SIZE (sizeof(RadarWidthSignalDurationTable) / sizeof(RADAR_DURATION_TABLE))
-#endif // DFS_SOFTWARE_SUPPORT //
-#endif // DFS_SUPPORT //
-#endif // CONFIG_AP_SUPPORT //
+#endif /* DFS_SOFTWARE_SUPPORT */
+#endif /* DFS_SUPPORT */
+#endif /* CONFIG_AP_SUPPORT */
 
 
 UCHAR RdIdleTimeTable[MAX_RD_REGION][4] =
 {
-	{9, 250, 250, 250},		// CE
-	{4, 250, 250, 250},		// FCC
-	{4, 250, 250, 250},		// JAP
-	{15, 250, 250, 250},	// JAP_W53
-	{4, 250, 250, 250}		// JAP_W56
+	{9, 250, 250, 250},		/* CE*/
+	{4, 250, 250, 250},		/* FCC*/
+	{4, 250, 250, 250},		/* JAP*/
+	{15, 250, 250, 250},	/* JAP_W53*/
+	{4, 250, 250, 250}		/* JAP_W56*/
 };
 
 #ifdef TONE_RADAR_DETECT_SUPPORT
 static void ToneRadarProgram(PRTMP_ADAPTER pAd);
 static void ToneRadarEnable(PRTMP_ADAPTER pAd);
-#endif // TONE_RADAR_DETECT_SUPPORT //
+#endif /* TONE_RADAR_DETECT_SUPPORT */
 
 #ifdef DFS_SUPPORT
 #ifdef DFS_SOFTWARE_SUPPORT
@@ -160,10 +160,8 @@ VOID BbpRadarDetectionStart(
 		{
 			pAd->CommonCfg.RadarDetect.DfsSessionTime = 15;
 		}
-
-
 	}
-#endif // RTMP_RBUS_SUPPORT //
+#endif /* RTMP_RBUS_SUPPORT */
 
 	RadarPeriod = ((UINT)RdIdleTimeTable[pAd->CommonCfg.RadarDetect.RDDurRegion][0] + (UINT)pAd->CommonCfg.RadarDetect.DfsSessionTime) < 250 ?
 			(RdIdleTimeTable[pAd->CommonCfg.RadarDetect.RDDurRegion][0] + pAd->CommonCfg.RadarDetect.DfsSessionTime) : 250;
@@ -172,22 +170,22 @@ VOID BbpRadarDetectionStart(
 #ifdef RT2880
 	pAd->CommonCfg.R65 = 0x1d;
 	pAd->CommonCfg.R66 = 0x60;
-#endif // RT2880 //
+#endif /* RT2880 */
 
 #ifdef CONFIG_AP_SUPPORT
 #ifdef CARRIER_DETECTION_SUPPORT
 		if (pAd->CommonCfg.CarrierDetect.Enable == TRUE)
 		{
-			// make sure CarrierDetect wont send CTS
+			/* make sure CarrierDetect wont send CTS*/
 			CARRIER_DETECT_STOP(pAd);
 		}
-#endif // CARRIER_DETECTION_SUPPORT //
-#endif // CONFIG_AP_SUPPORT //
+#endif /* CARRIER_DETECTION_SUPPORT */
+#endif /* CONFIG_AP_SUPPORT */
 
-#else // Original RT28xx source code.
+#else /* Original RT28xx source code.*/
 	RTMP_IO_WRITE8(pAd, 0x7020, 0x1d);
 	RTMP_IO_WRITE8(pAd, 0x7021, 0x40);
-#endif // RTMP_RBUS_SUPPORT //
+#endif /* RTMP_RBUS_SUPPORT */
 
 	RadarDetectionStart(pAd, 0, RadarPeriod);
 
@@ -222,7 +220,7 @@ VOID BbpRadarDetectionStop(
 	RadarDetectionStop(pAd);
 	return;
 }
-#endif // DFS_SOFTWARE_SUPPORT //
+#endif /* DFS_SOFTWARE_SUPPORT */
 /*
 	========================================================================
 
@@ -242,7 +240,7 @@ VOID RadarDetectionStart(
 	IN UINT8 CTSPeriod)
 {
 	UINT8 DfsActiveTime = (pAd->CommonCfg.RadarDetect.DfsSessionTime & 0x1f);
-	UINT8 CtsProtect = (CTSProtect == 1) ? 0x02 : 0x01; // CTS protect.
+	UINT8 CtsProtect = (CTSProtect == 1) ? 0x02 : 0x01; /* CTS protect.*/
 
 	if (CTSProtect != 0)
 	{
@@ -275,15 +273,15 @@ VOID RadarDetectionStart(
 		CtsProtect = 0x01;
 	
 
-	// send start-RD with CTS protection command to MCU
-	// highbyte [7]		reserve
-	// highbyte [6:5]	0x: stop Carrier/Radar detection
-	// highbyte [10]:	Start Carrier/Radar detection without CTS protection, 11: Start Carrier/Radar detection with CTS protection
-	// highbyte [4:0]	Radar/carrier detection duration. In 1ms.
+	/* send start-RD with CTS protection command to MCU*/
+	/* highbyte [7]		reserve*/
+	/* highbyte [6:5]	0x: stop Carrier/Radar detection*/
+	/* highbyte [10]:	Start Carrier/Radar detection without CTS protection, 11: Start Carrier/Radar detection with CTS protection*/
+	/* highbyte [4:0]	Radar/carrier detection duration. In 1ms.*/
 
-	// lowbyte [7:0]	Radar/carrier detection period, in 1ms.
+	/* lowbyte [7:0]	Radar/carrier detection period, in 1ms.*/
 	AsicSendCommandToMcu(pAd, 0x60, 0xff, CTSPeriod, DfsActiveTime | (CtsProtect << 5));
-	//AsicSendCommandToMcu(pAd, 0x63, 0xff, 10, 0);
+	/*AsicSendCommandToMcu(pAd, 0x63, 0xff, 10, 0);*/
 
 	return;
 }
@@ -307,12 +305,12 @@ VOID RadarDetectionStop(
 	IN PRTMP_ADAPTER	pAd)
 {
 	DBGPRINT(RT_DEBUG_TRACE,("RadarDetectionStop.\n"));
-	AsicSendCommandToMcu(pAd, 0x60, 0xff, 0x00, 0x00);	// send start-RD with CTS protection command to MCU
+	AsicSendCommandToMcu(pAd, 0x60, 0xff, 0x00, 0x00);	/* send start-RD with CTS protection command to MCU*/
 
 	return;
 }
-#endif // DFS_SOFTWARE_SUPPORT //
-#endif // DFS_SUPPORT //
+#endif /* DFS_SOFTWARE_SUPPORT */
+#endif /* DFS_SUPPORT */
 
 
 /*
@@ -376,7 +374,7 @@ ULONG JapRadarType(
 	else if (i < 15)
 		return JAP_W56;
 	else
-		return JAP; // W52
+		return JAP; /* W52*/
 
 }
 
@@ -403,14 +401,14 @@ ULONG RTMPReadRadarDuration(
 		result = (duration1 << 16) + (duration2 << 8) + duration3;
 		return result;
 	}
-#endif // DFS_DEBUG //
-#endif // RT2880 //
+#endif /* DFS_DEBUG */
+#endif /* RT2880 */
 
 	BBP_IO_READ8_BY_REG_ID(pAd, BBP_R116, &duration1);
 	BBP_IO_READ8_BY_REG_ID(pAd, BBP_R117, &duration2);
 	BBP_IO_READ8_BY_REG_ID(pAd, BBP_R118, &duration3);
 	result = (duration1 << 16) + (duration2 << 8) + duration3;
-#endif // DFS_SUPPORT //
+#endif /* DFS_SUPPORT */
 
 	return result;
 
@@ -453,7 +451,7 @@ VOID ApRadarDetectPeriodic(
 			}
 		}
 	}
-	//radar detect
+	/*radar detect*/
 	if ((pAd->CommonCfg.Channel > 14)
 		&& (pAd->CommonCfg.bIEEE80211H == 1)
 		&& RadarChannelCheck(pAd, pAd->CommonCfg.Channel))
@@ -463,8 +461,8 @@ VOID ApRadarDetectPeriodic(
 	return;
 }
 
-// Periodic Radar detection, switch channel will occur in RTMPHandleTBTTInterrupt()
-// Before switch channel, driver needs doing channel switch announcement.
+/* Periodic Radar detection, switch channel will occur in RTMPHandleTBTTInterrupt()*/
+/* Before switch channel, driver needs doing channel switch announcement.*/
 VOID RadarDetectPeriodic(
 	IN PRTMP_ADAPTER	pAd)
 {
@@ -536,9 +534,9 @@ VOID RadarDetectPeriodic(
 				pAd->CommonCfg.RadarElectNum = 10;
 		}		
 	}
-#endif // RT2880 //
+#endif /* RT2880 */
 
-	// need to check channel availability, after switch channel
+	/* need to check channel availability, after switch channel*/
 	if (pAd->CommonCfg.RadarDetect.RDMode != RD_SILENCE_MODE)
 			return;
 
@@ -560,22 +558,22 @@ VOID RadarDetectPeriodic(
 			}
 		}
 	}
-#endif // DFS_SOFTWARE_SUPPORT //
-#endif // RT2880 //
+#endif /* DFS_SOFTWARE_SUPPORT */
+#endif /* RT2880 */
 
 
-	// channel availability check time is 60sec, use 65 for assurance
+	/* channel availability check time is 60sec, use 65 for assurance*/
 	if (pAd->CommonCfg.RadarDetect.RDCount++ > pAd->CommonCfg.RadarDetect.ChMovingTime)
 	{
 		DBGPRINT(RT_DEBUG_TRACE, ("Not found radar signal, start send beacon and radar detection in service monitor\n\n"));
 #ifdef DFS_SOFTWARE_SUPPORT
 		if (pAd->CommonCfg.dfs_func < HARDWARE_DFS_V1) 
 			BbpRadarDetectionStop(pAd);
-#endif // DFS_SOFTWARE_SUPPORT //
+#endif /* DFS_SOFTWARE_SUPPORT */
 
 #ifdef RT2880
 		pAd->CommonCfg.R66 = pAd->CommonCfg.DFS_R66;
-#endif // RT2880 //
+#endif /* RT2880 */
 
 #ifdef CONFIG_AP_SUPPORT
 		IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
@@ -583,12 +581,12 @@ VOID RadarDetectPeriodic(
 #ifdef CARRIER_DETECTION_SUPPORT
 			if (pAd->CommonCfg.CarrierDetect.Enable == TRUE)
 			{
-				// trun on Carrier-Detection. (Carrier-Detect with CTS protection).
+				/* trun on Carrier-Detection. (Carrier-Detect with CTS protection).*/
 				CARRIER_DETECT_START(pAd, 1);
 			}
-#endif // CARRIER_DETECTION_SUPPORT //
+#endif /* CARRIER_DETECTION_SUPPORT */
 		}
-#endif // CONFIG_AP_SUPPORT //
+#endif /* CONFIG_AP_SUPPORT */
 		AsicEnableBssSync(pAd);
 		pAd->CommonCfg.RadarDetect.RDMode = RD_NORMAL_MODE;
 
@@ -607,8 +605,8 @@ VOID RadarDetectPeriodic(
 				RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, 114, 0x02);
 			}
 		}
-#endif // DFS_SOFTWARE_SUPPORT //
-#endif // RT2880 //
+#endif /* DFS_SOFTWARE_SUPPORT */
+#endif /* RT2880 */
 
 
 #ifdef CONFIG_AP_SUPPORT
@@ -623,26 +621,26 @@ VOID RadarDetectPeriodic(
 		{
 			return;
 		}
-		//NewRadarDetectionStart(pAd);
+		/*NewRadarDetectionStart(pAd);*/
 	}
 	else
-#endif // DFS_HARDWARE_SUPPORT //
-#endif // RTMP_RBUS_SUPPORT //
+#endif /* DFS_HARDWARE_SUPPORT */
+#endif /* RTMP_RBUS_SUPPORT */
 	{
 #ifdef DFS_SOFTWARE_SUPPORT
 		if (pAd->CommonCfg.dfs_func < HARDWARE_DFS_V1) 
-			AdaptRadarDetection(pAd);   // start radar detection.
-#endif // DFS_SOFTWARE_SUPPORT //
+			AdaptRadarDetection(pAd);   /* start radar detection.*/
+#endif /* DFS_SOFTWARE_SUPPORT */
 	}
-#endif // DFS_SUPPORT //
+#endif /* DFS_SUPPORT */
 		}
-#endif // CONFIG_AP_SUPPORT //
+#endif /* CONFIG_AP_SUPPORT */
 		return;
 	}
 
 	return;
 }
-#endif // DFS_SUPPORT //
+#endif /* DFS_SUPPORT */
 
 #ifdef CONFIG_AP_SUPPORT
 void RTMPPrepareRDCTSFrame(
@@ -662,10 +660,10 @@ void RTMPPrepareRDCTSFrame(
 	UCHAR				*ptr;
 	UINT				i;
 
-	if (CTSBaseAddr == HW_CS_CTS_BASE) // CTS frame for carrier-sense.
-		Wcid = CS_CTS_WCID;
-	else if (CTSBaseAddr == HW_DFS_CTS_BASE) // CTS frame for radar-detection.
-		Wcid = DFS_CTS_WCID;
+	if (CTSBaseAddr == HW_CS_CTS_BASE) /* CTS frame for carrier-sense.*/
+		Wcid = CS_CTS_WCID(pAd);
+	else if (CTSBaseAddr == HW_DFS_CTS_BASE) /* CTS frame for radar-detection.*/
+		Wcid = DFS_CTS_WCID(pAd);
 	else
 	{
 		DBGPRINT(RT_DEBUG_OFF, ("%s illegal address (%lx) for CTS frame buffer.\n", __FUNCTION__, CTSBaseAddr));
@@ -679,7 +677,7 @@ void RTMPPrepareRDCTSFrame(
 	pRtsFrame->FC.Type    = BTYPE_CNTL;
 	pRtsFrame->Duration = (USHORT)Duration;
 
-	// Write Tx descriptor
+	/* Write Tx descriptor*/
 	pRtsFrame->FC.SubType = SUBTYPE_CTS;
 	COPY_MAC_ADDR(pRtsFrame->Addr1, pAd->CurrentAddress);
 
@@ -696,14 +694,14 @@ void RTMPPrepareRDCTSFrame(
 #ifdef RT_BIG_ENDIAN
 	RTMPWIEndianChange(ptr, TYPE_TXWI);
 #endif
-	for (i=0; i<TXWI_SIZE; i+=4)  // 16-byte TXWI field
+	for (i=0; i<TXWI_SIZE; i+=4)  /* 16-byte TXWI field*/
 	{
 		UINT32 longptr =  *ptr + (*(ptr+1)<<8) + (*(ptr+2)<<16) + (*(ptr+3)<<24);
 		RTMP_IO_WRITE32(pAd, CTSBaseAddr + i, longptr);
 		ptr += 4;
 	}
 
-	// update CTS frame content. start right after the 24-byte TXINFO field
+	/* update CTS frame content. start right after the 24-byte TXINFO field*/
 	ptr = (PUCHAR)pRtsFrame;
 #ifdef RT_BIG_ENDIAN
 	RTMPFrameEndianChange(pAd, ptr, DIR_WRITE, FALSE);
@@ -725,15 +723,15 @@ VOID RTMPPrepareRadarDetectParams(
 {
 	UINT32 DfsSessionTime = pAd->CommonCfg.RadarDetect.DfsSessionTime;
 
-	// Initialize parameters for firmware-base radar detection
-	// Fill CTS frame
-	// change 1st CTS's duration from 15100 to 25100 for Carrier-Sense feature.
+	/* Initialize parameters for firmware-base radar detection*/
+	/* Fill CTS frame*/
+	/* change 1st CTS's duration from 15100 to 25100 for Carrier-Sense feature.*/
 	RTMPPrepareRDCTSFrame(pAd, pAd->CurrentAddress,	25100, pAd->CommonCfg.RtsRate, HW_CS_CTS_BASE, IFS_SIFS);
 	RTMPPrepareRDCTSFrame(pAd, pAd->CurrentAddress,	(DfsSessionTime * 1000 + 100), pAd->CommonCfg.RtsRate, HW_DFS_CTS_BASE, IFS_SIFS);
 
-	// Carrier-Sense function Rx power gain.
-	// The value here will fill to BBP R66 during Carrier detection  period.
-	// There are four bytes (20Mhz-A band)(20Mhz-G band)(40Mhz-A band)(40Mhz-G band).
+	/* Carrier-Sense function Rx power gain.*/
+	/* The value here will fill to BBP R66 during Carrier detection  period.*/
+	/* There are four bytes (20Mhz-A band)(20Mhz-G band)(40Mhz-A band)(40Mhz-G band).*/
 	RTMP_IO_WRITE32(pAd, 0x702c, 0x40305040);
 }
 
@@ -749,7 +747,7 @@ void RadarSMDetect(
 		return;
 
 
-	// In service monitor
+	/* In service monitor*/
 	if (RadarType == RADAR_PULSE)
 	{
 	RadarSignalDuration = RTMPReadRadarDuration(pAd);
@@ -796,8 +794,8 @@ void RadarSMDetect(
 		}
 		return;
 	}
-#endif // DFS_DEBUG //
-#endif // RTMP_RBUS_SUPPORT //
+#endif /* DFS_DEBUG */
+#endif /* RTMP_RBUS_SUPPORT */
 
 	if (RadarSignalDetermination(pAd, RadarType, RadarSignalDuration))
 	{
@@ -826,33 +824,34 @@ void RadarSMDetect(
 
 #ifdef DOT11_N_SUPPORT
 		N_ChannelCheck(pAd);
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 
 #ifdef WDS_SUPPORT
-		// info neighbor APs that Radar signal found throgh WDS link.
+		/* info neighbor APs that Radar signal found throgh WDS link.*/
 		for (i = 0; i < MAX_WDS_ENTRY; i++)
 		{
-			// send Channel Switch Action frame to info Neighbro APs.
+			/* send Channel Switch Action frame to info Neighbro APs.*/
 			if (ValidWdsEntry(pAd, i))
 				EnqueueChSwAnn(pAd, pAd->WdsTab.WdsEntry[i].PeerWdsAddr, 0, pAd->CommonCfg.Channel);
 		}
-#endif // WDS_SUPPORT //
+#endif /* WDS_SUPPORT */
 
 		for (i=0; i<pAd->ChannelListNum; i++)
 		{
 			if (pAd->CommonCfg.Channel == pAd->ChannelList[i].Channel)
 			{
-				pAd->ChannelList[i].RemainingTimeForUse = 1800;//30 min = 1800 sec
+				pAd->ChannelList[i].RemainingTimeForUse = 1800;/*30 min = 1800 sec*/
 				break;
 			}
 		}
 
-		RadarDetectionStop(pAd);   // send stop-RD command to MCU
-		mdelay(5);
-		RadarDetectionStop(pAd);   // To Make sure command is sucessful
+		RadarDetectionStop(pAd);   /* send stop-RD command to MCU*/
+		/*mdelay(5); */
+		RtmpOsMsDelay(5);
+		RadarDetectionStop(pAd);   /* To Make sure command is sucessful*/
 
 #ifdef RTMP_RBUS_SUPPORT
-		// Roger test // to allow TBTTinterrupt do Channel Switch count down
+		/* Roger test  to allow TBTTinterrupt do Channel Switch count down*/
 		{
 			BCN_TIME_CFG_STRUC csr;
 			RTMP_IO_READ32(pAd, BCN_TIME_CFG, &csr.word);
@@ -860,14 +859,14 @@ void RadarSMDetect(
 			RTMP_IO_WRITE32(pAd, BCN_TIME_CFG, csr.word);
 		}
 		pAd->CommonCfg.RadarDetect.ChMovingTime = 65;
-#endif // RTMP_RBUS_SUPPORT //
+#endif /* RTMP_RBUS_SUPPORT */
 
 		pAd->CommonCfg.RadarDetect.RDMode = RD_SWITCHING_MODE;
 		pAd->CommonCfg.RadarDetect.CSCount = 0;
 		DBGPRINT(RT_DEBUG_TRACE, ("Radar signal(Duration=%x) exist when in service monitor, will switch to ch%d !!!\n\n\n", RadarSignalDuration, pAd->CommonCfg.Channel));
 #ifdef RT2880
 		pAd->CommonCfg.W56_debug = 0;
-#endif // RT2880 //
+#endif /* RT2880 */
 	}
 	
 
@@ -915,8 +914,8 @@ VOID AdaptRadarDetection(
 		pAd->CommonCfg.RadarDetect.lowerlimit = pAd->CommonCfg.RadarDetect.DfsLowerLimit;
 	}
 	
-	// AP should not send any packet out during Carrier-Signal exist.
-	// Those commands below will let Mac start sending CTS for Radar-Detection.
+	/* AP should not send any packet out during Carrier-Signal exist.*/
+	/* Those commands below will let Mac start sending CTS for Radar-Detection.*/
 	if (pAd->CommonCfg.RadarDetect.RDMode != RD_NORMAL_MODE)
 	{
 		return;
@@ -931,14 +930,14 @@ VOID AdaptRadarDetection(
 		Idx = 0;
 	}
 
-	// Cutomer report a problem that Ralink AP with DFS enable
-	// really hurt other wireless divec performance since Ralink-AP
-	// send out CTS frame to protect air for Radar-signal detection.
-	// To avoid that AP should not send out too much CTS frames out in idle mode by David,Tung recommend.
+	/* Cutomer report a problem that Ralink AP with DFS enable*/
+	/* really hurt other wireless divec performance since Ralink-AP*/
+	/* send out CTS frame to protect air for Radar-signal detection.*/
+	/* To avoid that AP should not send out too much CTS frames out in idle mode by David,Tung recommend.*/
 	if (OneSecTotalXmitCnt < pAd->CommonCfg.RadarDetect.lowerlimit)
 		Idx = 3;
 
-	// according to Andy's request. avoid send too much CTS frame out in low signal strenght.
+	/* according to Andy's request. avoid send too much CTS frame out in low signal strenght.*/
 	if (RTMPMaxRssi(pAd, pAd->ApCfg.RssiSample.AvgRssi0, pAd->ApCfg.RssiSample.AvgRssi1, pAd->ApCfg.RssiSample.AvgRssi2) < pAd->CommonCfg.RadarDetect.AvgRssiReq)
 		Idx = 3;
 
@@ -951,7 +950,7 @@ VOID AdaptRadarDetection(
 		RadarPeriod = ((UINT)RdIdleTimeTable[pAd->CommonCfg.RadarDetect.RDDurRegion][Idx] + (UINT)pAd->CommonCfg.RadarDetect.DfsSessionTime) < 250 ?
 			(RdIdleTimeTable[pAd->CommonCfg.RadarDetect.RDDurRegion][Idx] + pAd->CommonCfg.RadarDetect.DfsSessionTime) : 250;
 
-		// Roger test
+		/* Roger test*/
 		if ((pAd->CommonCfg.RadarDetect.RDDurRegion == JAP) || (pAd->CommonCfg.RadarDetect.RDDurRegion == JAP_W53) || (pAd->CommonCfg.RadarDetect.RDDurRegion == JAP_W56))
 		{
 			
@@ -971,7 +970,7 @@ VOID AdaptRadarDetection(
 			}
 			else
 			{
-				//RadarDetectionStop(pAd);
+				/*RadarDetectionStop(pAd);*/
 				return;
 			}
 			
@@ -986,7 +985,7 @@ VOID AdaptRadarDetection(
 	if ((pAd->CommonCfg.RadarDetect.RDMode != RD_NORMAL_MODE)
 #ifdef CARRIER_DETECTION_SUPPORT
 		||(isCarrierDetectExist(pAd) == TRUE)
-#endif // CARRIER_DETECT_SUPPORT //
+#endif /* CARRIER_DETECT_SUPPORT */
 		)
 		CtsProtect = FALSE;
 	else
@@ -994,7 +993,7 @@ VOID AdaptRadarDetection(
 		
 	RadarDetectionStart(pAd, CtsProtect, RadarPeriod);
 }
-#else // original Rt28xx source code
+#else /* original Rt28xx source code*/
 VOID AdaptRadarDetection(
 	IN PRTMP_ADAPTER pAd)
 {
@@ -1004,7 +1003,7 @@ VOID AdaptRadarDetection(
 	ULONG OneSecTotalXmitCnt = pAd->RalinkCounters.OneSecRxCount + pAd->RalinkCounters.OneSecTxDoneCount;
 	ULONG upperlimit = 4000, lowerlimit = 500;
 
-	//DBGPRINT(RT_DEBUG_TRACE, ("OneSecTotalXmitCnt = %d        ", OneSecTotalXmitCnt));
+	/*DBGPRINT(RT_DEBUG_TRACE, ("OneSecTotalXmitCnt = %d        ", OneSecTotalXmitCnt));*/
 	
 	if (pAd->CommonCfg.RadarDetect.RDDurRegion == JAP_W53)
 	{
@@ -1020,8 +1019,8 @@ VOID AdaptRadarDetection(
 		upperlimit = 2500;
 	}
 
-	// AP should not send any packet out during Carrier-Signal exist.
-	// Those commands below will let Mac start sending CTS for Radar-Detection.
+	/* AP should not send any packet out during Carrier-Signal exist.*/
+	/* Those commands below will let Mac start sending CTS for Radar-Detection.*/
 	if (pAd->CommonCfg.RadarDetect.RDMode != RD_NORMAL_MODE)
 	{
 		return;
@@ -1036,14 +1035,14 @@ VOID AdaptRadarDetection(
 		Idx = 0;
 	}
 
-	// Cutomer report a problem that Ralink AP with DFS enable
-	// really hurt other wireless divec performance since Ralink-AP
-	// send out CTS frame to protect air for Radar-signal detection.
-	// To avoid that AP should not send out too much CTS frames out in idle mode by David,Tung recommend.
+	/* Cutomer report a problem that Ralink AP with DFS enable*/
+	/* really hurt other wireless divec performance since Ralink-AP*/
+	/* send out CTS frame to protect air for Radar-signal detection.*/
+	/* To avoid that AP should not send out too much CTS frames out in idle mode by David,Tung recommend.*/
 	if (OneSecTotalXmitCnt < lowerlimit)
 		Idx = 3;
 
-	// according to Andy's request. avoid send too much CTS frame out in low signal strenght.
+	/* according to Andy's request. avoid send too much CTS frame out in low signal strenght.*/
 	if (RTMPMaxRssi(pAd, pAd->ApCfg.RssiSample.AvgRssi0, pAd->ApCfg.RssiSample.AvgRssi1, pAd->ApCfg.RssiSample.AvgRssi2) < -65)
 		Idx = 3;
 
@@ -1065,7 +1064,7 @@ VOID AdaptRadarDetection(
 	if ((pAd->CommonCfg.RadarDetect.RDMode != RD_NORMAL_MODE)
 #ifdef CARRIER_DETECTION_SUPPORT
 		||(isCarrierDetectExist(pAd) == TRUE)
-#endif // CARRIER_DETECT_SUPPORT //
+#endif /* CARRIER_DETECT_SUPPORT */
 		)
 		CtsProtect = FALSE;
 	else
@@ -1074,8 +1073,8 @@ VOID AdaptRadarDetection(
 	RadarDetectionStart(pAd, CtsProtect, RadarPeriod);
 }
 
-#endif // RTMP_RBUS_SUPPORT //
-#endif // DFS_SOFTWARE_SUPPORT //
+#endif /* RTMP_RBUS_SUPPORT */
+#endif /* DFS_SOFTWARE_SUPPORT */
 
 VOID DFSStartTrigger(
 	IN PRTMP_ADAPTER pAd)
@@ -1139,7 +1138,7 @@ static BOOLEAN RadarSignalDetermination(
 	{
 		RadarElectNum = pAd->CommonCfg.RadarElectNum;
 	}
-#endif // RT2880 //
+#endif /* RT2880 */
 
 	if (!RadarSignalDuration)
 		return FALSE;
@@ -1184,14 +1183,14 @@ static BOOLEAN RadarSignalDetermination(
 #ifdef DFS_DEBUG
 			DBGPRINT(RT_DEBUG_TRACE, ("RadarElectNum=%d CurRecodTime = %ld, delta = %ld, Duration = %x\n", 
 						RadarElectNum, CurRecodTime, ((CurRecodTime - PreRecodTime) / OS_HZ), RadarSignalDuration));
-#endif // DFS_DEBUG //
+#endif /* DFS_DEBUG */
 
 			if ((PreRecodTime != 0)
 				&& ((CurRecodTime - PreRecodTime) <= (6 * OS_HZ))
-#else // original RT28xx source code
+#else /* original RT28xx source code*/
 			if ((PreRecodTime != 0)
 				&& ((CurRecodTime - PreRecodTime) < (6 * OS_HZ))
-#endif // RTMP_RBUS_SUPPORT //
+#endif /* RTMP_RBUS_SUPPORT */
 				)
 				result = TRUE;
 			else
@@ -1202,8 +1201,8 @@ static BOOLEAN RadarSignalDetermination(
 
 	return result;
 }
-#endif // DFS_SOFTWARE_SUPPORT //
-#endif // DFS_SUPPORT //
+#endif /* DFS_SOFTWARE_SUPPORT */
+#endif /* DFS_SUPPORT */
 
 /* 
     ==========================================================================
@@ -1253,7 +1252,7 @@ INT Set_LongPulseRadarTh_Proc(
 
 	return TRUE;
 }
-#endif // CONFIG_AP_SUPPORT //
+#endif /* CONFIG_AP_SUPPORT */
 
 
 #ifdef CONFIG_AP_SUPPORT
@@ -1263,26 +1262,28 @@ static ULONG time[20];
 static ULONG idle[20];
 static ULONG busy[20];
 static ULONG cd_idx=0;
-#endif // CARRIER_DETECTION_SUPPORT //
-#endif // TONE_RADAR_DETECT_SUPPORT //
+#endif /* CARRIER_DETECTION_SUPPORT */
+#endif /* TONE_RADAR_DETECT_SUPPORT */
 #if defined (DFS_SUPPORT) || defined (CARRIER_DETECTION_SUPPORT)
-#if defined (TONE_RADAR_DETECT_SUPPORT) || defined (DFS_INTERRUPT_SUPPORT)
+#if defined (TONE_RADAR_DETECT_SUPPORT) || defined (RTMP_RBUS_SUPPORT) || defined (DFS_INTERRUPT_SUPPORT)
 
 void RTMPHandleRadarInterrupt(PRTMP_ADAPTER  pAd)
 {
 #ifdef CARRIER_DETECTION_SUPPORT
 #ifdef TONE_RADAR_DETECT_SUPPORT 
 	UINT32 value, delta;
+#ifdef TONE_RADAR_DETECT_V2 
 	UCHAR bbp=0;
-#endif // TONE_RADAR_DETECT_SUPPORT //
-#endif // CARRIER_DETECTION_SUPPORT //
+#endif /* TONE_RADAR_DETECT_V2  */
+#endif /* TONE_RADAR_DETECT_SUPPORT */
+#endif /* CARRIER_DETECTION_SUPPORT */
 #ifdef DFS_SUPPORT
 #ifdef DFS_HARDWARE_SUPPORT
 #ifdef DFS_INTERRUPT_SUPPORT
 	NewTimerCB_Radar(pAd);
-#endif // DFS_INTERRUPT_SUPPORT //
-#endif // DFS_HARDWARE_SUPPORT //
-#endif // DFS_SUPPORT  //
+#endif /* DFS_INTERRUPT_SUPPORT */
+#endif /* DFS_HARDWARE_SUPPORT */
+#endif /* DFS_SUPPORT  */
 #ifdef CARRIER_DETECTION_SUPPORT
 #ifdef TONE_RADAR_DETECT_V2 
 	if(pAd->CommonCfg.carrier_func==TONE_RADAR_V2)
@@ -1294,7 +1295,7 @@ void RTMPHandleRadarInterrupt(PRTMP_ADAPTER  pAd)
 				return;
 			}
 		}
-#endif // TONE_RADAR_DETECT_V2  //
+#endif /* TONE_RADAR_DETECT_V2  */
 #ifdef TONE_RADAR_DETECT_SUPPORT
 	RTMP_IO_READ32(pAd, PBF_LIFE_TIMER, &value);
 	RTMP_IO_READ32(pAd, CH_IDLE_STA, &pAd->CommonCfg.CarrierDetect.idle_time);
@@ -1336,19 +1337,19 @@ void RTMPHandleRadarInterrupt(PRTMP_ADAPTER  pAd)
 			pAd->CommonCfg.CarrierDetect.recheck ++;
 		if (pAd->CommonCfg.CarrierDetect.recheck == 0)
 		{
-			// declare carrier sense
+			/* declare carrier sense*/
 			pAd->CommonCfg.CarrierDetect.CD_State = CD_SILENCE;
-			//pAd->CommonCfg.CarrierDetect.recheck = pAd->CommonCfg.CarrierDetect.recheck1;
+			/*pAd->CommonCfg.CarrierDetect.recheck = pAd->CommonCfg.CarrierDetect.recheck1;*/
 
 			if (pAd->CommonCfg.CarrierDetect.CarrierDebug == 0)
 			{
 	
 				DBGPRINT(RT_DEBUG_TRACE, ("Carrier Detected\n"));
 
-				// disconnect all STAs behind AP.
-				//MacTableReset(pAd);
+				/* disconnect all STAs behind AP.*/
+				/*MacTableReset(pAd);*/
 				
-				// stop all TX actions including Beacon sending.
+				/* stop all TX actions including Beacon sending.*/
 				AsicDisableSync(pAd);
 			}
 			else
@@ -1366,12 +1367,12 @@ void RTMPHandleRadarInterrupt(PRTMP_ADAPTER  pAd)
 		ToneRadarProgram(pAd);
 		ToneRadarEnable(pAd);
 	}
-#endif // TONE_RADAR_DETECT_SUPPORT //
-#endif // CARRIER_DETECTION_SUPPORT //
+#endif /* TONE_RADAR_DETECT_SUPPORT */
+#endif /* CARRIER_DETECTION_SUPPORT */
 
 }
-#endif // define(TONE_RADAR_DETECT_SUPPORT) || defined(DFS_INTERRUPT_SUPPORT) //
-#endif // define(DFS_SUPPORT) || define(CARRIER_DETECTION_SUPPORT) //
+#endif /* define(TONE_RADAR_DETECT_SUPPORT) || defined(DFS_INTERRUPT_SUPPORT) */
+#endif /* define(DFS_SUPPORT) || define(CARRIER_DETECTION_SUPPORT) */
 #ifdef CARRIER_DETECTION_SUPPORT
 VOID CarrierDetectionFsm(
 	IN PRTMP_ADAPTER pAd,
@@ -1384,14 +1385,14 @@ VOID CarrierDetectionFsm(
 	BOOLEAN bCarExist = TRUE;
 	BCN_TIME_CFG_STRUC csr;
 	CD_STATE CurrentState = pAd->CommonCfg.CarrierDetect.CD_State;
-	//UINT32 AvgFalseCCA;
+	/*UINT32 AvgFalseCCA;*/
 	UINT32 FalseCCAThreshold;
 	static int Cnt = 0;
 	static UINT32 FalseCCA[CAR_SAMPLE_NUM] = {0};
 
 	FalseCCA[(Cnt++) % CAR_SAMPLE_NUM] = CurFalseCCA;
-	//AvgFalseCCA = (FalseCCA[0] + FalseCCA[1] + FalseCCA[2]) / 3;
-	//DBGPRINT(RT_DEBUG_TRACE, ("%s: AvgFalseCCA=%d, CurFalseCCA=%d\n", __FUNCTION__, AvgFalseCCA, CurFalseCCA));
+	/*AvgFalseCCA = (FalseCCA[0] + FalseCCA[1] + FalseCCA[2]) / 3;*/
+	/*DBGPRINT(RT_DEBUG_TRACE, ("%s: AvgFalseCCA=%d, CurFalseCCA=%d\n", __FUNCTION__, AvgFalseCCA, CurFalseCCA));*/
 	DBGPRINT(RT_DEBUG_TRACE, ("%s: FalseCCA[0]=%d, FalseCCA[1]=%d, FalseCCA[2]=%d,\n",
 		__FUNCTION__, FalseCCA[0], FalseCCA[1], FalseCCA[2]));
 
@@ -1410,32 +1411,32 @@ VOID CarrierDetectionFsm(
 		case CD_NORMAL:
 			for (i = 0; i < CAR_SAMPLE_NUM; i++)
 				bCarExist &= (FalseCCA[i] > FalseCCAThreshold);
-			//if (AvgFalseCCA > FalseCCAThreshold)
-			//if (FalseCCA[0] > FalseCCAThreshold
-			//	&& FalseCCA[1] > FalseCCAThreshold
-			//	&& FalseCCA[2] > FalseCCAThreshold)
+			/*if (AvgFalseCCA > FalseCCAThreshold)*/
+			/*if (FalseCCA[0] > FalseCCAThreshold*/
+			/*	&& FalseCCA[1] > FalseCCAThreshold*/
+			/*	&& FalseCCA[2] > FalseCCAThreshold)*/
 			if (bCarExist)
 			{
-				// MacTabReset() will clean whole MAC table no matther what kind entry.
-				// In the case, the WDS links will be deleted here and never recovery it back again.
-				// Ralink STA also added Carrier-Sense function now
-				// os it's no necessary to disconnect STAs here.
+				/* MacTabReset() will clean whole MAC table no matther what kind entry.*/
+				/* In the case, the WDS links will be deleted here and never recovery it back again.*/
+				/* Ralink STA also added Carrier-Sense function now*/
+				/* os it's no necessary to disconnect STAs here.*/
 #ifdef RTMP_RBUS_SUPPORT
-				// disconnect all STAs behind AP.
+				/* disconnect all STAs behind AP.*/
 				MacTableReset(pAd);
-#else // Original RT28xx source code
+#else /* Original RT28xx source code*/
 				/* disconnect all STAs behind AP. */
-				//MacTableReset(pAd);
-#endif // RTMP_RBUS_SUPPORT //
+				/*MacTableReset(pAd);*/
+#endif /* RTMP_RBUS_SUPPORT */
 
-				// change state to CD_SILENCE.
+				/* change state to CD_SILENCE.*/
 				pAd->CommonCfg.CarrierDetect.CD_State = CD_SILENCE;
 
-				// Stop sending CTS for Carrier Detection.
+				/* Stop sending CTS for Carrier Detection.*/
 
 				CARRIER_DETECT_START(pAd, 0);
 
-				// stop all TX actions including Beacon sending.
+				/* stop all TX actions including Beacon sending.*/
 				AsicDisableSync(pAd);
 				if ((pAd->CommonCfg.Channel > 14)
 					&& (pAd->CommonCfg.bIEEE80211H == TRUE))
@@ -1443,8 +1444,8 @@ VOID CarrierDetectionFsm(
 #ifdef DFS_SUPPORT
 #ifdef DFS_SOFTWARE_SUPPORT
 					AdaptRadarDetection(pAd);
-#endif // DFS_SOFTWARE_SUPPORT //
-#endif // DFS_SUPPORT //
+#endif /* DFS_SOFTWARE_SUPPORT */
+#endif /* DFS_SUPPORT */
 				}
 
 				DBGPRINT(RT_DEBUG_TRACE, ("Carrier signal detected. Change State to CD_SILENCE.\n"));
@@ -1452,11 +1453,11 @@ VOID CarrierDetectionFsm(
 			break;
 
 		case CD_SILENCE:
-			// check that all TX been blocked properly.
+			/* check that all TX been blocked properly.*/
 			RTMP_IO_READ32(pAd, BCN_TIME_CFG, &csr.word);
 			if (csr.field.bBeaconGen == 1)
 			{
-				// Stop sending CTS for Carrier Detection.
+				/* Stop sending CTS for Carrier Detection.*/
 
 				CARRIER_DETECT_START(pAd, 0);
 				AsicDisableSync(pAd);
@@ -1471,36 +1472,36 @@ VOID CarrierDetectionFsm(
 						{
 							return;
 						}
-						//NewRadarDetectionStart(pAd);
+						/*NewRadarDetectionStart(pAd);*/
 					}
 					else
-#endif // DFS_HARDWARE_SUPPORT //
-#endif // RT2880 //
+#endif /* DFS_HARDWARE_SUPPORT */
+#endif /* RT2880 */
 #ifdef DFS_SUPPORT
 #ifdef DFS_SOFTWARE_SUPPORT
 					AdaptRadarDetection(pAd);
-#endif // DFS_SOFTWARE_SUPPORT //
-#endif // DFS_SUPPORT //
+#endif /* DFS_SOFTWARE_SUPPORT */
+#endif /* DFS_SUPPORT */
 				}
 			}
 
-			// check carrier signal.
+			/* check carrier signal.*/
 			for (i = 0; i < CAR_SAMPLE_NUM; i++)
 				bCarExist &= (FalseCCA[i] < CARRIER_DETECT_LOW_BOUNDARY);
 
-			//if (AvgFalseCCA < CARRIER_DETECT_LOW_BOUNDARY)
-			//if (FalseCCA[0] < CARRIER_DETECT_LOW_BOUNDARY
-			//	&& FalseCCA[1] < CARRIER_DETECT_LOW_BOUNDARY
-			//	&& FalseCCA[2] < CARRIER_DETECT_LOW_BOUNDARY)
+			/*if (AvgFalseCCA < CARRIER_DETECT_LOW_BOUNDARY)*/
+			/*if (FalseCCA[0] < CARRIER_DETECT_LOW_BOUNDARY*/
+			/*	&& FalseCCA[1] < CARRIER_DETECT_LOW_BOUNDARY*/
+			/*	&& FalseCCA[2] < CARRIER_DETECT_LOW_BOUNDARY)*/
 			if (bCarExist)
 			{
-				// change state to CD_NORMAL.
+				/* change state to CD_NORMAL.*/
 				pAd->CommonCfg.CarrierDetect.CD_State = CD_NORMAL;
 
-				// Start sending CTS for Carrier Detection.
+				/* Start sending CTS for Carrier Detection.*/
 				CARRIER_DETECT_START(pAd, 1);
 
-				// start all TX actions.
+				/* start all TX actions.*/
 				APMakeAllBssBeacon(pAd);
 				APUpdateAllBeaconFrame(pAd);
 				AsicEnableBssSync(pAd);
@@ -1512,8 +1513,8 @@ VOID CarrierDetectionFsm(
 				{
 					AdaptRadarDetection(pAd);
 				}
-#endif // DFS_SOFTWARE_SUPPORT //
-#endif // DFS_SUPPORT //
+#endif /* DFS_SOFTWARE_SUPPORT */
+#endif /* DFS_SUPPORT */
 
 				DBGPRINT(RT_DEBUG_TRACE, ("Carrier signal gone. Change State to CD_NORMAL.\n"));
 			}
@@ -1606,8 +1607,8 @@ INT Set_CarrierCriteria_Proc(
 	Value = simple_strtol(arg, 0, 10);
 
 	pAd->CommonCfg.CarrierDetect.criteria = Value;
-	// If want to carrier detection debug, set Criteria to odd number
-	// To stop debug, set Criteria to even number
+	/* If want to carrier detection debug, set Criteria to odd number*/
+	/* To stop debug, set Criteria to even number*/
 	pAd->CommonCfg.CarrierDetect.CarrierDebug = Value & 1;
 
 	return TRUE;
@@ -1623,83 +1624,81 @@ INT Set_CarrierReCheck_Proc(
 	return TRUE;
 }
 
-
-
-
-
-
-
 static void ToneRadarProgram(PRTMP_ADAPTER pAd)
 {
 	UCHAR bbp;
+	ULONG threshold;
+
+	/* if wireless mode is 20Mhz mode, then the threshold should div by 2 */	
+	if (pAd->CommonCfg.HtCapability.HtCapInfo.ChannelWidth  == BW_20)		
+		threshold = pAd->CommonCfg.CarrierDetect.threshold >> 1;	
+	else		
+		threshold = pAd->CommonCfg.CarrierDetect.threshold;
 
 #ifdef TONE_RADAR_DETECT_V1
 		if(pAd->CommonCfg.carrier_func==TONE_RADAR_V1)
-		{	// programe delta delay & division bit
-	DBGPRINT(RT_DEBUG_TRACE, ("3090 ToneRadarProgram\n"));
+		{	/* programe delta delay & division bit*/
+	DBGPRINT(RT_DEBUG_TRACE, ("ToneRadarProgram v1\n"));
 
 	BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R184, 0xf0);
 	bbp = pAd->CommonCfg.CarrierDetect.delta << 4;
 	bbp |= (pAd->CommonCfg.CarrierDetect.div_flag & 0x1) << 3;
 	BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R185, bbp);
 	
-	// program threshold
+	/* program threshold*/
 	BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R184, 0x34);
-			BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R185, (pAd->CommonCfg.CarrierDetect.threshold & 0xff000000) >> 24);
+		BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R185, (threshold & 0xff000000) >> 24);
 	
 	BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R184, 0x24);
-			BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R185, (pAd->CommonCfg.CarrierDetect.threshold & 0xff0000) >> 16);
+		BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R185, (threshold & 0xff0000) >> 16);
 	
 	BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R184, 0x14);
-			BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R185, (pAd->CommonCfg.CarrierDetect.threshold & 0xff00) >> 8);
+		BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R185, (threshold & 0xff00) >> 8);
 
 	BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R184, 0x04);
-			BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R185, pAd->CommonCfg.CarrierDetect.threshold & 0xff);
+		BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R185, threshold & 0xff);
 		}
-#endif // TONE_RADAR_DETECT_V1 //
+#endif /* TONE_RADAR_DETECT_V1 */
 
 
 #ifdef TONE_RADAR_DETECT_V2
 	if(pAd->CommonCfg.carrier_func==TONE_RADAR_V2)
 	{
-
-
-	// programe delta delay & division bit
-		DBGPRINT(RT_DEBUG_TRACE, ("3390/3090A ToneRadarProgram\n"));
-	
+	/* programe delta delay & division bit*/
+		DBGPRINT(RT_DEBUG_TRACE, ("ToneRadarProgram v2\n"));
 		BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R184, 0x05);
 		bbp = pAd->CommonCfg.CarrierDetect.delta;
-		bbp |= 0x10<<4;
+		bbp |= 0x10<<3;
 		bbp |= (pAd->CommonCfg.CarrierDetect.div_flag & 0x1) << 6;
 		BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R185, bbp);
-	// program *_mask
-		//RTMP_CARRIER_IO_WRITE8(pAd, 2, pAd->CommonCfg.CarrierDetect.VGA_Mask);
+	/* program *_mask*/
+		/*RTMP_CARRIER_IO_WRITE8(pAd, 2, pAd->CommonCfg.CarrierDetect.VGA_Mask);*/
 		BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R184, 0x02);
 		BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R185, pAd->CommonCfg.CarrierDetect.VGA_Mask);
-		//RTMP_CARRIER_IO_WRITE8(pAd, 3, pAd->CommonCfg.CarrierDetect.Packet_End_Mask);
+		/*RTMP_CARRIER_IO_WRITE8(pAd, 3, pAd->CommonCfg.CarrierDetect.Packet_End_Mask);*/
 		BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R184, 0x03);
 		BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R185, pAd->CommonCfg.CarrierDetect.Packet_End_Mask);
 	
-		//RTMP_CARRIER_IO_WRITE8(pAd, 4, pAd->CommonCfg.CarrierDetect.Rx_PE_Mask);
+		/*RTMP_CARRIER_IO_WRITE8(pAd, 4, pAd->CommonCfg.CarrierDetect.Rx_PE_Mask);*/
 		BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R184, 0x04);
 		BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R185, pAd->CommonCfg.CarrierDetect.Rx_PE_Mask);
 	
 
-	// program threshold
+	/* program threshold*/
 		BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R184, 0x09);
-	BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R185, (pAd->CommonCfg.CarrierDetect.threshold & 0xff000000) >> 24);
+		BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R185, (threshold & 0xff000000) >> 24);
 
 		BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R184, 0x08);
-	BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R185, (pAd->CommonCfg.CarrierDetect.threshold & 0xff0000) >> 16);
+		BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R185, (threshold & 0xff0000) >> 16);
 	
 		BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R184, 0x07);
-	BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R185, (pAd->CommonCfg.CarrierDetect.threshold & 0xff00) >> 8);
+		BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R185, (threshold & 0xff00) >> 8);
 	
 		BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R184, 0x06);
-	BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R185, pAd->CommonCfg.CarrierDetect.threshold & 0xff);
+		BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R185, threshold & 0xff);
 	}
 	
-#endif // TONE_RADAR_DETECT_V2 //
+#endif /* TONE_RADAR_DETECT_V2 */
 
 }
 
@@ -1710,15 +1709,15 @@ static void ToneRadarEnable(PRTMP_ADAPTER pAd)
 if(pAd->CommonCfg.carrier_func==TONE_RADAR_V1)
 {
 	BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R184, 0x05);
-	DBGPRINT(RT_DEBUG_TRACE, ("3090 ToneRadarEnable\n"));
+	DBGPRINT(RT_DEBUG_TRACE, ("ToneRadarEnable v1\n"));
 
 }
-#endif // TONE_RADAR_DETECT_V1 //
+#endif /* TONE_RADAR_DETECT_V1 */
 
 #ifdef TONE_RADAR_DETECT_V2
 	if(pAd->CommonCfg.carrier_func==TONE_RADAR_V2)
 	{
-		DBGPRINT(RT_DEBUG_TRACE, ("3390/3090A ToneRadarEnable\n"));
+		DBGPRINT(RT_DEBUG_TRACE, ("ToneRadarEnable v2\n"));
 
 		BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R184, 0x01);
 		BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R185, 0x01);
@@ -1729,7 +1728,7 @@ if(pAd->CommonCfg.carrier_func==TONE_RADAR_V1)
 		
 	}
 
-#endif // TONE_RADAR_DETECT_V2 //
+#endif /* TONE_RADAR_DETECT_V2 */
 
 }
 
@@ -1737,7 +1736,7 @@ if(pAd->CommonCfg.carrier_func==TONE_RADAR_V1)
 void NewCarrierDetectionStart(PRTMP_ADAPTER pAd)
 {	
 	ULONG Value;
-	// Enable Bandwidth usage monitor
+	/* Enable Bandwidth usage monitor*/
 		
 	DBGPRINT(RT_DEBUG_TRACE, ("NewCarrierDetectionStart\n"));
 		
@@ -1745,10 +1744,10 @@ void NewCarrierDetectionStart(PRTMP_ADAPTER pAd)
 	RTMP_IO_WRITE32(pAd, CH_TIME_CFG, Value | 0x1f);
 	pAd->CommonCfg.CarrierDetect.recheck1 = CARRIER_DETECT_RECHECK_TIME;
 
-	//pAd->CommonCfg.CarrierDetect.recheck2 = CARRIER_DETECT_STOP_RECHECK_TIME;
+	/*pAd->CommonCfg.CarrierDetect.recheck2 = CARRIER_DETECT_STOP_RECHECK_TIME;*/
 	
 
-	// Init Carrier Detect
+	/* Init Carrier Detect*/
 	if (pAd->CommonCfg.CarrierDetect.Enable)
 	{
 		pAd->CommonCfg.CarrierDetect.TimeStamp = 0;
@@ -1759,12 +1758,30 @@ void NewCarrierDetectionStart(PRTMP_ADAPTER pAd)
 	
 }
 
-#endif // TONE_RADAR_DETECT_SUPPORT //
-#endif // CARRIER_DETECTION_SUPPORT //
+#endif /* TONE_RADAR_DETECT_SUPPORT */
+#endif /* CARRIER_DETECTION_SUPPORT */
 
 
 #ifdef DFS_SUPPORT
 #ifdef DFS_SOFTWARE_SUPPORT
+#ifdef WORKQUEUE_BH
+void pulse_radar_detect_workq(struct work_struct *work)
+{
+	POS_COOKIE pObj = container_of(work, struct os_cookie, pulse_radar_detect_work);
+	PRTMP_ADAPTER pAd = pObj->pAd_va;
+	
+	RadarSMDetect(pAd, RADAR_PULSE);
+}
+
+
+void width_radar_detect_workq(struct work_struct *work)
+{
+	POS_COOKIE pObj = container_of(work, struct os_cookie, width_radar_detect_work);
+	PRTMP_ADAPTER pAd = pObj->pAd_va;
+	
+	RadarSMDetect(pAd, RADAR_WIDTH);
+}
+#else
 void pulse_radar_detect_tasklet(unsigned long data)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER) data;
@@ -1784,11 +1801,21 @@ void width_radar_detect_tasklet(unsigned long data)
 
 	RadarSMDetect(pAd, RADAR_WIDTH);
 }
-#endif // DFS_SOFTWARE_SUPPORT //
-#endif // DFS_SUPPORT //
+#endif /* WORKQUEUE_BH */
+#endif /* DFS_SOFTWARE_SUPPORT */
+#endif /* DFS_SUPPORT */
 
 
 #ifdef CARRIER_DETECTION_SUPPORT
+#ifdef WORKQUEUE_BH
+void carrier_sense_workq(struct work_struct *work)
+{
+	POS_COOKIE pObj = container_of(work, POS_COOKIE, carrier_sense_work);
+	PRTMP_ADAPTER pAd = pObj->pAd_va;
+	
+	CarrierDetectionCheck(pAd);
+}
+#else
 void carrier_sense_tasklet(unsigned long data)
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER) data;
@@ -1798,8 +1825,9 @@ void carrier_sense_tasklet(unsigned long data)
 
 	CarrierDetectionCheck(pAd);
 }
-#endif // CARRIER_DETECTION_SUPPORT //
+#endif /* WORKQUEUE_BH */
+#endif /* CARRIER_DETECTION_SUPPORT */
 
 
-#endif // CONFIG_AP_SUPPORT //
+#endif /* CONFIG_AP_SUPPORT */
 

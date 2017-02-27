@@ -31,16 +31,12 @@
 #define _MAT_H_
 
 
-#ifdef LINUX
-#include <linux/if_ether.h>
-#include <linux/if_arp.h>
-#include <linux/ip.h>
-#endif // LINUX //
 
 
-#if defined(LINUX) || defined (VXWORKS)
-#else
-//Currently support upper layer protocols
+/*#if defined(LINUX) || defined (VXWORKS) */
+
+/*#else */
+/*Currently support upper layer protocols */
 #ifndef ETH_P_IP
 #define ETH_P_IP        0x0800          /* Internet Protocol packet     */
 #endif
@@ -55,21 +51,27 @@
 #endif
 
 /* ARP protocol HARDWARE identifiers. */
+#ifndef ARPHRD_ETHER
 #define ARPHRD_ETHER    1               /* Ethernet 10Mbps              */
+#endif
 
 /* ARP protocol opcodes. */
+#ifndef ARPOP_REQUEST
 #define ARPOP_REQUEST   1               /* ARP request                  */
+#endif
+#ifndef ARPOP_REPLY
 #define ARPOP_REPLY     2               /* ARP reply                    */
+#endif
 
-struct arphdr{
+typedef struct _NET_PRO_ARP_HDR{
 	unsigned short  ar_hrd;         /* format of hardware address   */
 	unsigned short  ar_pro;         /* format of protocol address   */
 	unsigned char   ar_hln;         /* length of hardware address   */
 	unsigned char   ar_pln;         /* length of protocol address   */
 	unsigned short  ar_op;          /* ARP opcode (command)         */
-};
+} NET_PRO_ARP_HDR;
 
-struct iphdr{
+typedef struct _NET_PRO_IP_HDR{
 #ifndef RT_BIG_ENDIAN
 	UCHAR   ihl:4,
 			version:4;
@@ -86,8 +88,8 @@ struct iphdr{
 	UINT16	check;
 	UINT16	saddr;
 	UINT32	daddr;
-}; 
-#endif  //endif of __LINUX__
+} NET_PRO_IP_HDR; 
+/*#endif  //endif of __LINUX__ */
 
 #ifndef MAT_SUPPORT
 #error "You should define MAT_SUPPORT if you want to compile MAT related functions!"
@@ -96,12 +98,12 @@ struct iphdr{
 
 /* MAT relate definition */
 #define MAT_MAX_HASH_ENTRY_SUPPORT		64
-#define MAT_TB_ENTRY_AGEOUT_TIME		  	(5 * 60 * OS_HZ)	// 30000, 5min. MAT convert table entry age-out time interval. now set it as 5min.
+#define MAT_TB_ENTRY_AGEOUT_TIME		  	(5 * 60 * OS_HZ)	/* 30000, 5min. MAT convert table entry age-out time interval. now set it as 5min. */
 
 
 /* 802.3 Ethernet related definition */
-#define MAT_ETHER_HDR_LEN		14							// dstMac(6) + srcMac(6) + protoType(2)
-#define MAT_VLAN_ETH_HDR_LEN 	(MAT_ETHER_HDR_LEN + 4)		// 4 for h_vlan_TCI and h_vlan_encapsulated_proto
+#define MAT_ETHER_HDR_LEN		14							/* dstMac(6) + srcMac(6) + protoType(2) */
+#define MAT_VLAN_ETH_HDR_LEN 	(MAT_ETHER_HDR_LEN + 4)		/* 4 for h_vlan_TCI and h_vlan_encapsulated_proto */
 
 #define MAT_MAC_ADDR_HASH(Addr)       (Addr[0] ^ Addr[1] ^ Addr[2] ^ Addr[3] ^ Addr[4] ^ Addr[5])
 #define MAT_MAC_ADDR_HASH_INDEX(Addr) (MAT_MAC_ADDR_HASH(Addr) % MAT_MAX_HASH_ENTRY_SUPPORT)
@@ -111,14 +113,14 @@ struct iphdr{
 #define isZeroEtherAddr(addr)	(!(addr[0] | addr[1] | addr[2] | addr[3] | addr[4] | addr[5]))
 
 #define IS_GROUP_MAC(Addr)		((Addr[0]) & 0x01)
-#define IS_UCAST_MAC(addr)		(!(isMcastEtherAddr(addr) || isZeroEtherAddr(addr))) // isUcastMac = !(00:00:00:00:00:00 || mcastMac);
+#define IS_UCAST_MAC(addr)		(!(isMcastEtherAddr(addr) || isZeroEtherAddr(addr))) /* isUcastMac = !(00:00:00:00:00:00 || mcastMac); */
 #define IS_EQUAL_MAC(a, b)		(((a[0] ^ b[0]) | (a[1] ^ b[1]) | (a[2] ^ b[2]) | (a[3] ^ b[3]) | (a[4] ^ b[4]) | (a[5] ^ b[5])) == 0)
 
 #define IS_VLAN_PACKET(pkt)		((((pkt)[12] << 8) | (pkt)[13]) == 0x8100)
 
 /* IPv4 related definition */
-#define IPMAC_TB_HASH_ENTRY_NUM			(MAT_MAX_HASH_ENTRY_SUPPORT+1)	// One entry for broadcast address
-#define IPMAC_TB_HASH_INDEX_OF_BCAST 	MAT_MAX_HASH_ENTRY_SUPPORT		// cause hash index start from 0.
+#define IPMAC_TB_HASH_ENTRY_NUM			(MAT_MAX_HASH_ENTRY_SUPPORT+1)	/* One entry for broadcast address */
+#define IPMAC_TB_HASH_INDEX_OF_BCAST 	MAT_MAX_HASH_ENTRY_SUPPORT		/* cause hash index start from 0. */
 
 #define MAT_IP_ADDR_HASH(Addr)		(((Addr>>24)&0xff)^((Addr>>16) & 0xff) ^((Addr>>8) & 0xff) ^ (Addr & 0xff))
 #define MAT_IP_ADDR_HASH_INDEX(Addr)	(MAT_IP_ADDR_HASH(Addr) % MAT_MAX_HASH_ENTRY_SUPPORT)
@@ -127,10 +129,10 @@ struct iphdr{
 #define IS_MULTICAST_IP(IP)	(((UINT32)(IP) & 0xf0000000) == 0xe0000000)
 
 /* IPv6 related definition */
-#define IPV6MAC_TB_HASH_ENTRY_NUM 		(MAT_MAX_HASH_ENTRY_SUPPORT+1)	// One entry for broadcast address
-#define IPV6MAC_TB_HASH_INDEX_OF_BCAST 	MAT_MAX_HASH_ENTRY_SUPPORT		// cause hash index start from 0.
+#define IPV6MAC_TB_HASH_ENTRY_NUM 		(MAT_MAX_HASH_ENTRY_SUPPORT+1)	/* One entry for broadcast address */
+#define IPV6MAC_TB_HASH_INDEX_OF_BCAST 	MAT_MAX_HASH_ENTRY_SUPPORT		/* cause hash index start from 0. */
 
-//We just use byte 10,13,14,15 to calculate the IPv6 hash, because the byte 11,12 usually are 0xff, 0xfe for link-local address.
+/*We just use byte 10,13,14,15 to calculate the IPv6 hash, because the byte 11,12 usually are 0xff, 0xfe for link-local address. */
 #define MAT_IPV6_ADDR_HASH(Addr)    ((Addr[10]&0xff) ^ (Addr[13] & 0xff) ^(Addr[14] & 0xff) ^ (Addr[15] & 0xff))
 #define MAT_IPV6_ADDR_HASH_INDEX(Addr)	(MAT_IPV6_ADDR_HASH(Addr) % MAT_MAX_HASH_ENTRY_SUPPORT)
 
@@ -142,14 +144,13 @@ struct iphdr{
 #define IS_MULTICAST_IPV6_ADDR(_addr) \
 		(((_addr).ipv6_addr[0] & 0xff) == 0xff)
 
-
-// The MAT_TABLE used for MacAddress <-> UpperLayer Address Translation.
+/* The MAT_TABLE used for MacAddress <-> UpperLayer Address Translation. */
 typedef struct _MAT_TABLE_
 {
-	VOID	*IPMacTable;		// IPv4 Address, Used for IP, ARP protocol
-	VOID	*IPv6MacTable;		// IPv6 Address, Used for IPv6 related protocols
-	VOID	*SesMacTable;		// PPPoE Session
-	VOID	*UidMacTable;		// PPPoE Discovery
+	VOID	*IPMacTable;		/* IPv4 Address, Used for IP, ARP protocol */
+	VOID	*IPv6MacTable;		/* IPv6 Address, Used for IPv6 related protocols */
+	VOID	*SesMacTable;		/* PPPoE Session */
+	VOID	*UidMacTable;		/* PPPoE Discovery */
 }MAT_TABLE, *PMAT_TABLE;
 
 
@@ -169,7 +170,7 @@ typedef struct _MAT_STRUCT_
 #ifdef KMALLOC_BATCH
 	UCHAR 				*pMATNodeEntryPoll;
 #endif
-	UINT32				nodeCount;		// the number of nodes which connect to Internet via us.
+	UINT32				nodeCount;		/* the number of nodes which connect to Internet via us. */
 	VOID				*pPriv;
 }MAT_STRUCT;
 
@@ -192,7 +193,7 @@ typedef struct _MATProtoTable
 
 VOID dumpPkt(PUCHAR pHeader, int len);
 
-//#define KMALLOC_BATCH
+/*#define KMALLOC_BATCH */
 
 PUCHAR MATDBEntryAlloc(
 	IN MAT_STRUCT 	*pMatStruct, 

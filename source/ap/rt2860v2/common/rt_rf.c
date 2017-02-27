@@ -61,17 +61,10 @@ NDIS_STATUS RT30xxWriteRFRegister(
 		DBGPRINT_ERR(("RT30xxWriteRFRegister. Not allow to write RF 0x%x : fail\n",  regID));	
 		return STATUS_UNSUCCESSFUL;
 	}
-#endif // RTMP_MAC_PCI //
+#endif /* RTMP_MAC_PCI */
 
 	{
-		if (IS_RT3883(pAd))
-		{
-			ASSERT((regID <= 63)); // R0~R63
-		}
-		else
-		{
-		ASSERT((regID <= 31)); // R0~R31
-		}
+		ASSERT((regID <= pAd->chipCap.MaxNumOfRfId)); /* R0~R31 or R63*/
 
 		do
 		{
@@ -91,10 +84,42 @@ NDIS_STATUS RT30xxWriteRFRegister(
 
 		rfcsr.field.RF_CSR_WR = 1;
 		rfcsr.field.RF_CSR_KICK = 1;
-		rfcsr.field.TESTCSR_RFACC_REGNUM = regID; // R0~R31
-		rfcsr.field.RF_CSR_DATA = value;
-		
-		RTMP_IO_WRITE32(pAd, RF_CSR_CFG, rfcsr.word);
+		rfcsr.field.TESTCSR_RFACC_REGNUM = regID;
+
+		if ((pAd->chipCap.RfReg17WtMethod == RF_REG_WT_METHOD_STEP_ON) && (regID == RF_R17))
+		{
+			UCHAR IdRf;
+			UCHAR RfValue;
+
+			RT30xxReadRFRegister(pAd, RF_R17, &RfValue);
+
+			if (RfValue <= value)
+			{
+				for(IdRf=RfValue; IdRf<value; IdRf++)
+				{
+					rfcsr.field.RF_CSR_DATA = IdRf;
+					RTMP_IO_WRITE32(pAd, RF_CSR_CFG, rfcsr.word);
+					RtmpOsMsDelay(1);
+				}
+			}
+			else
+			{
+				for(IdRf=RfValue; IdRf>value; IdRf--)
+				{
+					rfcsr.field.RF_CSR_DATA = IdRf;
+					RTMP_IO_WRITE32(pAd, RF_CSR_CFG, rfcsr.word);
+					RtmpOsMsDelay(1);
+				}
+			}
+
+			rfcsr.field.RF_CSR_DATA = value;
+			RTMP_IO_WRITE32(pAd, RF_CSR_CFG, rfcsr.word);
+		}
+		else
+		{
+			rfcsr.field.RF_CSR_DATA = value;
+			RTMP_IO_WRITE32(pAd, RF_CSR_CFG, rfcsr.word);
+		}
 	}
 
 	return NDIS_STATUS_SUCCESS;
@@ -132,31 +157,24 @@ NDIS_STATUS RT30xxReadRFRegister(
 		DBGPRINT_ERR(("RT30xxReadRFRegister. Not allow to read RF 0x%x : fail\n",  regID));	
 		return STATUS_UNSUCCESSFUL;
 	}
-#endif // RTMP_MAC_PCI //
+#endif /* RTMP_MAC_PCI */
 
 	{
-		if (IS_RT3883(pAd))
-		{
-			ASSERT((regID <= 63)); // R0~R63
-		}
-		else
-		{
-		ASSERT((regID <= 31)); // R0~R31
-		}
+		ASSERT((regID <= pAd->chipCap.MaxNumOfRfId)); /* R0~R63*/
 
 		for (i=0; i<MAX_BUSY_COUNT; i++)
 		{
 			RTMP_IO_READ32(pAd, RF_CSR_CFG, &rfcsr.word);
 
 			if (rfcsr.field.RF_CSR_KICK == BUSY)									
-			{																
 				continue;													
-			}																
+
 			rfcsr.word = 0;
 			rfcsr.field.RF_CSR_WR = 0;
 			rfcsr.field.RF_CSR_KICK = 1;
 			rfcsr.field.TESTCSR_RFACC_REGNUM = regID;
 			RTMP_IO_WRITE32(pAd, RF_CSR_CFG, rfcsr.word);
+		
 			for (k=0; k<MAX_BUSY_COUNT; k++)
 			{
 				RTMP_IO_READ32(pAd, RF_CSR_CFG, &rfcsr.word);
@@ -164,6 +182,7 @@ NDIS_STATUS RT30xxReadRFRegister(
 				if (rfcsr.field.RF_CSR_KICK == IDLE)
 					break;
 			}
+		
 			if ((rfcsr.field.RF_CSR_KICK == IDLE) &&
 				(rfcsr.field.TESTCSR_RFACC_REGNUM == regID))
 			{
@@ -171,6 +190,7 @@ NDIS_STATUS RT30xxReadRFRegister(
 				break;
 			}
 		}
+
 		if (rfcsr.field.RF_CSR_KICK == BUSY)
 		{																	
 			DBGPRINT_ERR(("RF read R%d=0x%X fail, i[%d], k[%d]\n", regID, rfcsr.word,i,k));
@@ -190,39 +210,45 @@ VOID NICInitRFRegisters(
 }
 
 
-VOID RtmpChipOpsRFHook(
-	IN RTMP_ADAPTER *pAd)
+VOID RFMultiStepXoCode(
+	IN	PRTMP_ADAPTER pAd,
+	IN	UCHAR	rfRegID,
+	IN	UCHAR	rfRegValue,
+	IN	UCHAR	rfRegValuePre)
 {
-	RTMP_CHIP_OP *pChipOps = &pAd->chipOps;
+	UINT i = 0, count = 0;
+	BOOLEAN bit7IsTrue = (rfRegValue & (0x80));
 
-	pChipOps->pRFRegTable = NULL;
-	pChipOps->pBBPRegTable = NULL;
-	pChipOps->bbpRegTbSize = 0;
-	pChipOps->AsicRfInit = NULL;
-	pChipOps->AsicRfTurnOn = NULL;
-	pChipOps->AsicRfTurnOff = NULL;
-	pChipOps->AsicReverseRfFromSleepMode = NULL;
-	pChipOps->AsicHaltAction = NULL;
-	
-	/* We depends on RfICType and MACVersion to assign the corresponding operation callbacks. */
+	rfRegValue &= (0x7F);
+	rfRegValuePre &= (0x7F);
 
-#ifdef RT305x
-	if ((pAd->MACVersion == 0x28720200) && 
-		((pAd->RfIcType == RFIC_3320) || (pAd->RfIcType == RFIC_3020) || (pAd->RfIcType == RFIC_3021) || (pAd->RfIcType == RFIC_3022)))
+	if (rfRegValuePre == rfRegValue)
+		return;
+
+	DBGPRINT(RT_DEBUG_TRACE, ("RFMultiStepXoCode--> Write Value 0x%02x, previous Value 0x%02x, bit7IsTrue = %d\n",rfRegValue, rfRegValuePre, bit7IsTrue));
+
+		if (rfRegValue>rfRegValuePre)
 	{
-		pChipOps->pRFRegTable = RT305x_RFRegTable;
-		pChipOps->pBBPRegTable = RT305x_BBPRegTable;
-		pChipOps->bbpRegTbSize = RT305x_NUM_BBP_REG_PARMS;
-		pChipOps->AsicRfInit = NICInitRT305xRFRegisters;
+		/* Sequentially */
+		for (i = rfRegValuePre; i<=rfRegValue; i++)
+		{
+			if (bit7IsTrue)
+				i |=0x80;		
+			RT30xxWriteRFRegister(pAd, rfRegID, i);
+			count ++;
+		}
 	}
-#endif // RT305x //
+	else
+	{
+		/* one step */
+		if (bit7IsTrue)
+			rfRegValue |=0x80;	
+		RT30xxWriteRFRegister(pAd, rfRegID, rfRegValue);
+		count++;
+	}
+		DBGPRINT(RT_DEBUG_TRACE, ("RFMultiStepXoCode<-- Write Value 0x%02x, previous Value 0x%02x, running step count=%d\n",rfRegValue, rfRegValuePre,count));
 
-
-
-
-	DBGPRINT(RT_DEBUG_TRACE, ("Chip specific bbpRegTbSize=%d!\n", pChipOps->bbpRegTbSize));
-	
 }
 
-#endif // RTMP_RF_RW_SUPPORT //
+#endif /* RTMP_RF_RW_SUPPORT */
 

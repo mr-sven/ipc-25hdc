@@ -27,26 +27,19 @@
 */
 
 
+#ifdef CONFIG_SWMCU_SUPPORT
 #include	"rt_config.h"
-#include "led.h"
 
-#ifdef WLAN_LED
-extern unsigned char   LinkStatus;
-extern unsigned char   SignalStrength;
-extern unsigned char   GPIOPolarity;
-extern ULED_PARAMETER LedParameter;
-#endif // WLAN_LED //
-
-// for 2880-SW-MCU
+/* for 2880-SW-MCU*/
 #ifdef CONFIG_AP_SUPPORT
 #if defined(DFS_SUPPORT) || defined(CARRIER_DETECTION_SUPPORT)
 extern void TimerCB(PRTMP_ADAPTER pAd);
 #endif
-#endif // CONFIG_AP_SUPPORT //
+#endif /* CONFIG_AP_SUPPORT */
 
 
 
-int RtmpAsicSendCommandToSwMcu(
+INT RtmpAsicSendCommandToSwMcu(
 	IN RTMP_ADAPTER *pAd, 
 	IN UCHAR Command, 
 	IN UCHAR Token,
@@ -56,6 +49,9 @@ int RtmpAsicSendCommandToSwMcu(
 	BBP_CSR_CFG_STRUC  BbpCsr, BbpCsr2;
 	int             j, k;
 	UINT16 Temp;
+#ifdef LED_CONTROL_SUPPORT
+	PSWMCU_LED_CONTROL pSWMCULedCntl = &pAd->LedCntl.SWMCULedCntl;
+#endif /* LED_CONTROL_SUPPORT */
 	
 	switch(Command)
 	{
@@ -77,7 +73,7 @@ int RtmpAsicSendCommandToSwMcu(
 				
 				if (BbpCsr.field.fRead == 1)
 				{
-					// read
+					/* read*/
 					for (k=0; k<MAX_BUSY_COUNT; k++)
 					{
 						RTMP_IO_READ32(pAd, BBP_CSR_CFG, &BbpCsr2.word);
@@ -97,7 +93,7 @@ int RtmpAsicSendCommandToSwMcu(
 				}
 				else
 				{
-					//write
+					/*write*/
 					BbpCsr.field.Busy = IDLE;
 					RTMP_IO_WRITE32(pAd, H2M_BBP_AGENT, BbpCsr.word);
 					pAd->BbpWriteLatch[BbpCsr.field.RegNum] = BbpCsr2.field.Value;
@@ -119,33 +115,31 @@ int RtmpAsicSendCommandToSwMcu(
 			break;
 		case 0x31:
 			break;
-#ifdef WLAN_LED
-		case 0x50:
-			{					
-	                        LedParameter.LedMode    = Arg0;
-	                        LinkStatus                  = Arg1;
-	                        SetLinkStatusEntry(pAd);
+#ifdef LED_CONTROL_SUPPORT
+		case MCU_SET_LED_MODE:
+			pSWMCULedCntl->LedParameter.LedMode = Arg0;
+	        pSWMCULedCntl->LinkStatus = Arg1;
+			SetLedLinkStatus(pAd);
 	                        break;
-			}
-		case 0x51:
-	                        GPIOPolarity                    = Arg1;
-	                        SignalStrength                  = Arg0;
+		case MCU_SET_LED_GPIO_SIGNAL_CFG:
+			pSWMCULedCntl->GPIOPolarity = Arg1;
+			pSWMCULedCntl->SignalStrength = Arg0;
 	                        break;
-		  case 0x52:
+		case MCU_SET_LED_AG_CFG:
 			Temp = ((UINT16)Arg1 << 8) | (UINT16)Arg0;
-			NdisMoveMemory(&LedParameter.LedAgCfg, &Temp, 2);
+			NdisMoveMemory(&pSWMCULedCntl->LedParameter.LedAgCfg, &Temp, 2);
 			break;
-		  case 0x53:
+		case MCU_SET_LED_ACT_CFG:
 			Temp = ((UINT16)Arg1 << 8) | (UINT16)Arg0;
-			NdisMoveMemory(&LedParameter.LedActCfg, &Temp, 2);
+			NdisMoveMemory(&pSWMCULedCntl->LedParameter.LedActCfg, &Temp, 2);
 			break;
-		  case 0x54:
+		case MCU_SET_LED_POLARITY:
 			Temp = ((UINT16)Arg1 << 8) | (UINT16)Arg0;
-			NdisMoveMemory(&LedParameter.LedPolarityCfg, &Temp, 2);
+			NdisMoveMemory(&pSWMCULedCntl->LedParameter.LedPolarityCfg, &Temp, 2);
 			break;
-#endif // WLAN_LED //
+#endif /* LED_CONTROL_SUPPORT */
 
-	// 2880-SW-MCU
+	/* 2880-SW-MCU*/
 #ifdef CONFIG_AP_SUPPORT
 
 #ifdef DFS_SUPPORT
@@ -163,7 +157,7 @@ int RtmpAsicSendCommandToSwMcu(
 #else
 	BOOLEAN Cancelled;
 	RTMPCancelTimer(&pAd->CommonCfg.CSWatchDogTimer, &Cancelled);
-#endif // RTMP_RBUS_SUPPORT //					
+#endif /* RTMP_RBUS_SUPPORT */					
 					RTMP_IO_READ32(pAd, MAC_SYS_CTRL, &Value);
 					Value |= 0x04;
 					RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, Value);
@@ -191,7 +185,7 @@ int RtmpAsicSendCommandToSwMcu(
 #else
 						RTMPInitTimer(pAd, &pAd->CommonCfg.CSWatchDogTimer, GET_TIMER_FUNCTION(TimerCB), pAd,  TRUE); 
 						RTMPSetTimer(&pAd->CommonCfg.DFSWatchDogTimer, NEW_DFS_WATCH_DOG_TIME);
-#endif // DFS_ARCH_TEAM //
+#endif /* RTMP_RBUS_SUPPORT */
 					}
 					else
 						pAd->CommonCfg.McuRadarCmd |= RADAR_DETECTION;
@@ -200,7 +194,7 @@ int RtmpAsicSendCommandToSwMcu(
 #else
 					RTMPInitTimer(pAd, &pAd->CommonCfg.CSWatchDogTimer, GET_TIMER_FUNCTION(TimerCB), pAd,  TRUE); 
 					RTMPSetTimer(&pAd->CommonCfg.DFSWatchDogTimer, NEW_DFS_WATCH_DOG_TIME);
-#endif // DFS_ARCH_TEAM //
+#endif /* RTMP_RBUS_SUPPORT */
 				}
 				else
 				{
@@ -213,7 +207,7 @@ int RtmpAsicSendCommandToSwMcu(
 				
 			}
 			break;
-#endif // DFS_SUPPORT //
+#endif /* DFS_SUPPORT */
 
 #ifdef CARRIER_DETECTION_SUPPORT
 		case 0x61:
@@ -230,7 +224,7 @@ int RtmpAsicSendCommandToSwMcu(
 #else
 	BOOLEAN Cancelled;
 	RTMPCancelTimer(&pAd->CommonCfg.CSWatchDogTimer, &Cancelled);
-#endif // RTMP_RBUS_SUPPORT //
+#endif /* RTMP_RBUS_SUPPORT */
 					RTMP_IO_READ32(pAd, MAC_SYS_CTRL, &Value);
 					Value |= 0x04;
 					RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, Value);
@@ -238,7 +232,7 @@ int RtmpAsicSendCommandToSwMcu(
 			}
 			else
 			{
-				// Prepare CTS frame again, for debug 
+				/* Prepare CTS frame again, for debug */
 				if (!(pAd->CommonCfg.McuRadarCmd & CARRIER_DETECTION))
 				{
 					pAd->CommonCfg.McuCarrierPeriod = Arg0 << ((Command == 0x61) ? 0 : 7);
@@ -260,7 +254,7 @@ int RtmpAsicSendCommandToSwMcu(
 #else
 					RTMPInitTimer(pAd, &pAd->CommonCfg.CSWatchDogTimer, GET_TIMER_FUNCTION(TimerCB), pAd,  TRUE); 
 					RTMPSetTimer(&pAd->CommonCfg.DFSWatchDogTimer, NEW_DFS_WATCH_DOG_TIME);
-#endif // DFS_ARCH_TEAM //
+#endif /* RTMP_RBUS_SUPPORT */
 					}
 					else
 						pAd->CommonCfg.McuRadarCmd |= CARRIER_DETECTION;
@@ -269,7 +263,7 @@ int RtmpAsicSendCommandToSwMcu(
 #else
 					RTMPInitTimer(pAd, &pAd->CommonCfg.CSWatchDogTimer, GET_TIMER_FUNCTION(TimerCB), pAd,  TRUE); 
 					RTMPSetTimer(&pAd->CommonCfg.CSWatchDogTimer, NEW_DFS_WATCH_DOG_TIME);
-#endif // DFS_ARCH_TEAM //
+#endif /* RTMP_RBUS_SUPPORT */
 				}
 				else
 				{
@@ -281,7 +275,7 @@ int RtmpAsicSendCommandToSwMcu(
 				
 			}
 			break;
-#endif // CARRIER_DETECTION_SUPPORT //
+#endif /* CARRIER_DETECTION_SUPPORT */
 
 #if defined(DFS_SUPPORT) || defined(CARRIER_DETECTION_SUPPORT)
 		case 0x62:
@@ -289,7 +283,7 @@ int RtmpAsicSendCommandToSwMcu(
 			{
 				
 				
-				if (Arg0) // Carrier
+				if (Arg0) /* Carrier*/
 				{
 					if ((pAd->CommonCfg.McuRadarEvent & RADAR_EVENT_CARRIER_DETECTING) && (pAd->CommonCfg.McuCarrierState == WAIT_CTS_BEING_SENT))
 					{
@@ -312,9 +306,8 @@ int RtmpAsicSendCommandToSwMcu(
 				}
 			}
 			break;
-#endif
-
-#endif // CONFIG_AP_SUPPORT //
+#endif /* defined(DFS_SUPPORT) || defined(CARRIER_DETECTION_SUPPORT) */
+#endif /* CONFIG_AP_SUPPORT */
 
 		default:
 			break;
@@ -323,4 +316,4 @@ int RtmpAsicSendCommandToSwMcu(
 	return 0;
 }
 
-
+#endif /* CONFIG_SWMCU_SUPPORT */

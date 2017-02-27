@@ -32,9 +32,10 @@ VOID CliWds_ProxyTabInit(
 	INT idx;
 	ULONG i;
 
-	NdisAllocateSpinLock(&pAd->ApCfg.CliWdsTabLock);
+	NdisAllocateSpinLock(pAd, &pAd->ApCfg.CliWdsTabLock);
 
-	pAd->ApCfg.pCliWdsEntryPool = kmalloc(sizeof(CLIWDS_PROXY_ENTRY) * CLIWDS_POOL_SIZE, GFP_ATOMIC);
+/*	pAd->ApCfg.pCliWdsEntryPool = kmalloc(sizeof(CLIWDS_PROXY_ENTRY) * CLIWDS_POOL_SIZE, GFP_ATOMIC);*/
+	os_alloc_mem(pAd, (UCHAR **)&(pAd->ApCfg.pCliWdsEntryPool), sizeof(CLIWDS_PROXY_ENTRY) * CLIWDS_POOL_SIZE);
 	if (pAd->ApCfg.pCliWdsEntryPool)
 	{
 		NdisZeroMemory(pAd->ApCfg.pCliWdsEntryPool, sizeof(CLIWDS_PROXY_ENTRY) * CLIWDS_POOL_SIZE);
@@ -75,7 +76,8 @@ VOID CliWds_ProxyTabDestory(
 	}
 
 	if (pAd->ApCfg.pCliWdsEntryPool)
-		kfree(pAd->ApCfg.pCliWdsEntryPool);
+/*		kfree(pAd->ApCfg.pCliWdsEntryPool);*/
+		os_free_mem(NULL, pAd->ApCfg.pCliWdsEntryPool);
 	pAd->ApCfg.pCliWdsEntryPool = NULL;	
 
 	return;
@@ -191,5 +193,5 @@ VOID CliWds_ProxyTabMaintain(
 	return;
 }
 
-#endif // CLIENT_WDS //
+#endif /* CLIENT_WDS */
 

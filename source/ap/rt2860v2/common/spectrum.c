@@ -33,7 +33,7 @@
 DOT11_REGULATORY_INFORMATION USARegulatoryInfo[] = 
 {
 /*  "regulatory class"  "number of channels"  "Max Tx Pwr"  "channel list" */
-    {0,	                {0,                   0,           {0}}}, // Invlid entry
+    {0,	                {0,                   0,           {0}}}, /* Invlid entry*/
     {1,                 {4,                   16,           {36, 40, 44, 48}}}, 
     {2,                 {4,                   23,           {52, 56, 60, 64}}}, 
     {3,                 {4,                   29,           {149, 153, 157, 161}}}, 
@@ -54,7 +54,7 @@ DOT11_REGULATORY_INFORMATION USARegulatoryInfo[] =
 DOT11_REGULATORY_INFORMATION EuropeRegulatoryInfo[] = 
 {
 /*  "regulatory class"  "number of channels"  "Max Tx Pwr"  "channel list" */
-    {0,                 {0,                   0,           {0}}}, // Invalid entry
+    {0,                 {0,                   0,           {0}}}, /* Invalid entry*/
     {1,                 {4,                   20,           {36, 40, 44, 48}}}, 
     {2,                 {4,                   20,           {52, 56, 60, 64}}}, 
     {3,                 {11,                  30,           {100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140}}}, 
@@ -67,7 +67,7 @@ DOT11_REGULATORY_INFORMATION EuropeRegulatoryInfo[] =
 DOT11_REGULATORY_INFORMATION JapanRegulatoryInfo[] = 
 {
 /*  "regulatory class"  "number of channels"  "Max Tx Pwr"  "channel list" */
-    {0,                 {0,                   0,           {0}}}, // Invalid entry
+    {0,                 {0,                   0,           {0}}}, /* Invalid entry*/
     {1,                 {4,                   22,           {34, 38, 42, 46}}}, 
     {2,                 {3,                   24,           {8, 12, 16}}}, 
     {3,                 {3,                   24,           {8, 12, 16}}}, 
@@ -112,7 +112,7 @@ UINT8 GetRegulatoryMaxTxPwr(
 	UINT8 RegulatoryClass;
 	UINT8 MaxRegulatoryClassNum;
 	PDOT11_REGULATORY_INFORMATION pRegulatoryClass;
-	PSTRING pCountry = pAd->CommonCfg.CountryCode;
+	PSTRING pCountry = (PSTRING)(pAd->CommonCfg.CountryCode);
 
 
 	if (strncmp(pCountry, "US", 2) == 0)
@@ -159,10 +159,6 @@ UINT8 GetRegulatoryMaxTxPwr(
 	return 0xff;
 }
 
-CHAR RTMP_GetTxPwr(
-	IN PRTMP_ADAPTER pAd,
-	IN HTTRANSMIT_SETTING HTTxMode)
-{
 typedef struct __TX_PWR_CFG
 {
 	UINT8 Mode;
@@ -172,6 +168,46 @@ typedef struct __TX_PWR_CFG
 	UINT32 BitMask;
 } TX_PWR_CFG;
 
+/* Note: the size of TxPwrCfg is too large, do not put it to function */
+TX_PWR_CFG TxPwrCfg[] = {
+	{MODE_CCK, 0, 0, 4, 0x000000f0},
+	{MODE_CCK, 1, 0, 0, 0x0000000f},
+	{MODE_CCK, 2, 0, 12, 0x0000f000},
+	{MODE_CCK, 3, 0, 8, 0x00000f00},
+
+	{MODE_OFDM, 0, 0, 20, 0x00f00000},
+	{MODE_OFDM, 1, 0, 16, 0x000f0000},
+	{MODE_OFDM, 2, 0, 28, 0xf0000000},
+	{MODE_OFDM, 3, 0, 24, 0x0f000000},
+	{MODE_OFDM, 4, 1, 4, 0x000000f0},
+	{MODE_OFDM, 5, 1, 0, 0x0000000f},
+	{MODE_OFDM, 6, 1, 12, 0x0000f000},
+	{MODE_OFDM, 7, 1, 8, 0x00000f00}
+#ifdef DOT11_N_SUPPORT
+	,{MODE_HTMIX, 0, 1, 20, 0x00f00000},
+	{MODE_HTMIX, 1, 1, 16, 0x000f0000},
+	{MODE_HTMIX, 2, 1, 28, 0xf0000000},
+	{MODE_HTMIX, 3, 1, 24, 0x0f000000},
+	{MODE_HTMIX, 4, 2, 4, 0x000000f0},
+	{MODE_HTMIX, 5, 2, 0, 0x0000000f},
+	{MODE_HTMIX, 6, 2, 12, 0x0000f000},
+	{MODE_HTMIX, 7, 2, 8, 0x00000f00},
+	{MODE_HTMIX, 8, 2, 20, 0x00f00000},
+	{MODE_HTMIX, 9, 2, 16, 0x000f0000},
+	{MODE_HTMIX, 10, 2, 28, 0xf0000000},
+	{MODE_HTMIX, 11, 2, 24, 0x0f000000},
+	{MODE_HTMIX, 12, 3, 4, 0x000000f0},
+	{MODE_HTMIX, 13, 3, 0, 0x0000000f},
+	{MODE_HTMIX, 14, 3, 12, 0x0000f000},
+	{MODE_HTMIX, 15, 3, 8, 0x00000f00}
+#endif /* DOT11_N_SUPPORT */
+};
+#define MAX_TXPWR_TAB_SIZE (sizeof(TxPwrCfg) / sizeof(TX_PWR_CFG))
+
+CHAR RTMP_GetTxPwr(
+	IN PRTMP_ADAPTER pAd,
+	IN HTTRANSMIT_SETTING HTTxMode)
+{
 	UINT32 Value;
 	INT Idx;
 	UINT8 PhyMode;
@@ -180,41 +216,6 @@ typedef struct __TX_PWR_CFG
 	CHAR DaltaPwr;
 	ULONG TxPwr[5];
 
-
-	TX_PWR_CFG TxPwrCfg[] = {
-		{MODE_CCK, 0, 0, 4, 0x000000f0},
-		{MODE_CCK, 1, 0, 0, 0x0000000f},
-		{MODE_CCK, 2, 0, 12, 0x0000f000},
-		{MODE_CCK, 3, 0, 8, 0x00000f00},
-
-		{MODE_OFDM, 0, 0, 20, 0x00f00000},
-		{MODE_OFDM, 1, 0, 16, 0x000f0000},
-		{MODE_OFDM, 2, 0, 28, 0xf0000000},
-		{MODE_OFDM, 3, 0, 24, 0x0f000000},
-		{MODE_OFDM, 4, 1, 4, 0x000000f0},
-		{MODE_OFDM, 5, 1, 0, 0x0000000f},
-		{MODE_OFDM, 6, 1, 12, 0x0000f000},
-		{MODE_OFDM, 7, 1, 8, 0x00000f00}
-#ifdef DOT11_N_SUPPORT
-		,{MODE_HTMIX, 0, 1, 20, 0x00f00000},
-		{MODE_HTMIX, 1, 1, 16, 0x000f0000},
-		{MODE_HTMIX, 2, 1, 28, 0xf0000000},
-		{MODE_HTMIX, 3, 1, 24, 0x0f000000},
-		{MODE_HTMIX, 4, 2, 4, 0x000000f0},
-		{MODE_HTMIX, 5, 2, 0, 0x0000000f},
-		{MODE_HTMIX, 6, 2, 12, 0x0000f000},
-		{MODE_HTMIX, 7, 2, 8, 0x00000f00},
-		{MODE_HTMIX, 8, 2, 20, 0x00f00000},
-		{MODE_HTMIX, 9, 2, 16, 0x000f0000},
-		{MODE_HTMIX, 10, 2, 28, 0xf0000000},
-		{MODE_HTMIX, 11, 2, 24, 0x0f000000},
-		{MODE_HTMIX, 12, 3, 4, 0x000000f0},
-		{MODE_HTMIX, 13, 3, 0, 0x0000000f},
-		{MODE_HTMIX, 14, 3, 12, 0x0000f000},
-		{MODE_HTMIX, 15, 3, 8, 0x00000f00}
-#endif // DOT11_N_SUPPORT //
-	};
-#define MAX_TXPWR_TAB_SIZE (sizeof(TxPwrCfg) / sizeof(TX_PWR_CFG))
 
 #ifdef SINGLE_SKU
 	CurTxPwr = pAd->CommonCfg.DefineMaxTxPwr;
@@ -299,14 +300,14 @@ typedef struct __TX_PWR_CFG
 				TxPwrRef = (Value & 0x00000f00) >> 8;
 			}
 			break;
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 	}
 
 	PhyMode =
 #ifdef DOT11_N_SUPPORT
 				(HTTxMode.field.MODE == MODE_HTGREENFIELD)
 				? MODE_HTMIX :
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 				HTTxMode.field.MODE;
 
 	for (Idx = 0; Idx < MAX_TXPWR_TAB_SIZE; Idx++)
@@ -331,9 +332,10 @@ NDIS_STATUS	MeasureReqTabInit(
 {
 	NDIS_STATUS     Status = NDIS_STATUS_SUCCESS;
 
-	NdisAllocateSpinLock(&pAd->CommonCfg.MeasureReqTabLock);
+	NdisAllocateSpinLock(pAd, &pAd->CommonCfg.MeasureReqTabLock);
 
-	pAd->CommonCfg.pMeasureReqTab = kmalloc(sizeof(MEASURE_REQ_TAB), GFP_ATOMIC);
+/*	pAd->CommonCfg.pMeasureReqTab = kmalloc(sizeof(MEASURE_REQ_TAB), GFP_ATOMIC);*/
+	os_alloc_mem(pAd, (UCHAR **)&(pAd->CommonCfg.pMeasureReqTab), sizeof(MEASURE_REQ_TAB));
 	if (pAd->CommonCfg.pMeasureReqTab)
 		NdisZeroMemory(pAd->CommonCfg.pMeasureReqTab, sizeof(MEASURE_REQ_TAB));
 	else
@@ -351,7 +353,8 @@ VOID MeasureReqTabExit(
 	NdisFreeSpinLock(&pAd->CommonCfg.MeasureReqTabLock);
 
 	if (pAd->CommonCfg.pMeasureReqTab)
-		kfree(pAd->CommonCfg.pMeasureReqTab);
+/*		kfree(pAd->CommonCfg.pMeasureReqTab);*/
+		os_free_mem(NULL, pAd->CommonCfg.pMeasureReqTab);
 	pAd->CommonCfg.pMeasureReqTab = NULL;
 
 	return;
@@ -425,7 +428,7 @@ PMEASURE_REQ_ENTRY MeasureReqInsert(
 				ULONG HashIdx = MQ_DIALOGTOKEN_HASH_INDEX(pEntry->DialogToken);
 				PMEASURE_REQ_ENTRY pProbeEntry = pTab->Hash[HashIdx];
 
-				// update Hash list
+				/* update Hash list*/
 				do
 				{
 					if (pProbeEntry == pEntry)
@@ -469,7 +472,7 @@ PMEASURE_REQ_ENTRY MeasureReqInsert(
 			DBGPRINT(RT_DEBUG_ERROR, ("%s: pMeasureReqTab tab full.\n", __FUNCTION__));
 		}
 
-		// add this Neighbor entry into HASH table
+		/* add this Neighbor entry into HASH table*/
 		if (pEntry)
 		{
 			HashIdx = MQ_DIALOGTOKEN_HASH_INDEX(DialogToken);
@@ -505,7 +508,7 @@ VOID MeasureReqDelete(
 		return;
 	}
 
-	// if empty, return
+	/* if empty, return*/
 	if (pTab->Size == 0) 
 	{
 		DBGPRINT(RT_DEBUG_ERROR, ("pMeasureReqTab empty.\n"));
@@ -520,7 +523,7 @@ VOID MeasureReqDelete(
 		PMEASURE_REQ_ENTRY pProbeEntry = pTab->Hash[HashIdx];
 
 		RTMP_SEM_LOCK(&pAd->CommonCfg.MeasureReqTabLock);
-		// update Hash list
+		/* update Hash list*/
 		do
 		{
 			if (pProbeEntry == pEntry)
@@ -554,9 +557,10 @@ NDIS_STATUS	TpcReqTabInit(
 {
 	NDIS_STATUS     Status = NDIS_STATUS_SUCCESS;
 
-	NdisAllocateSpinLock(&pAd->CommonCfg.TpcReqTabLock);
+	NdisAllocateSpinLock(pAd, &pAd->CommonCfg.TpcReqTabLock);
 
-	pAd->CommonCfg.pTpcReqTab = kmalloc(sizeof(TPC_REQ_TAB), GFP_ATOMIC);
+/*	pAd->CommonCfg.pTpcReqTab = kmalloc(sizeof(TPC_REQ_TAB), GFP_ATOMIC);*/
+	os_alloc_mem(pAd, (UCHAR **)&(pAd->CommonCfg.pTpcReqTab), sizeof(TPC_REQ_TAB));
 	if (pAd->CommonCfg.pTpcReqTab)
 		NdisZeroMemory(pAd->CommonCfg.pTpcReqTab, sizeof(TPC_REQ_TAB));
 	else
@@ -574,7 +578,8 @@ VOID TpcReqTabExit(
 	NdisFreeSpinLock(&pAd->CommonCfg.TpcReqTabLock);
 
 	if (pAd->CommonCfg.pTpcReqTab)
-		kfree(pAd->CommonCfg.pTpcReqTab);
+/*		kfree(pAd->CommonCfg.pTpcReqTab);*/
+		os_free_mem(NULL, pAd->CommonCfg.pTpcReqTab);
 	pAd->CommonCfg.pTpcReqTab = NULL;
 
 	return;
@@ -649,7 +654,7 @@ static PTPC_REQ_ENTRY TpcReqInsert(
 				ULONG HashIdx = TPC_DIALOGTOKEN_HASH_INDEX(pEntry->DialogToken);
 				PTPC_REQ_ENTRY pProbeEntry = pTab->Hash[HashIdx];
 
-				// update Hash list
+				/* update Hash list*/
 				do
 				{
 					if (pProbeEntry == pEntry)
@@ -693,7 +698,7 @@ static PTPC_REQ_ENTRY TpcReqInsert(
 			DBGPRINT(RT_DEBUG_ERROR, ("%s: pTpcReqTab tab full.\n", __FUNCTION__));
 		}
 
-		// add this Neighbor entry into HASH table
+		/* add this Neighbor entry into HASH table*/
 		if (pEntry)
 		{
 			HashIdx = TPC_DIALOGTOKEN_HASH_INDEX(DialogToken);
@@ -729,7 +734,7 @@ static VOID TpcReqDelete(
 		return;
 	}
 
-	// if empty, return
+	/* if empty, return*/
 	if (pTab->Size == 0) 
 	{
 		DBGPRINT(RT_DEBUG_ERROR, ("pTpcReqTab empty.\n"));
@@ -744,7 +749,7 @@ static VOID TpcReqDelete(
 		PTPC_REQ_ENTRY pProbeEntry = pTab->Hash[HashIdx];
 
 		RTMP_SEM_LOCK(&pAd->CommonCfg.TpcReqTabLock);
-		// update Hash list
+		/* update Hash list*/
 		do
 		{
 			if (pProbeEntry == pEntry)
@@ -786,7 +791,7 @@ static VOID TpcReqDelete(
 static UINT64 GetCurrentTimeStamp(
 	IN PRTMP_ADAPTER pAd)
 {
-	// get current time stamp.
+	/* get current time stamp.*/
 	return 0;
 }
 
@@ -1104,7 +1109,7 @@ VOID MakeMeasurementReqFrame(
 
 	InsertActField(pAd, (pOutBuffer + *pFrameLen), pFrameLen, Category, Action);
 
-	// fill Dialog Token
+	/* fill Dialog Token*/
 	InsertDialogToken(pAd, (pOutBuffer + *pFrameLen), pFrameLen, MeasureToken);
 
 	/* fill Number of repetitions. */
@@ -1117,7 +1122,7 @@ VOID MakeMeasurementReqFrame(
 		*pFrameLen += TempLen;
 	}
 
-	// prepare Measurement IE.
+	/* prepare Measurement IE.*/
 	NdisZeroMemory(&MeasureReqIE, sizeof(MEASURE_REQ_INFO));
 	MeasureReqIE.Token = MeasureToken;
 	MeasureReqIE.ReqMode.word = MeasureReqMode;
@@ -1156,11 +1161,14 @@ VOID EnqueueMeasurementRep(
 	HEADER_802_11 ActHdr;
 	MEASURE_REPORT_INFO MeasureRepIE;
 
-	// build action frame header.
+	/* build action frame header.*/
 	MgtMacHeaderInit(pAd, &ActHdr, SUBTYPE_ACTION, 0, pDA,
+#ifdef P2P_SUPPORT
+						pAd->CurrentAddress,
+#endif /* P2P_SUPPORT */
 						pAd->CurrentAddress);
 
-	NStatus = MlmeAllocateMemory(pAd, (PVOID)&pOutBuffer);  //Get an unused nonpaged memory
+	NStatus = MlmeAllocateMemory(pAd, (PVOID)&pOutBuffer);  /*Get an unused nonpaged memory*/
 	if(NStatus != NDIS_STATUS_SUCCESS)
 	{
 		DBGPRINT(RT_DEBUG_TRACE, ("%s() allocate memory failed \n", __FUNCTION__));
@@ -1171,10 +1179,10 @@ VOID EnqueueMeasurementRep(
 
 	InsertActField(pAd, (pOutBuffer + FrameLen), &FrameLen, CATEGORY_SPECTRUM, SPEC_MRP);
 
-	// fill Dialog Token
+	/* fill Dialog Token*/
 	InsertDialogToken(pAd, (pOutBuffer + FrameLen), &FrameLen, DialogToken);
 
-	// prepare Measurement IE.
+	/* prepare Measurement IE.*/
 	NdisZeroMemory(&MeasureRepIE, sizeof(MEASURE_REPORT_INFO));
 	MeasureRepIE.Token = MeasureToken;
 	MeasureRepIE.ReportMode = MeasureReqMode;
@@ -1210,11 +1218,14 @@ VOID EnqueueTPCReq(
 
 	HEADER_802_11 ActHdr;
 
-	// build action frame header.
+	/* build action frame header.*/
 	MgtMacHeaderInit(pAd, &ActHdr, SUBTYPE_ACTION, 0, pDA,
+#ifdef P2P_SUPPORT
+						pAd->CurrentAddress,
+#endif /* P2P_SUPPORT */
 						pAd->CurrentAddress);
 
-	NStatus = MlmeAllocateMemory(pAd, (PVOID)&pOutBuffer);  //Get an unused nonpaged memory
+	NStatus = MlmeAllocateMemory(pAd, (PVOID)&pOutBuffer);  /*Get an unused nonpaged memory*/
 	if(NStatus != NDIS_STATUS_SUCCESS)
 	{
 		DBGPRINT(RT_DEBUG_TRACE, ("%s() allocate memory failed \n", __FUNCTION__));
@@ -1225,10 +1236,10 @@ VOID EnqueueTPCReq(
 
 	InsertActField(pAd, (pOutBuffer + FrameLen), &FrameLen, CATEGORY_SPECTRUM, SPEC_TPCRQ);
 
-	// fill Dialog Token
+	/* fill Dialog Token*/
 	InsertDialogToken(pAd, (pOutBuffer + FrameLen), &FrameLen, DialogToken);
 
-	// Insert TPC Request IE.
+	/* Insert TPC Request IE.*/
 	InsertTpcReqIE(pAd, (pOutBuffer + FrameLen), &FrameLen);
 
 	MiniportMMRequest(pAd, QID_AC_BE, pOutBuffer, FrameLen);
@@ -1262,11 +1273,14 @@ VOID EnqueueTPCRep(
 
 	HEADER_802_11 ActHdr;
 
-	// build action frame header.
+	/* build action frame header.*/
 	MgtMacHeaderInit(pAd, &ActHdr, SUBTYPE_ACTION, 0, pDA,
+#ifdef P2P_SUPPORT
+						pAd->CurrentAddress,
+#endif /* P2P_SUPPORT */
 						pAd->CurrentAddress);
 
-	NStatus = MlmeAllocateMemory(pAd, (PVOID)&pOutBuffer);  //Get an unused nonpaged memory
+	NStatus = MlmeAllocateMemory(pAd, (PVOID)&pOutBuffer);  /*Get an unused nonpaged memory*/
 	if(NStatus != NDIS_STATUS_SUCCESS)
 	{
 		DBGPRINT(RT_DEBUG_TRACE, ("%s() allocate memory failed \n", __FUNCTION__));
@@ -1277,10 +1291,10 @@ VOID EnqueueTPCRep(
 
 	InsertActField(pAd, (pOutBuffer + FrameLen), &FrameLen, CATEGORY_SPECTRUM, SPEC_TPCRP);
 
-	// fill Dialog Token
+	/* fill Dialog Token*/
 	InsertDialogToken(pAd, (pOutBuffer + FrameLen), &FrameLen, DialogToken);
 
-	// Insert TPC Request IE.
+	/* Insert TPC Request IE.*/
 	InsertTpcReportIE(pAd, (pOutBuffer + FrameLen), &FrameLen, TxPwr, LinkMargin);
 
 	MiniportMMRequest(pAd, QID_AC_BE, pOutBuffer, FrameLen);
@@ -1360,11 +1374,14 @@ VOID EnqueueChSwAnn(
 
 	HEADER_802_11 ActHdr;
 
-	// build action frame header.
+	/* build action frame header.*/
 	MgtMacHeaderInit(pAd, &ActHdr, SUBTYPE_ACTION, 0, pDA,
+#ifdef P2P_SUPPORT
+						pAd->CurrentAddress,
+#endif /* P2P_SUPPORT */
 						pAd->CurrentAddress);
 
-	NStatus = MlmeAllocateMemory(pAd, (PVOID)&pOutBuffer);  //Get an unused nonpaged memory
+	NStatus = MlmeAllocateMemory(pAd, (PVOID)&pOutBuffer);  /*Get an unused nonpaged memory*/
 	if(NStatus != NDIS_STATUS_SUCCESS)
 	{
 		DBGPRINT(RT_DEBUG_TRACE, ("%s() allocate memory failed \n", __FUNCTION__));
@@ -1382,7 +1399,7 @@ VOID EnqueueChSwAnn(
 
 	return;
 }
-#endif // WDS_SUPPORT //
+#endif /* WDS_SUPPORT */
 
 static BOOLEAN DfsRequirementCheck(
 	IN PRTMP_ADAPTER pAd,
@@ -1393,22 +1410,22 @@ static BOOLEAN DfsRequirementCheck(
 
 	do
 	{
-		// check DFS procedure is running.
-		// make sure DFS procedure won't start twice.
+		/* check DFS procedure is running.*/
+		/* make sure DFS procedure won't start twice.*/
 		if (pAd->CommonCfg.RadarDetect.RDMode != RD_NORMAL_MODE)
 		{
 			Result = FALSE;
 			break;
 		}
 
-		// check the new channel carried from Channel Switch Announcemnet is valid.
+		/* check the new channel carried from Channel Switch Announcemnet is valid.*/
 		for (i=0; i<pAd->ChannelListNum; i++)
 		{
 			if ((Channel == pAd->ChannelList[i].Channel)
 				&&(pAd->ChannelList[i].RemainingTimeForUse == 0))
 			{
-				// found radar signal in the channel. the channel can't use at least for 30 minutes.
-				pAd->ChannelList[i].RemainingTimeForUse = 1800;//30 min = 1800 sec
+				/* found radar signal in the channel. the channel can't use at least for 30 minutes.*/
+				pAd->ChannelList[i].RemainingTimeForUse = 1800;/*30 min = 1800 sec*/
 				Result = TRUE;
 				break;
 			}
@@ -1426,26 +1443,26 @@ VOID NotifyChSwAnnToPeerAPs(
 	IN UINT8 Channel)
 {
 #ifdef WDS_SUPPORT
-	if (!((pRA[0] & 0xff) == 0xff)) // is pRA a broadcase address.
+	if (!((pRA[0] & 0xff) == 0xff)) /* is pRA a broadcase address.*/
 	{
 		INT i;
-		// info neighbor APs that Radar signal found throgh WDS link.
+		/* info neighbor APs that Radar signal found throgh WDS link.*/
 		for (i = 0; i < MAX_WDS_ENTRY; i++)
 		{
 			if (ValidWdsEntry(pAd, i))
 			{
 				PUCHAR pDA = pAd->WdsTab.WdsEntry[i].PeerWdsAddr;
 
-				// DA equal to SA. have no necessary orignal AP which found Radar signal.
+				/* DA equal to SA. have no necessary orignal AP which found Radar signal.*/
 				if (MAC_ADDR_EQUAL(pTA, pDA))
 					continue;
 
-				// send Channel Switch Action frame to info Neighbro APs.
+				/* send Channel Switch Action frame to info Neighbro APs.*/
 				EnqueueChSwAnn(pAd, pDA, ChSwMode, Channel);
 			}
 		}
 	}
-#endif // WDS_SUPPORT //
+#endif /* WDS_SUPPORT */
 }
 
 static VOID StartDFSProcedure(
@@ -1453,11 +1470,11 @@ static VOID StartDFSProcedure(
 	IN UCHAR Channel,
 	IN UINT8 ChSwMode)
 {
-	// start DFS procedure
+	/* start DFS procedure*/
 	pAd->CommonCfg.Channel = Channel;
 #ifdef DOT11_N_SUPPORT
 	N_ChannelCheck(pAd);
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 	pAd->CommonCfg.RadarDetect.RDMode = RD_SWITCHING_MODE;
 	pAd->CommonCfg.RadarDetect.CSCount = 0;
 }
@@ -1495,10 +1512,10 @@ static BOOLEAN PeerChSwAnnSanity(
 	BOOLEAN result = FALSE;
 	PEID_STRUCT eid_ptr;
 
-	// skip 802.11 header.
+	/* skip 802.11 header.*/
 	MsgLen -= sizeof(HEADER_802_11);
 
-	// skip category and action code.
+	/* skip category and action code.*/
 	pFramePtr += 2;
 	MsgLen -= 2;
 
@@ -1556,10 +1573,10 @@ static BOOLEAN PeerMeasureReqSanity(
 	UINT64 MeasureStartTime;
 	UINT16 MeasureDuration;
 
-	// skip 802.11 header.
+	/* skip 802.11 header.*/
 	MsgLen -= sizeof(HEADER_802_11);
 
-	// skip category and action code.
+	/* skip category and action code.*/
 	pFramePtr += 2;
 	MsgLen -= 2;
 
@@ -1646,10 +1663,10 @@ static BOOLEAN PeerMeasureReportSanity(
 	PEID_STRUCT eid_ptr;
 	PUCHAR ptr;
 
-	// skip 802.11 header.
+	/* skip 802.11 header.*/
 	MsgLen -= sizeof(HEADER_802_11);
 
-	// skip category and action code.
+	/* skip category and action code.*/
 	pFramePtr += 2;
 	MsgLen -= 2;
 
@@ -1736,7 +1753,7 @@ static BOOLEAN PeerTpcReqSanity(
 
 	MsgLen -= sizeof(HEADER_802_11);
 
-	// skip category and action code.
+	/* skip category and action code.*/
 	pFramePtr += 2;
 	MsgLen -= 2;
 
@@ -1793,7 +1810,7 @@ static BOOLEAN PeerTpcRepSanity(
 
 	MsgLen -= sizeof(HEADER_802_11);
 
-	// skip category and action code.
+	/* skip category and action code.*/
 	pFramePtr += 2;
 	MsgLen -= 2;
 
@@ -1844,7 +1861,7 @@ static VOID PeerChSwAnnAction(
 #ifdef CONFIG_STA_SUPPORT
 	UCHAR index = 0, Channel = 0, NewChannel = 0;
 	ULONG Bssidx = 0;
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 
 	NdisZeroMemory(&ChSwAnnInfo, sizeof(CH_SW_ANN_INFO));
 	if (! PeerChSwAnnSanity(pAd, Elem->Msg, Elem->MsgLen, &ChSwAnnInfo))
@@ -1854,14 +1871,14 @@ static VOID PeerChSwAnnAction(
 	}
 
 #ifdef CONFIG_AP_SUPPORT
-	// ChSwAnn need check.
+	/* ChSwAnn need check.*/
 	if ((pAd->OpMode == OPMODE_AP) &&
 		(DfsRequirementCheck(pAd, ChSwAnnInfo.Channel) == TRUE))
 	{
 		NotifyChSwAnnToPeerAPs(pAd, pFr->Hdr.Addr1, pFr->Hdr.Addr2, ChSwAnnInfo.ChSwMode, ChSwAnnInfo.Channel);
 		StartDFSProcedure(pAd, ChSwAnnInfo.Channel, ChSwAnnInfo.ChSwMode);
 	}
-#endif // CONFIG_AP_SUPPORT //
+#endif /* CONFIG_AP_SUPPORT */
 
 #ifdef CONFIG_STA_SUPPORT
 	if (pAd->OpMode == OPMODE_STA)
@@ -1881,16 +1898,15 @@ static VOID PeerChSwAnnAction(
 
 		if ((pAd->CommonCfg.bIEEE80211H == 1) && (NewChannel != 0) && (Channel != NewChannel))
 		{
-			// Switching to channel 1 can prevent from rescanning the current channel immediately (by auto reconnection).
-			// In addition, clear the MLME queue and the scan table to discard the RX packets and previous scanning results.
+			/* Switching to channel 1 can prevent from rescanning the current channel immediately (by auto reconnection).*/
+			/* In addition, clear the MLME queue and the scan table to discard the RX packets and previous scanning results.*/
 			AsicSwitchChannel(pAd, 1, FALSE);
 			AsicLockChannel(pAd, 1);
 		    LinkDown(pAd, FALSE);
-			MlmeQueueInit(&pAd->Mlme.Queue);
-			BssTableInit(&pAd->ScanTab);
-		    RTMPusecDelay(1000000);		// use delay to prevent STA do reassoc
+			MlmeQueueInit(pAd, &pAd->Mlme.Queue);
+		    RTMPusecDelay(1000000);		/* use delay to prevent STA do reassoc*/
 					
-			// channel sanity check
+			/* channel sanity check*/
 			for (index = 0 ; index < pAd->ChannelListNum; index++)
 			{
 				if (pAd->ChannelList[index].Channel == NewChannel)
@@ -1910,7 +1926,7 @@ static VOID PeerChSwAnnAction(
 			}
 		}
 	}
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 
 	return;
 }
@@ -1967,10 +1983,12 @@ static VOID PeerMeasureReportAction(
 	UINT8 DialogToken;
 	PUINT8 pMeasureReportInfo;
 
-//	if (pAd->CommonCfg.bIEEE80211H != TRUE)
-//		return;
+/*	if (pAd->CommonCfg.bIEEE80211H != TRUE)*/
+/*		return;*/
 
-	if ((pMeasureReportInfo = kmalloc(sizeof(MEASURE_RPI_REPORT), GFP_ATOMIC)) == NULL)
+	os_alloc_mem(pAd, (UCHAR **)&pMeasureReportInfo, sizeof(MEASURE_RPI_REPORT));
+/*	if ((pMeasureReportInfo = kmalloc(sizeof(MEASURE_RPI_REPORT), GFP_ATOMIC)) == NULL)*/
+	if (pMeasureReportInfo == NULL)
 	{
 		DBGPRINT(RT_DEBUG_ERROR, ("%s unable to alloc memory for measure report buffer (size=%d).\n", __FUNCTION__, sizeof(MEASURE_RPI_REPORT)));
 		return;
@@ -1983,8 +2001,8 @@ static VOID PeerMeasureReportAction(
 		do {
 			PMEASURE_REQ_ENTRY pEntry = NULL;
 
-			// Not a autonomous measure report.
-			// check the dialog token field. drop it if the dialog token doesn't match.
+			/* Not a autonomous measure report.*/
+			/* check the dialog token field. drop it if the dialog token doesn't match.*/
 			if ((DialogToken != 0)
 				&& ((pEntry = MeasureReqLookUp(pAd, DialogToken)) == NULL))
 				break;
@@ -2007,7 +2025,8 @@ static VOID PeerMeasureReportAction(
 	else
 		DBGPRINT(RT_DEBUG_TRACE, ("Invalid Measurement Report Frame.\n"));
 
-	kfree(pMeasureReportInfo);
+/*	kfree(pMeasureReportInfo);*/
+	os_free_mem(NULL, pMeasureReportInfo);
 
 	return;
 }
@@ -2034,18 +2053,18 @@ static VOID PeerTpcReqAction(
 	UINT8 LinkMargin = 0;
 	CHAR RealRssi;
 
-	// link margin: Ratio of the received signal power to the minimum desired by the station (STA). The
-	//				STA may incorporate rate information and channel conditions, including interference, into its computation
-	//				of link margin.
+	/* link margin: Ratio of the received signal power to the minimum desired by the station (STA). The*/
+	/*				STA may incorporate rate information and channel conditions, including interference, into its computation*/
+	/*				of link margin.*/
 
 	RealRssi = RTMPMaxRssi(pAd, ConvertToRssi(pAd, Elem->Rssi0, RSSI_0),
 								ConvertToRssi(pAd, Elem->Rssi1, RSSI_1),
 								ConvertToRssi(pAd, Elem->Rssi2, RSSI_2));
 
-	// skip Category and action code.
+	/* skip Category and action code.*/
 	pFramePtr += 2;
 
-	// Dialog token.
+	/* Dialog token.*/
 	NdisMoveMemory(&DialogToken, pFramePtr, 1);
 
 	LinkMargin = (RealRssi / MIN_RCV_PWR);
@@ -2113,8 +2132,8 @@ VOID PeerSpectrumAction(
 	switch(Action)
 	{
 		case SPEC_MRQ:
-			// current rt2860 unable do such measure specified in Measurement Request.
-			// reject all measurement request.
+			/* current rt2860 unable do such measure specified in Measurement Request.*/
+			/* reject all measurement request.*/
 			PeerMeasureReqAction(pAd, Elem);
 			break;
 
@@ -2137,10 +2156,10 @@ VOID PeerSpectrumAction(
 				SEC_CHA_OFFSET_IE	Secondary;
 				CHA_SWITCH_ANNOUNCE_IE	ChannelSwitch;
 
-				// 802.11h only has Channel Switch Announcement IE. 
+				/* 802.11h only has Channel Switch Announcement IE. */
 				RTMPMoveMemory(&ChannelSwitch, &Elem->Msg[LENGTH_802_11+4], sizeof (CHA_SWITCH_ANNOUNCE_IE));
 					
-				// 802.11n D3.03 adds secondary channel offset element in the end.
+				/* 802.11n D3.03 adds secondary channel offset element in the end.*/
 				if (Elem->MsgLen ==  (LENGTH_802_11 + 2 + sizeof (CHA_SWITCH_ANNOUNCE_IE) + sizeof (SEC_CHA_OFFSET_IE)))
 				{
 					RTMPMoveMemory(&Secondary, &Elem->Msg[LENGTH_802_11+9], sizeof (SEC_CHA_OFFSET_IE));
@@ -2155,7 +2174,7 @@ VOID PeerSpectrumAction(
 					ChannelSwitchAction(pAd, Elem->Wcid, ChannelSwitch.NewChannel, Secondary.SecondaryChannelOffset);
 				}
 			}
-#endif // DOT11N_DRAFT3 //
+#endif /* DOT11N_DRAFT3 */
 
 			PeerChSwAnnAction(pAd, Elem);
 			break;
@@ -2194,7 +2213,7 @@ INT Set_MeasureReq_Proc(
 	NDIS_STATUS NStatus;
 	ULONG FrameLen;
 
-	NStatus = MlmeAllocateMemory(pAd, (PVOID)&pOutBuffer);  //Get an unused nonpaged memory
+	NStatus = MlmeAllocateMemory(pAd, (PVOID)&pOutBuffer);  /*Get an unused nonpaged memory*/
 	if(NStatus != NDIS_STATUS_SUCCESS)
 	{
 		DBGPRINT(RT_DEBUG_TRACE, ("%s() allocate memory failed \n", __FUNCTION__));
@@ -2206,11 +2225,11 @@ INT Set_MeasureReq_Proc(
 	{
 		switch(ArgIdx)
 		{
-			case 1:	// Aid.
+			case 1:	/* Aid.*/
 				Aid = (UINT8) simple_strtol(thisChar, 0, 16);
 				break;
 
-			case 2: // Measurement Request Type.
+			case 2: /* Measurement Request Type.*/
 				MeasureReqType = simple_strtol(thisChar, 0, 16);
 				if (MeasureReqType > 3)
 				{
@@ -2219,7 +2238,7 @@ INT Set_MeasureReq_Proc(
 				}
 				break;
 
-			case 3: // Measurement channel.
+			case 3: /* Measurement channel.*/
 				MeasureCh = (UINT8) simple_strtol(thisChar, 0, 16);
 				break;
 		}
@@ -2238,8 +2257,11 @@ INT Set_MeasureReq_Proc(
 
 	MeasureReqInsert(pAd, MeasureReqToken);
 
-	// build action frame header.
+	/* build action frame header.*/
 	MgtMacHeaderInit(pAd, &ActHdr, SUBTYPE_ACTION, 0, pAd->MacTab.Content[Aid].Addr,
+#ifdef P2P_SUPPORT
+						pAd->CurrentAddress,
+#endif /* P2P_SUPPORT */
 						pAd->CurrentAddress);
 
 	NdisMoveMemory(pOutBuffer, (PCHAR)&ActHdr, sizeof(HEADER_802_11));
@@ -2433,5 +2455,5 @@ VOID RguClass_BuildBcnChList(
 
 	return;
 }
-#endif // CONFIG_AP_SUPPORT //
+#endif /* CONFIG_AP_SUPPORT */
 

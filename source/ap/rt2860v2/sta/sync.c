@@ -28,7 +28,7 @@
 #include "rt_config.h"
 
 
-#define ADHOC_ENTRY_BEACON_LOST_TIME	(2*OS_HZ)	// 2 sec
+#define ADHOC_ENTRY_BEACON_LOST_TIME	(2*OS_HZ)	/* 2 sec */
 
 /*
 	==========================================================================
@@ -48,14 +48,17 @@ VOID SyncStateMachineInit(
 {
 	StateMachineInit(Sm, Trans, MAX_SYNC_STATE, MAX_SYNC_MSG, (STATE_MACHINE_FUNC)Drop, SYNC_IDLE, SYNC_MACHINE_BASE);
 
-	// column 1
+	/* column 1 */
 	StateMachineSetAction(Sm, SYNC_IDLE, MT2_MLME_SCAN_REQ, (STATE_MACHINE_FUNC)MlmeScanReqAction);
 	StateMachineSetAction(Sm, SYNC_IDLE, MT2_MLME_JOIN_REQ, (STATE_MACHINE_FUNC)MlmeJoinReqAction);
 	StateMachineSetAction(Sm, SYNC_IDLE, MT2_MLME_START_REQ, (STATE_MACHINE_FUNC)MlmeStartReqAction);
 	StateMachineSetAction(Sm, SYNC_IDLE, MT2_PEER_BEACON, (STATE_MACHINE_FUNC)PeerBeacon);
 	StateMachineSetAction(Sm, SYNC_IDLE, MT2_PEER_PROBE_REQ, (STATE_MACHINE_FUNC)PeerProbeReqAction); 
+#ifdef P2P_SUPPORT
+	StateMachineSetAction(Sm, SYNC_IDLE, MT2_PEER_PROBE_RSP, (STATE_MACHINE_FUNC)PeerBeaconAtScanAction);
+#endif /* P2P_SUPPORT */
 
-	//column 2
+	/* column 2 */
 	StateMachineSetAction(Sm, JOIN_WAIT_BEACON, MT2_MLME_SCAN_REQ, (STATE_MACHINE_FUNC)InvalidStateWhenScan);
 	StateMachineSetAction(Sm, JOIN_WAIT_BEACON, MT2_MLME_JOIN_REQ, (STATE_MACHINE_FUNC)InvalidStateWhenJoin);
 	StateMachineSetAction(Sm, JOIN_WAIT_BEACON, MT2_MLME_START_REQ, (STATE_MACHINE_FUNC)InvalidStateWhenStart);
@@ -63,18 +66,19 @@ VOID SyncStateMachineInit(
 	StateMachineSetAction(Sm, JOIN_WAIT_BEACON, MT2_BEACON_TIMEOUT, (STATE_MACHINE_FUNC)BeaconTimeoutAtJoinAction);
 	StateMachineSetAction(Sm, JOIN_WAIT_BEACON, MT2_PEER_PROBE_RSP, (STATE_MACHINE_FUNC)PeerBeaconAtScanAction);
 
-	// column 3
+	/* column 3 */
 	StateMachineSetAction(Sm, SCAN_LISTEN, MT2_MLME_SCAN_REQ, (STATE_MACHINE_FUNC)InvalidStateWhenScan);
 	StateMachineSetAction(Sm, SCAN_LISTEN, MT2_MLME_JOIN_REQ, (STATE_MACHINE_FUNC)InvalidStateWhenJoin);
 	StateMachineSetAction(Sm, SCAN_LISTEN, MT2_MLME_START_REQ, (STATE_MACHINE_FUNC)InvalidStateWhenStart);
 	StateMachineSetAction(Sm, SCAN_LISTEN, MT2_PEER_BEACON, (STATE_MACHINE_FUNC)PeerBeaconAtScanAction);
 	StateMachineSetAction(Sm, SCAN_LISTEN, MT2_PEER_PROBE_RSP, (STATE_MACHINE_FUNC)PeerBeaconAtScanAction);
 	StateMachineSetAction(Sm, SCAN_LISTEN, MT2_SCAN_TIMEOUT, (STATE_MACHINE_FUNC)ScanTimeoutAction);
+	/* StateMachineSetAction(Sm, SCAN_LISTEN, MT2_MLME_SCAN_CNCL, (STATE_MACHINE_FUNC)ScanCnclAction); */
 
-	// resume scanning for fast-roaming
+	/* resume scanning for fast-roaming */
 	StateMachineSetAction(Sm, SCAN_PENDING, MT2_MLME_SCAN_REQ, (STATE_MACHINE_FUNC)MlmeScanReqAction);
 
-	// timer init
+	/* timer init */
 	RTMPInitTimer(pAd, &pAd->MlmeAux.BeaconTimer, GET_TIMER_FUNCTION(BeaconTimeout), pAd, FALSE);
 	RTMPInitTimer(pAd, &pAd->MlmeAux.ScanTimer, GET_TIMER_FUNCTION(ScanTimeout), pAd, FALSE);
 }
@@ -98,8 +102,10 @@ VOID BeaconTimeout(
 
 	DBGPRINT(RT_DEBUG_TRACE,("SYNC - BeaconTimeout\n"));
 	
-	// Do nothing if the driver is starting halt state.
-	// This might happen when timer already been fired before cancel timer with mlmehalt
+	/*
+	    Do nothing if the driver is starting halt state.
+	    This might happen when timer already been fired before cancel timer with mlmehalt
+	*/
 	if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_HALT_IN_PROGRESS))
 		return;
 	
@@ -116,7 +122,7 @@ VOID BeaconTimeout(
 		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R4, BBPValue);
 		DBGPRINT(RT_DEBUG_TRACE, ("SYNC - End of SCAN, restore to 40MHz channel %d, Total BSS[%02d]\n",pAd->CommonCfg.CentralChannel, pAd->ScanTab.BssNr));
 	}
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 
 	MlmeEnqueue(pAd, SYNC_STATE_MACHINE, MT2_BEACON_TIMEOUT, 0, NULL, 0);
 	RTMP_MLME_HANDLER(pAd);
@@ -140,8 +146,10 @@ VOID ScanTimeout(
 	RTMP_ADAPTER *pAd = (RTMP_ADAPTER *)FunctionContext;
 
 	
-	// Do nothing if the driver is starting halt state.
-	// This might happen when timer already been fired before cancel timer with mlmehalt
+	/* 
+	    Do nothing if the driver is starting halt state.
+	    This might happen when timer already been fired before cancel timer with mlmehalt
+	*/
 	if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_HALT_IN_PROGRESS))
 		return;
 	
@@ -151,11 +159,10 @@ VOID ScanTimeout(
 }
 	else
 	{
-		// To prevent SyncMachine.CurrState is SCAN_LISTEN forever.
+		/* To prevent SyncMachine.CurrState is SCAN_LISTEN forever. */
 		pAd->MlmeAux.Channel = 0;
-		ScanNextChannel(pAd);
+		ScanNextChannel(pAd, OPMODE_STA);
 			RTMPSendWirelessEvent(pAd, IW_SCAN_ENQUEUE_FAIL_EVENT_FLAG, NULL, BSS0, 0); 
-		
 	}
 }
 
@@ -173,9 +180,10 @@ VOID MlmeScanReqAction(
 	BOOLEAN        TimerCancelled;
 	ULONG		   Now;
 	USHORT         Status;
-
-	// Check the total scan tries for one single OID command
-	// If this is the CCX 2.0 Case, skip that!
+       /*
+	    Check the total scan tries for one single OID command
+	    If this is the CCX 2.0 Case, skip that!
+	*/
 	if ( !RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_START_UP))
 	{
 		DBGPRINT(RT_DEBUG_TRACE, ("SYNC - MlmeScanReqAction before Startup\n"));
@@ -200,9 +208,9 @@ VOID MlmeScanReqAction(
 			RT28xxPciAsicRadioOn(pAd, GUI_IDLE_POWER_SAVE);
 		}
 	}
-#endif // PCIE_PS_SUPPORT //
+#endif /* PCIE_PS_SUPPORT */
 
-	// first check the parameter sanity
+	/* first check the parameter sanity */
 	if (MlmeScanReqSanity(pAd, 
 						  Elem->Msg, 
 						  Elem->MsgLen, 
@@ -212,21 +220,24 @@ VOID MlmeScanReqAction(
 						  &ScanType)) 
 	{
 
-		// Check for channel load and noise hist request
-		// Suspend MSDU only at scan request, not the last two mentioned
-		// Suspend MSDU transmission here
+		/* 
+		     Check for channel load and noise hist request
+		     Suspend MSDU only at scan request, not the last two mentioned
+		     Suspend MSDU transmission here
+		*/
 		RTMPSuspendMsduTransmission(pAd);
 		
-		//
-		// To prevent data lost.	
-		// Send an NULL data with turned PSM bit on to current associated AP before SCAN progress.
-		// And should send an NULL data with turned PSM bit off to AP, when scan progress done 
-		//
+		/*
+		    To prevent data lost.	
+		    Send an NULL data with turned PSM bit on to current associated AP before SCAN progress.
+		    And should send an NULL data with turned PSM bit off to AP, when scan progress done 
+		*/
 		if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_MEDIA_STATE_CONNECTED) && (INFRA_ON(pAd)))
 		{
 			RTMPSendNullFrame(pAd, 
 							  pAd->CommonCfg.TxRate, 
-							  (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_WMM_INUSED) ? TRUE:FALSE));
+							  (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_WMM_INUSED) ? TRUE:FALSE),
+							  PWR_SAVE);
 			DBGPRINT(RT_DEBUG_TRACE, ("MlmeScanReqAction -- Send PSM Data frame for off channel RM, SCAN_IN_PROGRESS=%d!\n",
 											RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_BSS_SCAN_IN_PROGRESS)));
 				OS_WAIT(20);
@@ -236,11 +247,11 @@ VOID MlmeScanReqAction(
 
 		NdisGetSystemUpTime(&Now);
 		pAd->StaCfg.LastScanTime = Now;
-		// reset all the timers
+		/* reset all the timers */
 		RTMPCancelTimer(&pAd->MlmeAux.BeaconTimer, &TimerCancelled);
 		RTMPCancelTimer(&pAd->MlmeAux.ScanTimer, &TimerCancelled);
 
-		// record desired BSS parameters
+		/* record desired BSS parameters */
 		pAd->MlmeAux.BssType = BssType;
 		pAd->MlmeAux.ScanType = ScanType;
 		pAd->MlmeAux.SsidLen = SsidLen;
@@ -254,6 +265,12 @@ VOID MlmeScanReqAction(
 		{
 			pAd->MlmeAux.Channel = pAd->StaCfg.LastScanChannel;
 		}
+#ifdef P2P_SUPPORT
+		else if (pAd->P2pCfg.CtrlCurrentState == P2P_CTRL_DISCOVERY)
+		{
+			pAd->MlmeAux.Channel = 1;
+		}
+#endif /* P2P_SUPPORT */
 		else
 		{
 			if (pAd->StaCfg.bFastConnect && (pAd->CommonCfg.Channel != 0) && !pAd->StaCfg.bNotFirstScan)
@@ -261,22 +278,24 @@ VOID MlmeScanReqAction(
 				pAd->MlmeAux.Channel = pAd->CommonCfg.Channel;
 			}
 			else
-				// start from the first channel
+				/* start from the first channel */
 				pAd->MlmeAux.Channel = FirstChannel(pAd);
 		}
 
-		// Let BBP register at 20MHz to do scan		
+		/* Let BBP register at 20MHz to do scan */
 		RTMP_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R4, &BBPValue);
 		BBPValue &= (~0x18);
 		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R4, BBPValue);
 		DBGPRINT(RT_DEBUG_TRACE, ("SYNC - BBP R4 to 20MHz.l\n"));
 #ifdef DOT11_N_SUPPORT
 #ifdef DOT11N_DRAFT3
-		// Before scan, reset trigger event table.
+		/* Before scan, reset trigger event table. */
 		TriEventInit(pAd);
-#endif // DOT11N_DRAFT3 //
-#endif // DOT11_N_SUPPORT //
-		ScanNextChannel(pAd);
+#endif /* DOT11N_DRAFT3 */
+#endif /* DOT11_N_SUPPORT */
+
+
+		ScanNextChannel(pAd, OPMODE_STA);
 		pAd->Mlme.CntlMachine.CurrState = CNTL_WAIT_OID_LIST_SCAN;
 	} 
 	else 
@@ -312,8 +331,49 @@ VOID MlmeJoinReqAction(
 	UCHAR         ASupRate[] = {0x8C, 0x12, 0x98, 0x24, 0xb0, 0x48, 0x60, 0x6C};
 	UCHAR         ASupRateLen = sizeof(ASupRate)/sizeof(UCHAR);	
 	MLME_JOIN_REQ_STRUCT *pInfo = (MLME_JOIN_REQ_STRUCT *)(Elem->Msg);
+#ifdef WSC_STA_SUPPORT
+	BOOLEAN bHasWscIe = FALSE;
+#endif /* WSC_STA_SUPPORT */
+
+#ifdef CONFIG_PM
+#ifdef USB_SUPPORT_SELECTIVE_SUSPEND
+	POS_COOKIE  pObj = (POS_COOKIE) pAd->OS_Cookie;
+#endif /* USB_SUPPORT_SELECTIVE_SUSPEND */
+#endif /* CONFIG_PM */
+
 
 	DBGPRINT(RT_DEBUG_TRACE, ("SYNC - MlmeJoinReqAction(BSS #%ld)\n", pInfo->BssIdx));
+
+#ifdef CONFIG_PM
+#ifdef USB_SUPPORT_SELECTIVE_SUSPEND
+
+		if(!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_CPU_SUSPEND))
+		{
+			if( (RTMP_Usb_AutoPM_Get_Interface(pObj->pUsb_Dev,pObj->intf)) == 1)
+			{
+				DBGPRINT(RT_DEBUG_TRACE, ("MlmeJoinReqAction: autopm_resume success\n"));
+				RTMP_CLEAR_FLAG(pAd, fRTMP_ADAPTER_SUSPEND);
+			}
+			else if ((RTMP_Usb_AutoPM_Get_Interface(pObj->pUsb_Dev,pObj->intf)) == (-1))
+			{
+				DBGPRINT(RT_DEBUG_ERROR, ("MlmeJoinReqAction autopm_resume fail ------\n"));
+				RTMP_SET_FLAG(pAd, fRTMP_ADAPTER_SUSPEND);
+				return;
+			}
+			else
+				DBGPRINT(RT_DEBUG_TRACE, ("MlmeJoinReqAction: autopm_resume do nothing \n"));
+
+		}
+		else
+		{
+			DBGPRINT(RT_DEBUG_TRACE, ("MlmeJoinReqAction: fRTMP_ADAPTER_CPU_SUSPEND\n"));
+			return;
+		}
+
+#endif /* USB_SUPPORT_SELECTIVE_SUSPEND */
+#endif /* CONFIG_PM */
+
+
 
 #ifdef PCIE_PS_SUPPORT
     if ((OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_ADVANCE_POWER_SAVE_PCIE_DEVICE)) && 
@@ -323,18 +383,18 @@ VOID MlmeJoinReqAction(
 	{
 		RT28xxPciAsicRadioOn(pAd, GUI_IDLE_POWER_SAVE);
 	}
-#endif // PCIE_PS_SUPPORT //
+#endif /* PCIE_PS_SUPPORT */
 
-	// reset all the timers
+	/* reset all the timers */
 	RTMPCancelTimer(&pAd->MlmeAux.ScanTimer, &TimerCancelled);
 	RTMPCancelTimer(&pAd->MlmeAux.BeaconTimer, &TimerCancelled);
 
 	pBss = &pAd->MlmeAux.SsidBssTab.BssEntry[pInfo->BssIdx];
 
-	// record the desired SSID & BSSID we're waiting for
+	/* record the desired SSID & BSSID we're waiting for */
 	COPY_MAC_ADDR(pAd->MlmeAux.Bssid, pBss->Bssid);
 	
-	// If AP's SSID is not hidden, it is OK for updating ssid to MlmeAux again.
+	/* If AP's SSID is not hidden, it is OK for updating ssid to MlmeAux again. */
 	if (pBss->Hidden == 0)
 	{
 		RTMPZeroMemory(pAd->MlmeAux.Ssid, MAX_LEN_OF_SSID);
@@ -347,7 +407,7 @@ VOID MlmeJoinReqAction(
 	pAd->MlmeAux.CentralChannel = pBss->CentralChannel;
 	
 #ifdef EXT_BUILD_CHANNEL_LIST
-	// Country IE of the AP will be evaluated and will be used.
+	/* Country IE of the AP will be evaluated and will be used. */
 	if ((pAd->StaCfg.IEEE80211dClientMode != Rt802_11_D_None) &&
 		(pBss->bHasCountryIE == TRUE))
 	{
@@ -360,29 +420,29 @@ VOID MlmeJoinReqAction(
 			pAd->CommonCfg.Geography = BOTH;
 		BuildChannelListEx(pAd);
 	}
-#endif // EXT_BUILD_CHANNEL_LIST //
+#endif /* EXT_BUILD_CHANNEL_LIST */
 	
-	// Let BBP register at 20MHz to do scan		
+	/* Let BBP register at 20MHz to do scan */
 	RTMP_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R4, &BBPValue);
 	BBPValue &= (~0x18);
 	RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R4, BBPValue);
 	pAd->CommonCfg.BBPCurrentBW = BW_20;
 	DBGPRINT(RT_DEBUG_TRACE, ("SYNC - BBP R4 to 20MHz.l\n"));
 
-	// switch channel and waiting for beacon timer
+	/* switch channel and waiting for beacon timer */
 	AsicSwitchChannel(pAd, pAd->MlmeAux.Channel, FALSE);
 	AsicLockChannel(pAd, pAd->MlmeAux.Channel);
 
 #ifdef WSC_STA_SUPPORT
 #ifdef WSC_LED_SUPPORT
-	// LED indication.
+	/* LED indication. */
 	if (pAd->MlmeAux.BssType == BSS_INFRA)
 	{
 		LEDConnectionStart(pAd);
 		LEDConnectionCompletion(pAd, TRUE);
 	}
-#endif // WSC_LED_SUPPORT //
-#endif // WSC_STA_SUPPORT //
+#endif /* WSC_LED_SUPPORT */
+#endif /* WSC_STA_SUPPORT */
 
 	RTMPSetTimer(&pAd->MlmeAux.BeaconTimer, JOIN_TIMEOUT);
 
@@ -391,21 +451,21 @@ VOID MlmeJoinReqAction(
 		if (((pAd->CommonCfg.bIEEE80211H == 1) && 
             (pAd->MlmeAux.Channel > 14) && 
              RadarChannelCheck(pAd, pAd->MlmeAux.Channel))
-#ifdef CARRIER_DETECTION_SUPPORT // Roger sync Carrier             
+#ifdef CARRIER_DETECTION_SUPPORT /* Roger sync Carrier */             
              || (pAd->CommonCfg.CarrierDetect.Enable == TRUE)
-#endif // CARRIER_DETECTION_SUPPORT //
+#endif /* CARRIER_DETECTION_SUPPORT */
             )
 		{
-			//
-			// We can't send any Probe request frame to meet 802.11h.
-			//
+			/*
+			    We can't send any Probe request frame to meet 802.11h.
+			*/
 			if (pBss->Hidden == 0)
 			break;
 		}
         
-	//
-	// send probe request
-	//
+	/*
+	    send probe request
+	*/
 	NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);
 	if (NStatus == NDIS_STATUS_SUCCESS)
 	{
@@ -418,18 +478,26 @@ VOID MlmeJoinReqAction(
 		}
 		else
 		{
-			//
-			// Overwrite Support Rate, CCK rate are not allowed
-			//
+			/*
+		           Overwrite Support Rate, CCK rate are not allowed
+			*/
 			pSupRate = ASupRate;
 			SupRateLen = ASupRateLen;
 			ExtRateLen = 0;
 		}
 
 		if (pAd->MlmeAux.BssType == BSS_INFRA)
-			MgtMacHeaderInit(pAd, &Hdr80211, SUBTYPE_PROBE_REQ, 0, pAd->MlmeAux.Bssid, pAd->MlmeAux.Bssid);
+			MgtMacHeaderInit(pAd, &Hdr80211, SUBTYPE_PROBE_REQ, 0, pAd->MlmeAux.Bssid,
+#ifdef P2P_SUPPORT
+								pAd->CurrentAddress,
+#endif /* P2P_SUPPORT */
+								pAd->MlmeAux.Bssid);
 		else
-			MgtMacHeaderInit(pAd, &Hdr80211, SUBTYPE_PROBE_REQ, 0, BROADCAST_ADDR, BROADCAST_ADDR);
+			MgtMacHeaderInit(pAd, &Hdr80211, SUBTYPE_PROBE_REQ, 0, BROADCAST_ADDR,
+#ifdef P2P_SUPPORT
+								pAd->CurrentAddress,
+#endif /* P2P_SUPPORT */
+								BROADCAST_ADDR);
 
 		MakeOutgoingFrame(pOutBuffer,               &FrameLen,
 						  sizeof(HEADER_802_11),    &Hdr80211,
@@ -453,25 +521,43 @@ VOID MlmeJoinReqAction(
 		}
 		
 #ifdef WSC_STA_SUPPORT
-		// Append WSC information in probe request if WSC state is running
+		/* Append WSC information in probe request if WSC state is running */
 		if ((pAd->StaCfg.WscControl.WscEnProbeReqIE) && 
 			(pAd->StaCfg.WscControl.WscConfMode != WSC_DISABLE) &&
 			(pAd->StaCfg.WscControl.bWscTrigger
 			))
+			bHasWscIe = TRUE;
+#ifdef WSC_V2_SUPPORT
+		else if ((pAd->StaCfg.WscControl.WscEnProbeReqIE) && 
+			(pAd->StaCfg.WscControl.WscV2Info.bEnableWpsV2))
+			bHasWscIe = TRUE;
+#endif /* WSC_V2_SUPPORT */
+
+		if (bHasWscIe)
 		{
-			UCHAR		WscBuf[256], WscIeLen = 0;
+			UCHAR		/* WscBuf[256], */ WscIeLen = 0;
+			UCHAR		*WscBuf = NULL;
 			ULONG 		WscTmpLen = 0;
 
-			NdisZeroMemory(WscBuf, 256);
-			WscBuildProbeReqIE(pAd, &WscBuf[0], &WscIeLen);
+			/* allocate memory */
+			os_alloc_mem(NULL, (UCHAR **)&WscBuf, 256);
+			if (WscBuf != NULL)
+			{
+				NdisZeroMemory(WscBuf, 256);
+				WscBuildProbeReqIE(pAd, STA_MODE, WscBuf, &WscIeLen);
 
-			MakeOutgoingFrame(pOutBuffer + FrameLen,              &WscTmpLen,
-							WscIeLen,                             &WscBuf,
-							END_OF_ARGS);
+				MakeOutgoingFrame(pOutBuffer + FrameLen,              &WscTmpLen,
+								WscIeLen,                             WscBuf,
+								END_OF_ARGS);
 
-			FrameLen += WscTmpLen;
+				FrameLen += WscTmpLen;
+				os_free_mem(NULL, WscBuf);
+			}
+			else
+				DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n", __FUNCTION__));
 		}
-#endif // WSC_STA_SUPPORT //
+#endif /* WSC_STA_SUPPORT */
+
 
 #ifdef WPA_SUPPLICANT_SUPPORT
 		if ((pAd->OpMode == OPMODE_STA) &&
@@ -486,7 +572,7 @@ VOID MlmeJoinReqAction(
 
 			FrameLen += WpsTmpLen;
 		}
-#endif // WPA_SUPPLICANT_SUPPORT //
+#endif /* WPA_SUPPLICANT_SUPPORT */
 
 		MiniportMMRequest(pAd, 0, pOutBuffer, FrameLen);
 		MlmeFreeMemory(pAd, pOutBuffer);
@@ -512,14 +598,23 @@ VOID MlmeStartReqAction(
 	UCHAR         Ssid[MAX_LEN_OF_SSID], SsidLen; 
 	BOOLEAN       TimerCancelled;
 
-	// New for WPA security suites
-	UCHAR						VarIE[MAX_VIE_LEN]; 	// Total VIE length = MAX_VIE_LEN - -5
+	/* New for WPA security suites */
+	UCHAR						*VarIE = NULL;
 	NDIS_802_11_VARIABLE_IEs	*pVIE = NULL;
 	LARGE_INTEGER				TimeStamp;
 	BOOLEAN Privacy;
 	USHORT Status;
 
-	// Init Variable IE structure
+
+	/* allocate memory */
+	os_alloc_mem(NULL, (UCHAR **)&VarIE, MAX_VIE_LEN);
+	if (VarIE == NULL)
+	{
+		DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n", __FUNCTION__));
+		return;
+	}
+
+	/* Init Variable IE structure */
 	pVIE = (PNDIS_802_11_VARIABLE_IEs) VarIE;
 	pVIE->Length = 0;
 	TimeStamp.u.LowPart  = 0;
@@ -528,19 +623,19 @@ VOID MlmeStartReqAction(
 	if ((MlmeStartReqSanity(pAd, Elem->Msg, Elem->MsgLen, (PCHAR)Ssid, &SsidLen)) &&
 		(CHAN_PropertyCheck(pAd, pAd->MlmeAux.Channel, CHANNEL_NO_IBSS) == FALSE))
 	{
-		// reset all the timers
+		/* reset all the timers */
 		RTMPCancelTimer(&pAd->MlmeAux.ScanTimer, &TimerCancelled);
 		RTMPCancelTimer(&pAd->MlmeAux.BeaconTimer, &TimerCancelled);
 
-		//
-		// Start a new IBSS. All IBSS parameters are decided now....
-		//
+		/*
+		    Start a new IBSS. All IBSS parameters are decided now....
+		*/
 		DBGPRINT(RT_DEBUG_TRACE, ("MlmeStartReqAction - Start a new IBSS. All IBSS parameters are decided now.... \n"));
 		pAd->MlmeAux.BssType           = BSS_ADHOC;
 		NdisMoveMemory(pAd->MlmeAux.Ssid, Ssid, SsidLen); 
 		pAd->MlmeAux.SsidLen           = SsidLen;
 
-		// generate a radom number as BSSID
+		/* generate a radom number as BSSID */
 		MacAddrRandomBssid(pAd, pAd->MlmeAux.Bssid);
 		DBGPRINT(RT_DEBUG_TRACE, ("MlmeStartReqAction - generate a radom number as BSSID \n"));
 
@@ -566,17 +661,17 @@ VOID MlmeStartReqAction(
 		{
 			RTMPUpdateHTIE(&pAd->CommonCfg.DesiredHtPhy, &pAd->StaCfg.DesiredHtPhyInfo.MCSSet[0], &pAd->MlmeAux.HtCapability, &pAd->MlmeAux.AddHtInfo);
 			pAd->MlmeAux.HtCapabilityLen = sizeof(HT_CAPABILITY_IE);
-			// Not turn pAd->StaActive.SupportedHtPhy.bHtEnable = TRUE here.
+			/* Not turn pAd->StaActive.SupportedHtPhy.bHtEnable = TRUE here. */
 			DBGPRINT(RT_DEBUG_TRACE, ("SYNC -pAd->StaActive.SupportedHtPhy.bHtEnable = TRUE\n"));
 		}
 		else
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 		{
 			pAd->MlmeAux.HtCapabilityLen = 0;
 			pAd->StaActive.SupportedPhyInfo.bHtEnable = FALSE;
 			NdisZeroMemory(&pAd->StaActive.SupportedPhyInfo.MCSSet[0], 16);
 		}
-		// temporarily not support QOS in IBSS
+		/* temporarily not support QOS in IBSS */
 		NdisZeroMemory(&pAd->MlmeAux.APEdcaParm, sizeof(EDCA_PARM));
 		NdisZeroMemory(&pAd->MlmeAux.APQbssLoad, sizeof(QBSS_LOAD_PARM));
 		NdisZeroMemory(&pAd->MlmeAux.APQosCapability, sizeof(QOS_CAPABILITY_PARM));
@@ -598,6 +693,9 @@ VOID MlmeStartReqAction(
 		Status = MLME_INVALID_FORMAT;
 		MlmeEnqueue(pAd, MLME_CNTL_STATE_MACHINE, MT2_START_CONF, 2, &Status, 0);
 	}
+
+	if (VarIE != NULL)
+		os_free_mem(NULL, VarIE);
 }
 
 /* 
@@ -611,8 +709,9 @@ VOID PeerBeaconAtScanAction(
 	IN MLME_QUEUE_ELEM *Elem) 
 {
 	UCHAR           Bssid[MAC_ADDR_LEN], Addr2[MAC_ADDR_LEN];
-	UCHAR           Ssid[MAX_LEN_OF_SSID], BssType, Channel = 0, NewChannel,
-					SsidLen, DtimCount, DtimPeriod, BcastFlag, MessageToMe;
+	UCHAR           /* Ssid[MAX_LEN_OF_SSID], */ BssType, Channel = 0, NewChannel,
+					SsidLen=0, DtimCount, DtimPeriod, BcastFlag, MessageToMe;
+	UCHAR			*Ssid = NULL;
 	CF_PARM         CfParm;
 	USHORT          BeaconPeriod, AtimWin, CapabilityInfo;
 	PFRAME_802_11   pFrame;
@@ -627,26 +726,43 @@ VOID PeerBeaconAtScanAction(
 	QBSS_LOAD_PARM  QbssLoad;
 	QOS_CAPABILITY_PARM QosCapability;
 	ULONG						RalinkIe;
-	UCHAR						VarIE[MAX_VIE_LEN];		// Total VIE length = MAX_VIE_LEN - -5
+	UCHAR						*VarIE = NULL;
 	NDIS_802_11_VARIABLE_IEs	*pVIE = NULL;
-	HT_CAPABILITY_IE		HtCapability;
-	ADD_HT_INFO_IE		AddHtInfo;	// AP might use this additional ht info IE 
+	HT_CAPABILITY_IE		*pHtCapability = NULL;
+	ADD_HT_INFO_IE		*pAddHtInfo = NULL;	/* AP might use this additional ht info IE */
 	UCHAR			HtCapabilityLen = 0, PreNHtCapabilityLen = 0;
 	UCHAR			AddHtInfoLen;
 	UCHAR			NewExtChannelOffset = 0xff;
 
 	EXT_CAP_INFO_ELEMENT	ExtCapInfo;
 
+#ifdef P2P_SUPPORT
+	if (P2P_GO_ON(pAd))
+		return;
+#endif /* P2P_SUPPORT */
+	/* allocate memory */
+	os_alloc_mem(NULL, (UCHAR **)&Ssid, MAX_LEN_OF_SSID);
+	if (Ssid == NULL)
+		goto LabelErr;
+	os_alloc_mem(NULL, (UCHAR **)&VarIE, MAX_VIE_LEN);
+	if (VarIE == NULL)
+		goto LabelErr;
+	os_alloc_mem(NULL, (UCHAR **)&pHtCapability, sizeof(HT_CAPABILITY_IE));
+	if (pHtCapability == NULL)
+		goto LabelErr;
+	os_alloc_mem(NULL, (UCHAR **)&pAddHtInfo, sizeof(ADD_HT_INFO_IE));
+	if (pAddHtInfo == NULL)
+		goto LabelErr;
 
 	NdisZeroMemory(Ssid, MAX_LEN_OF_SSID);
 	pFrame = (PFRAME_802_11) Elem->Msg;
-	// Init Variable IE structure
+	/* Init Variable IE structure */
 	pVIE = (PNDIS_802_11_VARIABLE_IEs) VarIE;
 	pVIE->Length = 0;
 #ifdef DOT11_N_SUPPORT
-    RTMPZeroMemory(&HtCapability, sizeof(HtCapability));
-	RTMPZeroMemory(&AddHtInfo, sizeof(ADD_HT_INFO_IE));
-#endif // DOT11_N_SUPPORT //
+    RTMPZeroMemory(pHtCapability, sizeof(HT_CAPABILITY_IE));
+	RTMPZeroMemory(pAddHtInfo, sizeof(ADD_HT_INFO_IE));
+#endif /* DOT11_N_SUPPORT */
 
 	NdisZeroMemory(&QbssLoad, sizeof(QBSS_LOAD_PARM)); /* woody */
 	if (PeerBeaconAndProbeRspSanity(pAd, 
@@ -683,11 +799,11 @@ VOID PeerBeaconAtScanAction(
 								&HtCapabilityLen,
 #ifdef CONFIG_STA_SUPPORT
 								&PreNHtCapabilityLen,
-#endif // CONFIG_STA_SUPPORT //
-								&HtCapability,
+#endif /* CONFIG_STA_SUPPORT */
+								pHtCapability,
 								&ExtCapInfo,
 								&AddHtInfoLen,
-								&AddHtInfo,
+								pAddHtInfo,
 								&NewExtChannelOffset,
 								&LenVIE,
 								pVIE)) 
@@ -701,20 +817,29 @@ VOID PeerBeaconAtScanAction(
 
 		Rssi = RTMPMaxRssi(pAd, ConvertToRssi(pAd, Elem->Rssi0, RSSI_0), ConvertToRssi(pAd, Elem->Rssi1, RSSI_1), ConvertToRssi(pAd, Elem->Rssi2, RSSI_2));
 
+#ifdef P2P_SUPPORT
+		if (!P2P_CLI_ON(pAd))
+		{
+			if ((IS_P2P_SCAN(pAd)) || (IS_P2P_SEARCH(pAd)))
+			{
+				MlmeEnqueue(pAd, P2P_DISC_STATE_MACHINE, P2P_DISC_PEER_PROB_RSP, Elem->MsgLen, Elem->Msg, Channel);
+			}
+		}
+#endif /* P2P_SUPPORT */
 
 #ifdef DOT11_N_SUPPORT
 		if ((HtCapabilityLen > 0) || (PreNHtCapabilityLen > 0))
 			HtCapabilityLen = SIZE_HT_CAP_IE;
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 
 		Idx = BssTableSetEntry(pAd, &pAd->ScanTab, Bssid, (PCHAR)Ssid, SsidLen, BssType, BeaconPeriod,
-					  &CfParm, AtimWin, CapabilityInfo, SupRate, SupRateLen, ExtRate, ExtRateLen,  &HtCapability,
-					 &AddHtInfo, HtCapabilityLen, AddHtInfoLen, NewExtChannelOffset, Channel, Rssi, TimeStamp, CkipFlag, 
+					  &CfParm, AtimWin, CapabilityInfo, SupRate, SupRateLen, ExtRate, ExtRateLen,  pHtCapability,
+					 pAddHtInfo, HtCapabilityLen, AddHtInfoLen, NewExtChannelOffset, Channel, Rssi, TimeStamp, CkipFlag, 
 					 &EdcaParm, &QosCapability, &QbssLoad, LenVIE, pVIE);
 #ifdef DOT11_N_SUPPORT
-		// TODO: Check for things need to do when enable "DOT11V_WNM_SUPPORT"
+		/* TODO: Check for things need to do when enable "DOT11V_WNM_SUPPORT" */
 #ifdef DOT11N_DRAFT3
-		// Check if this scan channel is the effeced channel
+		/* Check if this scan channel is the effeced channel */
 		if (INFRA_ON(pAd) 
 			&& (pAd->CommonCfg.bBssCoexEnable == TRUE) 
 			&& ((Channel > 0) && (Channel <= 14)))
@@ -740,14 +865,14 @@ VOID PeerBeaconAtScanAction(
 					UCHAR RegClass;
 					OVERLAP_BSS_SCAN_IE	BssScan;
 
-					// Read Beacon's Reg Class IE if any.
+					/* Read Beacon's Reg Class IE if any. */
 					PeerBeaconAndProbeRspSanity2(pAd, Elem->Msg, Elem->MsgLen, &BssScan, &RegClass);
-					TriEventTableSetEntry(pAd, &pAd->CommonCfg.TriggerEventTab, Bssid, &HtCapability, HtCapabilityLen, RegClass, Channel);
+					TriEventTableSetEntry(pAd, &pAd->CommonCfg.TriggerEventTab, Bssid, pHtCapability, HtCapabilityLen, RegClass, Channel);
 				}
 			}
 		}
-#endif // DOT11N_DRAFT3 //
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11N_DRAFT3 */
+#endif /* DOT11_N_SUPPORT */
 		if (Idx != BSS_NOT_FOUND)
 		{
 			PBSS_ENTRY	pBssEntry = &pAd->ScanTab.BssEntry[Idx];
@@ -777,11 +902,26 @@ VOID PeerBeaconAtScanAction(
 #ifdef LINUX
 #ifdef RT_CFG80211_SUPPORT
 		RT_CFG80211_SCANNING_INFORM(pAd, Idx, Elem->Channel, (UCHAR *)pFrame,
-									Elem->MsgLen, Rssi, MEM_ALLOC_FLAG);
-#endif // RT_CFG80211_SUPPORT //
-#endif // LINUX //
+									Elem->MsgLen, Rssi);
+#endif /* RT_CFG80211_SUPPORT */
+#endif /* LINUX */
 	}
-	// sanity check fail, ignored
+	/* sanity check fail, ignored */
+	goto LabelOK;
+
+LabelErr:
+	DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n", __FUNCTION__));
+
+LabelOK:
+	if (Ssid != NULL)
+		os_free_mem(NULL, Ssid);
+	if (VarIE != NULL)
+		os_free_mem(NULL, VarIE);
+	if (pHtCapability != NULL)
+		os_free_mem(NULL, pHtCapability);
+	if (pAddHtInfo != NULL)
+		os_free_mem(NULL, pAddHtInfo);
+	return;
 }
 
 /* 
@@ -795,8 +935,9 @@ VOID PeerBeaconAtJoinAction(
 	IN MLME_QUEUE_ELEM *Elem) 
 {
 	UCHAR         Bssid[MAC_ADDR_LEN], Addr2[MAC_ADDR_LEN];
-	UCHAR         Ssid[MAX_LEN_OF_SSID], SsidLen, BssType, Channel, MessageToMe, 
+	UCHAR         /* Ssid[MAX_LEN_OF_SSID], */ SsidLen=0, BssType, Channel, MessageToMe, 
 				  DtimCount, DtimPeriod, BcastFlag, NewChannel; 
+	UCHAR			*Ssid = NULL;
 	LARGE_INTEGER TimeStamp;
 	USHORT        BeaconPeriod, AtimWin, CapabilityInfo;
 	CF_PARM       Cf;
@@ -811,27 +952,42 @@ VOID PeerBeaconAtJoinAction(
 	QBSS_LOAD_PARM  QbssLoad;
 	QOS_CAPABILITY_PARM QosCapability;
 	USHORT        Status;
-	UCHAR						VarIE[MAX_VIE_LEN];		// Total VIE length = MAX_VIE_LEN - -5
+	UCHAR						*VarIE = NULL;
 	NDIS_802_11_VARIABLE_IEs	*pVIE = NULL;
 	ULONG           RalinkIe;
 	ULONG         Idx = 0;
 	CHAR			Rssi = 0;
-	HT_CAPABILITY_IE		HtCapability;
-	ADD_HT_INFO_IE		AddHtInfo;	// AP might use this additional ht info IE 
+	HT_CAPABILITY_IE		*pHtCapability = NULL;
+	ADD_HT_INFO_IE		*pAddHtInfo = NULL;	/* AP might use this additional ht info IE */
 	UCHAR				HtCapabilityLen = 0, PreNHtCapabilityLen = 0;
 	UCHAR			AddHtInfoLen;
 	UCHAR			NewExtChannelOffset = 0xff;
 #ifdef DOT11_N_SUPPORT
 	UCHAR			CentralChannel;
 	BOOLEAN			bAllowNrate = FALSE;
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 	EXT_CAP_INFO_ELEMENT	ExtCapInfo;
 
-	// Init Variable IE structure
+
+	/* allocate memory */
+	os_alloc_mem(NULL, (UCHAR **)&Ssid, MAX_LEN_OF_SSID);
+	if (Ssid == NULL)
+		goto LabelErr;
+	os_alloc_mem(NULL, (UCHAR **)&VarIE, MAX_VIE_LEN);
+	if (VarIE == NULL)
+		goto LabelErr;
+	os_alloc_mem(NULL, (UCHAR **)&pHtCapability, sizeof(HT_CAPABILITY_IE));
+	if (pHtCapability == NULL)
+		goto LabelErr;
+	os_alloc_mem(NULL, (UCHAR **)&pAddHtInfo, sizeof(ADD_HT_INFO_IE));
+	if (pAddHtInfo == NULL)
+		goto LabelErr;
+
+	/* Init Variable IE structure */
 	pVIE = (PNDIS_802_11_VARIABLE_IEs) VarIE;
 	pVIE->Length = 0;
-    RTMPZeroMemory(&HtCapability, sizeof(HtCapability));
-	RTMPZeroMemory(&AddHtInfo, sizeof(ADD_HT_INFO_IE));
+    RTMPZeroMemory(pHtCapability, sizeof(HT_CAPABILITY_IE));
+	RTMPZeroMemory(pAddHtInfo, sizeof(ADD_HT_INFO_IE));
 
 	EdcaParm.bValid = FALSE;
 	if (PeerBeaconAndProbeRspSanity(pAd, 
@@ -867,30 +1023,55 @@ VOID PeerBeaconAtJoinAction(
 								&RalinkIe,
 								&HtCapabilityLen,
 								&PreNHtCapabilityLen,
-								&HtCapability,
+								pHtCapability,
 								&ExtCapInfo,
 								&AddHtInfoLen,
-								&AddHtInfo,
+								pAddHtInfo,
 								&NewExtChannelOffset,
 								&LenVIE,
 								pVIE)) 
 	{
-		// Disqualify 11b only adhoc when we are in 11g only adhoc mode
+		/* Disqualify 11b only adhoc when we are in 11g only adhoc mode */
 		if ((BssType == BSS_ADHOC) && (pAd->CommonCfg.PhyMode == PHY_11G) && ((SupRateLen+ExtRateLen)< 12))
-			return;
+			goto LabelOK;
 
-		// BEACON from desired BSS/IBSS found. We should be able to decide most
-		// BSS parameters here.
-		// Q. But what happen if this JOIN doesn't conclude a successful ASSOCIATEION?
-		//    Do we need to receover back all parameters belonging to previous BSS?
-		// A. Should be not. There's no back-door recover to previous AP. It still need
-		//    a new JOIN-AUTH-ASSOC sequence.
+#ifdef P2P_SUPPORT
+/*		if ((pAd->P2pCfg.P2PDiscoProvState == P2P_DISC_SCAN) || (pAd->P2pCfg.P2PDiscoProvState == P2P_DISC_SEARCH)) */
+		if (P2P_INF_ON(pAd))
+		{
+			P2pPeerBeaconAtJoinAction(pAd, Elem, Bssid);
+		}
+#endif /* P2P_SUPPORT */
+		/*
+		    BEACON from desired BSS/IBSS found. We should be able to decide most
+		    BSS parameters here.
+		    Q. But what happen if this JOIN doesn't conclude a successful ASSOCIATEION?
+		        Do we need to receover back all parameters belonging to previous BSS?
+		    A. Should be not. There's no back-door recover to previous AP. It still need
+		        a new JOIN-AUTH-ASSOC sequence.
+		*/
 		if (MAC_ADDR_EQUAL(pAd->MlmeAux.Bssid, Bssid)) 
 		{
 			DBGPRINT(RT_DEBUG_TRACE, ("SYNC - receive desired BEACON at JoinWaitBeacon... Channel = %d\n", Channel));
 			RTMPCancelTimer(&pAd->MlmeAux.BeaconTimer, &TimerCancelled);
 
-			// Update RSSI to prevent No signal display when cards first initialized
+#ifdef P2P_SUPPORT
+			if (IS_P2P_ENROLLEE(pAd))
+			{
+				int p2pIdx;
+				DBGPRINT(RT_DEBUG_ERROR, ("Recv desired Beacon, update SSID[%d][%s]\n", SsidLen, Ssid));
+				pAd->MlmeAux.SsidLen = SsidLen;
+				NdisMoveMemory(pAd->MlmeAux.Ssid, Ssid, pAd->MlmeAux.SsidLen);
+
+				p2pIdx = P2pGroupTabSearch(pAd, Addr2);
+				if (p2pIdx < MAX_P2P_GROUP_SIZE)
+				{
+					pAd->P2pTable.Client[p2pIdx].SsidLen = SsidLen;
+					NdisMoveMemory(pAd->P2pTable.Client[p2pIdx].Ssid, Ssid, pAd->P2pTable.Client[p2pIdx].SsidLen);
+				}
+			}
+#endif /* P2P_SUPPORT */
+			/* Update RSSI to prevent No signal display when cards first initialized */
 			pAd->StaCfg.RssiSample.LastRssi0	= ConvertToRssi(pAd, Elem->Rssi0, RSSI_0);
 			pAd->StaCfg.RssiSample.LastRssi1	= ConvertToRssi(pAd, Elem->Rssi1, RSSI_1);
 			pAd->StaCfg.RssiSample.LastRssi2	= ConvertToRssi(pAd, Elem->Rssi2, RSSI_2);
@@ -901,10 +1082,10 @@ VOID PeerBeaconAtJoinAction(
 			pAd->StaCfg.RssiSample.AvgRssi2	= pAd->StaCfg.RssiSample.LastRssi2;
 			pAd->StaCfg.RssiSample.AvgRssi2X8	= pAd->StaCfg.RssiSample.AvgRssi2 << 3;
 
-			//
-			// We need to check if SSID only set to any, then we can record the current SSID.
-			// Otherwise will cause hidden SSID association failed. 
-			//
+			/*
+			  We need to check if SSID only set to any, then we can record the current SSID.
+			  Otherwise will cause hidden SSID association failed. 
+			*/
 			if (pAd->MlmeAux.SsidLen == 0)
 			{
 				NdisMoveMemory(pAd->MlmeAux.Ssid, Ssid, SsidLen);
@@ -918,8 +1099,8 @@ VOID PeerBeaconAtJoinAction(
 				{
 					Rssi = RTMPMaxRssi(pAd, ConvertToRssi(pAd, Elem->Rssi0, RSSI_0), ConvertToRssi(pAd, Elem->Rssi1, RSSI_1), ConvertToRssi(pAd, Elem->Rssi2, RSSI_2));
 					Idx = BssTableSetEntry(pAd, &pAd->ScanTab, Bssid, (CHAR *) Ssid, SsidLen, BssType, BeaconPeriod,
-										&Cf, AtimWin, CapabilityInfo, SupRate, SupRateLen, ExtRate, ExtRateLen,  &HtCapability,
-										&AddHtInfo, HtCapabilityLen, AddHtInfoLen, NewExtChannelOffset, Channel, Rssi, TimeStamp, CkipFlag,
+										&Cf, AtimWin, CapabilityInfo, SupRate, SupRateLen, ExtRate, ExtRateLen,  pHtCapability,
+										pAddHtInfo, HtCapabilityLen, AddHtInfoLen, NewExtChannelOffset, Channel, Rssi, TimeStamp, CkipFlag,
 										&EdcaParm, &QosCapability, &QbssLoad, LenVIE, pVIE);
 					if (Idx != BSS_NOT_FOUND)
 					{
@@ -937,14 +1118,23 @@ VOID PeerBeaconAtJoinAction(
 				}
 				else
 				{
+#ifdef WPA_SUPPLICANT_SUPPORT
+					if (pAd->StaCfg.WpaSupplicantUP & WPA_SUPPLICANT_ENABLE_WPS) ;
+					else
+#endif /* WPA_SUPPLICANT_SUPPORT */
 #ifdef WSC_STA_SUPPORT
-					if (pAd->StaCfg.WscControl.WscState == WSC_STATE_OFF)
+					if ((pAd->StaCfg.WscControl.WscState != WSC_STATE_OFF)
+						)
+						;
+					else
+#endif /* WSC_STA_SUPPORT */
 					{
-#endif // WSC_STA_SUPPORT //
 
-						// Check if AP privacy is different Staion, if yes, 
-						// start a new scan and ignore the frame 
-						// (often happen during AP change privacy at short time)
+						/*
+						    Check if AP privacy is different Staion, if yes, 
+						    start a new scan and ignore the frame 
+						    (often happen during AP change privacy at short time)
+						*/
 						if ((((pAd->StaCfg.WepStatus != Ndis802_11WEPDisabled) << 4) ^
 							CapabilityInfo) &
 							0x0010)
@@ -955,15 +1145,13 @@ VOID PeerBeaconAtJoinAction(
 							MlmeEnqueue(pAd, SYNC_STATE_MACHINE, MT2_MLME_SCAN_REQ, sizeof(MLME_SCAN_REQ_STRUCT), &ScanReq, 0);
 							pAd->Mlme.CntlMachine.CurrState = CNTL_WAIT_OID_LIST_SCAN;
 							NdisGetSystemUpTime(&pAd->StaCfg.LastScanTime);
-							return;
+							goto LabelOK;
 						}
-#ifdef WSC_STA_SUPPORT
 					}
-#endif // WSC_STA_SUPPORT //
 
-					//
-					// Multiple SSID case, used correct CapabilityInfo
-					//
+					/*
+					    Multiple SSID case, used correct CapabilityInfo
+					*/
 					CapabilityInfo = pAd->ScanTab.BssEntry[Idx].CapabilityInfo;
 				}
 			}
@@ -971,14 +1159,24 @@ VOID PeerBeaconAtJoinAction(
 			pAd->MlmeAux.CapabilityInfo = CapabilityInfo & SUPPORTED_CAPABILITY_INFO;
 			pAd->MlmeAux.BssType = BssType;
 			pAd->MlmeAux.BeaconPeriod = BeaconPeriod;
+
+			/*
+				Some AP may carrys wrong beacon interval (ex. 0) in Beacon IE.
+				We need to check here for preventing divided by 0 error.
+			*/
+			if (pAd->MlmeAux.BeaconPeriod == 0)
+				pAd->MlmeAux.BeaconPeriod = 100;
+			
 			pAd->MlmeAux.Channel = Channel;
 			pAd->MlmeAux.AtimWin = AtimWin;
 			pAd->MlmeAux.CfpPeriod = Cf.CfpPeriod;
 			pAd->MlmeAux.CfpMaxDuration = Cf.CfpMaxDuration;
 			pAd->MlmeAux.APRalinkIe = RalinkIe;
 
-			// Copy AP's supported rate to MlmeAux for creating assoication request
-			// Also filter out not supported rate
+			/* 
+			    Copy AP's supported rate to MlmeAux for creating assoication request
+			    Also filter out not supported rate
+			*/
 			pAd->MlmeAux.SupRateLen = SupRateLen;
 			NdisMoveMemory(pAd->MlmeAux.SupRate, SupRate, SupRateLen);
 			RTMPCheckRates(pAd, pAd->MlmeAux.SupRate, &pAd->MlmeAux.SupRateLen);
@@ -997,7 +1195,7 @@ VOID PeerBeaconAtJoinAction(
 			DBGPRINT(RT_DEBUG_TRACE, ("MlmeAux.ExtCapInfo=%d\n", pAd->MlmeAux.ExtCapInfo.BssCoexistMgmtSupport));
 			if (pAd->CommonCfg.bBssCoexEnable == TRUE)
 				pAd->CommonCfg.ExtCapIE.BssCoexistMgmtSupport = 1;
-#endif // DOT11N_DRAFT3 //
+#endif /* DOT11N_DRAFT3 */
 
 			if (((pAd->StaCfg.WepStatus != Ndis802_11WEPEnabled) && (pAd->StaCfg.WepStatus != Ndis802_11Encryption2Enabled))
 				|| (pAd->CommonCfg.HT_DisallowTKIP == FALSE))
@@ -1011,51 +1209,51 @@ VOID PeerBeaconAtJoinAction(
 			pAd->MlmeAux.HtCapabilityLen = HtCapabilityLen;
 
 			RTMPZeroMemory(&pAd->MlmeAux.HtCapability, SIZE_HT_CAP_IE);
-			// filter out un-supported ht rates
+			/* filter out un-supported ht rates */
 			if (((HtCapabilityLen > 0) || (PreNHtCapabilityLen > 0)) && 
 				(pAd->StaCfg.DesiredHtPhyInfo.bHtEnable) &&
 				((pAd->CommonCfg.PhyMode >= PHY_11ABGN_MIXED) && bAllowNrate))
 			{
-   				RTMPMoveMemory(&pAd->MlmeAux.AddHtInfo, &AddHtInfo, SIZE_ADD_HT_INFO_IE);
+   				RTMPMoveMemory(&pAd->MlmeAux.AddHtInfo, pAddHtInfo, SIZE_ADD_HT_INFO_IE);
 				
-                		// StaActive.SupportedHtPhy.MCSSet stores Peer AP's 11n Rx capability
-				NdisMoveMemory(pAd->StaActive.SupportedPhyInfo.MCSSet, HtCapability.MCSSet, 16);
+                		/* StaActive.SupportedHtPhy.MCSSet stores Peer AP's 11n Rx capability */
+				NdisMoveMemory(pAd->StaActive.SupportedPhyInfo.MCSSet, pHtCapability->MCSSet, 16);
 				pAd->MlmeAux.NewExtChannelOffset = NewExtChannelOffset;
 				pAd->MlmeAux.HtCapabilityLen = SIZE_HT_CAP_IE;
 				pAd->StaActive.SupportedPhyInfo.bHtEnable = TRUE;
 				if (PreNHtCapabilityLen > 0)
 					pAd->StaActive.SupportedPhyInfo.bPreNHt = TRUE;
-				RTMPCheckHt(pAd, BSSID_WCID, &HtCapability, &AddHtInfo);
-				// Copy AP Parameter to StaActive.  This is also in LinkUp.
+				RTMPCheckHt(pAd, BSSID_WCID, pHtCapability, pAddHtInfo);
+				/* Copy AP Parameter to StaActive.  This is also in LinkUp. */
 				DBGPRINT(RT_DEBUG_TRACE, ("PeerBeaconAtJoinAction! (MpduDensity=%d, MaxRAmpduFactor=%d, BW=%d)\n", 
-					pAd->StaActive.SupportedHtPhy.MpduDensity, pAd->StaActive.SupportedHtPhy.MaxRAmpduFactor, HtCapability.HtCapInfo.ChannelWidth));
+					pAd->StaActive.SupportedHtPhy.MpduDensity, pAd->StaActive.SupportedHtPhy.MaxRAmpduFactor, pHtCapability->HtCapInfo.ChannelWidth));
 				
 				if (AddHtInfoLen > 0)
 				{
-					CentralChannel = AddHtInfo.ControlChan;
-		 			// Check again the Bandwidth capability of this AP.
-		 			if ((AddHtInfo.ControlChan > 2)&& (AddHtInfo.AddHtInfo.ExtChanOffset == EXTCHA_BELOW) && (HtCapability.HtCapInfo.ChannelWidth == BW_40))
+					CentralChannel = pAddHtInfo->ControlChan;
+		 			/* Check again the Bandwidth capability of this AP. */
+		 			if ((pAddHtInfo->ControlChan > 2)&& (pAddHtInfo->AddHtInfo.ExtChanOffset == EXTCHA_BELOW) && (pHtCapability->HtCapInfo.ChannelWidth == BW_40))
 		 			{
-		 				CentralChannel = AddHtInfo.ControlChan - 2;
+		 				CentralChannel = pAddHtInfo->ControlChan - 2;
 		 			}
-		 			else if ((AddHtInfo.AddHtInfo.ExtChanOffset == EXTCHA_ABOVE) && (HtCapability.HtCapInfo.ChannelWidth == BW_40))
+		 			else if ((pAddHtInfo->AddHtInfo.ExtChanOffset == EXTCHA_ABOVE) && (pHtCapability->HtCapInfo.ChannelWidth == BW_40))
 		 			{
-		 				CentralChannel = AddHtInfo.ControlChan + 2;
+		 				CentralChannel = pAddHtInfo->ControlChan + 2;
 		 			}
                     
-                    // Check Error .
+                    /* Check Error . */
 					if (pAd->MlmeAux.CentralChannel != CentralChannel)
-		 				DBGPRINT(RT_DEBUG_ERROR, ("PeerBeaconAtJoinAction HT===>Beacon Central Channel = %d, Control Channel = %d. Mlmeaux CentralChannel = %d\n", CentralChannel, AddHtInfo.ControlChan, pAd->MlmeAux.CentralChannel));
+		 				DBGPRINT(RT_DEBUG_ERROR, ("PeerBeaconAtJoinAction HT===>Beacon Central Channel = %d, Control Channel = %d. Mlmeaux CentralChannel = %d\n", CentralChannel, pAddHtInfo->ControlChan, pAd->MlmeAux.CentralChannel));
 
-		 			DBGPRINT(RT_DEBUG_TRACE, ("PeerBeaconAtJoinAction HT===>Central Channel = %d, Control Channel = %d,  .\n", CentralChannel, AddHtInfo.ControlChan));
+		 			DBGPRINT(RT_DEBUG_TRACE, ("PeerBeaconAtJoinAction HT===>Central Channel = %d, Control Channel = %d,  .\n", CentralChannel, pAddHtInfo->ControlChan));
 
 				}
 				
 			}
 			else
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 			{
-   				// To prevent error, let legacy AP must have same CentralChannel and Channel.
+   				/* To prevent error, let legacy AP must have same CentralChannel and Channel. */
 				if ((HtCapabilityLen == 0) && (PreNHtCapabilityLen == 0))
 					pAd->MlmeAux.CentralChannel = pAd->MlmeAux.Channel;
 
@@ -1068,11 +1266,11 @@ VOID PeerBeaconAtJoinAction(
 
 			RTMPUpdateMlmeRate(pAd);
 	
-			// copy QOS related information
+			/* copy QOS related information */
 			if ((pAd->CommonCfg.bWmmCapable)
 #ifdef DOT11_N_SUPPORT
 				 || (pAd->CommonCfg.PhyMode >= PHY_11ABGN_MIXED)
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 				)
 			{
 				NdisMoveMemory(&pAd->MlmeAux.APEdcaParm, &EdcaParm, sizeof(EDCA_PARM));
@@ -1091,10 +1289,10 @@ VOID PeerBeaconAtJoinAction(
 
 			if (AironetCellPowerLimit != 0xFF)
 			{
-				//We need to change our TxPower for CCX 2.0 AP Control of Client Transmit Power
+				/* We need to change our TxPower for CCX 2.0 AP Control of Client Transmit Power */
 				ChangeToCellPowerLimit(pAd, AironetCellPowerLimit);
 			}
-			else  //Used the default TX Power Percentage.
+			else  /* Used the default TX Power Percentage. */
 				pAd->CommonCfg.TxPowerPercentage = pAd->CommonCfg.TxPowerDefault;
 
 			if (pAd->StaCfg.BssType == BSS_INFRA)
@@ -1103,6 +1301,11 @@ VOID PeerBeaconAtJoinAction(
 					Ad-hoc call this function in LinkUp
 				*/
 				InitChannelRelatedValue(pAd);
+				{
+					AsicSetBssid(pAd, pAd->MlmeAux.Bssid);
+				}
+				/* Add BSSID to WCID search table */
+				AsicUpdateRxWCIDTable(pAd, BSSID_WCID, pAd->MlmeAux.Bssid);	
 			}
 
 			pAd->Mlme.SyncMachine.CurrState = SYNC_IDLE;
@@ -1112,13 +1315,29 @@ VOID PeerBeaconAtJoinAction(
 #ifdef LINUX
 #ifdef RT_CFG80211_SUPPORT
 			RT_CFG80211_SCANNING_INFORM(pAd, Idx, Elem->Channel, Elem->Msg,
-										Elem->MsgLen, Rssi, MEM_ALLOC_FLAG);
-#endif // RT_CFG80211_SUPPORT //
-#endif // LINUX //
+										Elem->MsgLen, Rssi);
+#endif /* RT_CFG80211_SUPPORT */
+#endif /* LINUX */
 		}
-		// not to me BEACON, ignored
+		/* not to me BEACON, ignored */
 	} 
-	// sanity check fail, ignore this frame
+	/* sanity check fail, ignore this frame */
+
+	goto LabelOK;
+
+LabelErr:
+	DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n", __FUNCTION__));
+
+LabelOK:
+	if (Ssid != NULL)
+		os_free_mem(NULL, Ssid);
+	if (VarIE != NULL)
+		os_free_mem(NULL, VarIE);
+	if (pHtCapability != NULL)
+		os_free_mem(NULL, pHtCapability);
+	if (pAddHtInfo != NULL)
+		os_free_mem(NULL, pAddHtInfo);
+	return;
 }
 
 /* 
@@ -1135,9 +1354,9 @@ VOID PeerBeacon(
 	IN MLME_QUEUE_ELEM *Elem) 
 {
 	UCHAR         Bssid[MAC_ADDR_LEN], Addr2[MAC_ADDR_LEN];
-	CHAR          Ssid[MAX_LEN_OF_SSID];
+	CHAR          *Ssid = NULL;
 	CF_PARM       CfParm;
-	UCHAR         SsidLen, MessageToMe=0, BssType, Channel, NewChannel, index=0;
+	UCHAR         SsidLen=0, MessageToMe=0, BssType, Channel, NewChannel, index=0;
 	UCHAR         DtimCount=0, DtimPeriod=0, BcastFlag=0;
 	USHORT        CapabilityInfo, AtimWin, BeaconPeriod;
 	LARGE_INTEGER TimeStamp;
@@ -1148,15 +1367,14 @@ VOID PeerBeacon(
 	UCHAR		  CkipFlag;
 	USHORT        LenVIE;
 	UCHAR		  AironetCellPowerLimit;
-	EDCA_PARM       EdcaParm;
+	EDCA_PARM       *pEdcaParm = NULL;
 	QBSS_LOAD_PARM  QbssLoad;
 	QOS_CAPABILITY_PARM QosCapability;
 	ULONG           RalinkIe;
-	// New for WPA security suites
-	UCHAR						VarIE[MAX_VIE_LEN];		// Total VIE length = MAX_VIE_LEN - -5
+	UCHAR						*VarIE = NULL;		/* Total VIE length = MAX_VIE_LEN - -5 */
 	NDIS_802_11_VARIABLE_IEs	*pVIE = NULL;
-	HT_CAPABILITY_IE		HtCapability;
-	ADD_HT_INFO_IE		AddHtInfo;	// AP might use this additional ht info IE 
+	HT_CAPABILITY_IE		*pHtCapability = NULL;
+	ADD_HT_INFO_IE		*pAddHtInfo = NULL;	/* AP might use this additional ht info IE */
 	UCHAR			HtCapabilityLen, PreNHtCapabilityLen;
 	UCHAR			AddHtInfoLen;
 	UCHAR			NewExtChannelOffset = 0xff;
@@ -1168,17 +1386,37 @@ VOID PeerBeacon(
     {
 		return;
     }
-#endif // RALINK_ATE //
+#endif /* RALINK_ATE */
 
 	if (!(INFRA_ON(pAd) || ADHOC_ON(pAd)
+#ifdef P2P_SUPPORT
+		|| P2P_GO_ON(pAd) || P2P_CLI_ON(pAd)
+#endif /* P2P_SUPPORT */
 		))
 		return;
 
-	// Init Variable IE structure
+	/* allocate memory */
+	os_alloc_mem(NULL, (UCHAR **)&Ssid, MAX_LEN_OF_SSID);
+	if (Ssid == NULL)
+		goto LabelErr;
+	os_alloc_mem(NULL, (UCHAR **)&pEdcaParm, sizeof(EDCA_PARM));
+	if (pEdcaParm == NULL)
+		goto LabelErr;
+	os_alloc_mem(NULL, (UCHAR **)&VarIE, MAX_VIE_LEN);
+	if (VarIE == NULL)
+		goto LabelErr;
+	os_alloc_mem(NULL, (UCHAR **)&pHtCapability, sizeof(HT_CAPABILITY_IE));
+	if (pHtCapability == NULL)
+		goto LabelErr;
+	os_alloc_mem(NULL, (UCHAR **)&pAddHtInfo, sizeof(ADD_HT_INFO_IE));
+	if (pAddHtInfo == NULL)
+		goto LabelErr;
+
+	/* Init Variable IE structure */
 	pVIE = (PNDIS_802_11_VARIABLE_IEs) VarIE;
 	pVIE->Length = 0;
-    RTMPZeroMemory(&HtCapability, sizeof(HtCapability));
-	RTMPZeroMemory(&AddHtInfo, sizeof(ADD_HT_INFO_IE));
+    RTMPZeroMemory(pHtCapability, sizeof(HT_CAPABILITY_IE));
+	RTMPZeroMemory(pAddHtInfo, sizeof(ADD_HT_INFO_IE));
 	RTMPZeroMemory(&ExtCapInfo, sizeof(ExtCapInfo));
 
 	if (PeerBeaconAndProbeRspSanity(pAd, 
@@ -1208,18 +1446,18 @@ VOID PeerBeacon(
 								&ExtRateLen,
 								&CkipFlag,
 								&AironetCellPowerLimit,
-								&EdcaParm,
+								pEdcaParm,
 								&QbssLoad,
 								&QosCapability,
 								&RalinkIe,
 								&HtCapabilityLen,
 #ifdef CONFIG_STA_SUPPORT
 								&PreNHtCapabilityLen,
-#endif // CONFIG_STA_SUPPORT //
-								&HtCapability,
+#endif /* CONFIG_STA_SUPPORT */
+								pHtCapability,
 								&ExtCapInfo,
 								&AddHtInfoLen,
-								&AddHtInfo,
+								pAddHtInfo,
 								&NewExtChannelOffset,
 								&LenVIE,
 								pVIE)) 
@@ -1233,34 +1471,34 @@ VOID PeerBeacon(
 		is_my_ssid = SSID_EQUAL(Ssid, SsidLen, pAd->CommonCfg.Ssid, pAd->CommonCfg.SsidLen)? TRUE:FALSE;
 
 
-		// ignore BEACON not for my SSID
-		if (((SsidLen > 0) && !is_my_ssid) || (!is_my_bssid))
-			return;
+		/* ignore BEACON not for my SSID */
+		if ((!is_my_ssid) && (!is_my_bssid))
+			goto LabelOK;
 
-		// It means STA waits disassoc completely from this AP, ignores this beacon.
+		/* It means STA waits disassoc completely from this AP, ignores this beacon. */
 		if (pAd->Mlme.CntlMachine.CurrState == CNTL_WAIT_DISASSOC)
-			return;
+			goto LabelOK;
 		
 #ifdef DOT11_N_SUPPORT
-		// Copy Control channel for this BSSID.		
+		/* Copy Control channel for this BSSID. */	
 		if (AddHtInfoLen != 0)
-			Channel = AddHtInfo.ControlChan;
+			Channel = pAddHtInfo->ControlChan;
 
 		if ((HtCapabilityLen > 0) || (PreNHtCapabilityLen > 0))
 			HtCapabilityLen = SIZE_HT_CAP_IE;
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 
-		//
-		// Housekeeping "SsidBssTab" table for later-on ROAMing usage. 
-		//
+		/*
+		   Housekeeping "SsidBssTab" table for later-on ROAMing usage. 
+		*/
 		Bssidx = BssTableSearchWithSSID(&pAd->MlmeAux.SsidBssTab, Bssid, Ssid, SsidLen, Channel);
 		if (Bssidx == BSS_NOT_FOUND)
 		{			
-			// discover new AP of this network, create BSS entry
+			/* discover new AP of this network, create BSS entry */
 			Bssidx = BssTableSetEntry(pAd, &pAd->MlmeAux.SsidBssTab, Bssid, Ssid, SsidLen, BssType, BeaconPeriod,
 						 &CfParm, AtimWin, CapabilityInfo, SupRate, SupRateLen, ExtRate, ExtRateLen, 
-						&HtCapability, &AddHtInfo,HtCapabilityLen,AddHtInfoLen,NewExtChannelOffset, Channel, 
-						RealRssi, TimeStamp, CkipFlag, &EdcaParm, &QosCapability, 
+						pHtCapability, pAddHtInfo, HtCapabilityLen,AddHtInfoLen,NewExtChannelOffset, Channel, 
+						RealRssi, TimeStamp, CkipFlag, pEdcaParm, &QosCapability, 
 						&QbssLoad, LenVIE, pVIE);
 			if (Bssidx == BSS_NOT_FOUND)
 				;
@@ -1284,14 +1522,14 @@ VOID PeerBeacon(
 		Bssidx = BssTableSearch(&pAd->ScanTab, Bssid, Channel);
 		if (Bssidx == BSS_NOT_FOUND)
 		{
-			// discover new AP of this network, create BSS entry
+			/* discover new AP of this network, create BSS entry */
 			Bssidx = BssTableSetEntry(pAd, &pAd->ScanTab, Bssid, Ssid, SsidLen, BssType, BeaconPeriod,
 						 &CfParm, AtimWin, CapabilityInfo, SupRate, SupRateLen, ExtRate, ExtRateLen, 
-						&HtCapability, &AddHtInfo,HtCapabilityLen,AddHtInfoLen,NewExtChannelOffset, Channel, 
-						RealRssi, TimeStamp, CkipFlag, &EdcaParm, &QosCapability, 
+						pHtCapability, pAddHtInfo, HtCapabilityLen,AddHtInfoLen,NewExtChannelOffset, Channel, 
+						RealRssi, TimeStamp, CkipFlag, pEdcaParm, &QosCapability, 
 						&QbssLoad, LenVIE, pVIE);
-			if (Bssidx == BSS_NOT_FOUND) // return if BSS table full
-				return;  
+			if (Bssidx == BSS_NOT_FOUND) /* return if BSS table full */
+				goto LabelOK;  
 			
 			NdisMoveMemory(pAd->ScanTab.BssEntry[Bssidx].PTSF, &Elem->Msg[24], 4);
 			NdisMoveMemory(&pAd->ScanTab.BssEntry[Bssidx].TTSF[0], &Elem->TimeStamp.u.LowPart, 4);
@@ -1306,70 +1544,20 @@ VOID PeerBeacon(
 			
 		}
 
-		if ((pAd->CommonCfg.bIEEE80211H == 1) && (NewChannel != 0) && (Channel != NewChannel))
-		{
-			// Switching to channel 1 can prevent from rescanning the current channel immediately (by auto reconnection).
-			// In addition, clear the MLME queue and the scan table to discard the RX packets and previous scanning results.
-			AsicSwitchChannel(pAd, 1, FALSE);
-			AsicLockChannel(pAd, 1);
-		    LinkDown(pAd, FALSE);
-			MlmeQueueInit(&pAd->Mlme.Queue);
-			BssTableInit(&pAd->ScanTab);
-		    RTMPusecDelay(1000000);		// use delay to prevent STA do reassoc
-					
-			// channel sanity check
-			for (index = 0 ; index < pAd->ChannelListNum; index++)
-			{
-				if (pAd->ChannelList[index].Channel == NewChannel)
-				{
-					pAd->ScanTab.BssEntry[Bssidx].Channel = NewChannel;
-					pAd->CommonCfg.Channel = NewChannel;
-					AsicSwitchChannel(pAd, pAd->CommonCfg.Channel, FALSE);
-					AsicLockChannel(pAd, pAd->CommonCfg.Channel);
-					DBGPRINT(RT_DEBUG_TRACE, ("PeerBeacon - STA receive channel switch announcement IE (New Channel =%d)\n", NewChannel));
-					break;
-				}
-			}
-
-			if (index >= pAd->ChannelListNum)
-			{
-				DBGPRINT_ERR(("PeerBeacon(can not find New Channel=%d in ChannelList[%d]\n", pAd->CommonCfg.Channel, pAd->ChannelListNum));
-			}
-		}
-
-#ifdef WSC_STA_SUPPORT
-		if (pAd->StaCfg.WscControl.WscState == WSC_STATE_OFF)
-		{
-#endif // WSC_STA_SUPPORT //
-			if ((((pAd->StaCfg.WepStatus != Ndis802_11WEPDisabled) << 4) ^
-				CapabilityInfo) &
-				0x0010)
-			{
-				DBGPRINT(RT_DEBUG_TRACE, ("%s:AP privacy:%x is differenct from STA privacy:%x\n", __FUNCTION__, (CapabilityInfo & 0x0010) >> 4 , pAd->StaCfg.WepStatus != Ndis802_11WEPDisabled));
-				if (INFRA_ON(pAd))
-				{
-					LinkDown(pAd,FALSE);
-					BssTableInit(&pAd->ScanTab);
-				}
-				return;
-			}
-#ifdef WSC_STA_SUPPORT
-		}
-#endif // WSC_STA_SUPPORT //
-
-	
-		// if the ssid matched & bssid unmatched, we should select the bssid with large value.
-		// This might happened when two STA start at the same time
+		/* 
+		    if the ssid matched & bssid unmatched, we should select the bssid with large value.
+		    This might happened when two STA start at the same time
+		*/
 		if ((! is_my_bssid) && ADHOC_ON(pAd))
 		{
 			INT	i;
-			// Add the safeguard against the mismatch of adhoc wep status
+			/* Add the safeguard against the mismatch of adhoc wep status */
 			if ((pAd->StaCfg.WepStatus != pAd->ScanTab.BssEntry[Bssidx].WepStatus) ||
 				(pAd->StaCfg.AuthMode != pAd->ScanTab.BssEntry[Bssidx].AuthMode))
 			{
-				return;
+				goto LabelOK;
 			}
-			// collapse into the ADHOC network which has bigger BSSID value.
+			/* collapse into the ADHOC network which has bigger BSSID value. */
 			for (i = 0; i < 6; i++)
 			{
 				if (Bssid[i] > pAd->CommonCfg.Bssid[i])
@@ -1379,8 +1567,8 @@ VOID PeerBeacon(
 					AsicDisableSync(pAd);
 					COPY_MAC_ADDR(pAd->CommonCfg.Bssid, Bssid);
 					AsicSetBssid(pAd, pAd->CommonCfg.Bssid); 
-					MakeIbssBeacon(pAd);        // re-build BEACON frame
-					AsicEnableIbssSync(pAd);    // copy BEACON frame to on-chip memory
+					MakeIbssBeacon(pAd);        /* re-build BEACON frame */
+					AsicEnableIbssSync(pAd);    /* copy BEACON frame to on-chip memory */
 					is_my_bssid = TRUE;
 					break;
 				}
@@ -1392,12 +1580,12 @@ VOID PeerBeacon(
 
 		NdisGetSystemUpTime(&Now);
 		pBss = &pAd->ScanTab.BssEntry[Bssidx];
-		pBss->Rssi = RealRssi;       // lastest RSSI
-		pBss->LastBeaconRxTime = Now;   // last RX timestamp
+		pBss->Rssi = RealRssi;       /* lastest RSSI */
+		pBss->LastBeaconRxTime = Now;   /* last RX timestamp */
 
-		//
-		// BEACON from my BSSID - either IBSS or INFRA network
-		// 
+		/*
+		   BEACON from my BSSID - either IBSS or INFRA network
+		*/ 
 		if (is_my_bssid)
 		{
 			RXWI_STRUC	RxWI;
@@ -1408,48 +1596,106 @@ VOID PeerBeacon(
 			UCHAR					RegClass;
 			BOOLEAN					brc;
 
-			// Read Beacon's Reg Class IE if any.
+			/* Read Beacon's Reg Class IE if any. */
 			brc = PeerBeaconAndProbeRspSanity2(pAd, Elem->Msg, Elem->MsgLen, &BssScan, &RegClass);
 			if (brc == TRUE)
 			{
 				UpdateBssScanParm(pAd, BssScan);
 				pAd->StaCfg.RegClass = RegClass;
 			}
-#endif // DOT11N_DRAFT3 //
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11N_DRAFT3 */
+#endif /* DOT11_N_SUPPORT */
 
 			pAd->StaCfg.DtimCount = DtimCount;
 			pAd->StaCfg.DtimPeriod = DtimPeriod;
 			pAd->StaCfg.LastBeaconRxTime = Now;
 
 
+			NdisZeroMemory(&RxWI, sizeof(RXWI_STRUC));
 			RxWI.RSSI0 = Elem->Rssi0;
 			RxWI.RSSI1 = Elem->Rssi1;
 			RxWI.RSSI2 = Elem->Rssi2;
-			RxWI.PHYMODE = 0; //Prevent SNR calculate error
-
+			RxWI.PHYMODE = 0; /* Prevent SNR calculate error. */
+			
 			Update_Rssi_Sample(pAd, &pAd->StaCfg.RssiSample, &RxWI);
+
+			if ((pAd->CommonCfg.bIEEE80211H == 1) && (NewChannel != 0) && (Channel != NewChannel))
+			{
+				/* Switching to channel 1 can prevent from rescanning the current channel immediately (by auto reconnection). */
+				/* In addition, clear the MLME queue and the scan table to discard the RX packets and previous scanning results. */
+				AsicSwitchChannel(pAd, 1, FALSE);
+				AsicLockChannel(pAd, 1);
+			    LinkDown(pAd, FALSE);
+				MlmeQueueInit(pAd, &pAd->Mlme.Queue);
+				BssTableInit(&pAd->ScanTab);
+			    RTMPusecDelay(1000000);		/* use delay to prevent STA do reassoc */
+						
+				/* channel sanity check */
+				for (index = 0 ; index < pAd->ChannelListNum; index++)
+				{
+					if (pAd->ChannelList[index].Channel == NewChannel)
+					{
+						pAd->ScanTab.BssEntry[Bssidx].Channel = NewChannel;
+						pAd->CommonCfg.Channel = NewChannel;
+						AsicSwitchChannel(pAd, pAd->CommonCfg.Channel, FALSE);
+						AsicLockChannel(pAd, pAd->CommonCfg.Channel);
+						DBGPRINT(RT_DEBUG_TRACE, ("PeerBeacon - STA receive channel switch announcement IE (New Channel =%d)\n", NewChannel));
+						break;
+					}
+				}
+
+				if (index >= pAd->ChannelListNum)
+				{
+					DBGPRINT_ERR(("PeerBeacon(can not find New Channel=%d in ChannelList[%d]\n", pAd->CommonCfg.Channel, pAd->ChannelListNum));
+				}
+			}
+
+#ifdef WPA_SUPPLICANT_SUPPORT
+			if (pAd->StaCfg.WpaSupplicantUP & WPA_SUPPLICANT_ENABLE_WPS) ;
+			else
+#endif /* WPA_SUPPLICANT_SUPPORT */
+#ifdef WSC_STA_SUPPORT
+			if (pAd->StaCfg.WscControl.WscState == WSC_STATE_OFF)
+#endif /* WSC_STA_SUPPORT */
+			{
+				if ((((pAd->StaCfg.WepStatus != Ndis802_11WEPDisabled) << 4) ^
+					CapabilityInfo) &
+					0x0010)
+				{
+					/*
+						To prevent STA connect to OPEN/WEP AP when STA is OPEN/NONE or 
+						STA connect to OPEN/NONE AP when STA is OPEN/WEP AP.
+					*/
+					DBGPRINT(RT_DEBUG_TRACE, ("%s:AP privacy:%x is differenct from STA privacy:%x\n", __FUNCTION__, (CapabilityInfo & 0x0010) >> 4 , pAd->StaCfg.WepStatus != Ndis802_11WEPDisabled));
+					if (INFRA_ON(pAd))
+					{
+						LinkDown(pAd,FALSE);
+						BssTableInit(&pAd->ScanTab);
+					}
+					goto LabelOK;
+				}
+			}
 
 #ifdef LINUX
 #ifdef RT_CFG80211_SUPPORT
-//			CFG80211_BeaconCountryRegionParse(pAd, pVIE, LenVIE);
-#endif // RT_CFG80211_SUPPORT //
-#endif // LINUX //
+/*			CFG80211_BeaconCountryRegionParse(pAd, pVIE, LenVIE); */
+#endif /* RT_CFG80211_SUPPORT */
+#endif /* LINUX */
 
 			if (AironetCellPowerLimit != 0xFF)
 			{
-				//
-				// We get the Cisco (ccx) "TxPower Limit" required
-				// Changed to appropriate TxPower Limit for Ciso Compatible Extensions
-				//
+				/*
+				   We get the Cisco (ccx) "TxPower Limit" required
+				   Changed to appropriate TxPower Limit for Ciso Compatible Extensions
+				*/
 				ChangeToCellPowerLimit(pAd, AironetCellPowerLimit);
 			}
 			else
 			{
-				//
-				// AironetCellPowerLimit equal to 0xFF means the Cisco (ccx) "TxPower Limit" not exist.
-				// Used the default TX Power Percentage, that set from UI.	
-				//
+				/*
+				   AironetCellPowerLimit equal to 0xFF means the Cisco (ccx) "TxPower Limit" not exist.
+				   Used the default TX Power Percentage, that set from UI.	
+				*/
 				pAd->CommonCfg.TxPowerPercentage = pAd->CommonCfg.TxPowerDefault;	
 			}
 
@@ -1460,9 +1706,9 @@ VOID PeerBeacon(
 				MAC_TABLE_ENTRY *pEntry;
 #ifdef WSC_STA_SUPPORT
 				PWSC_CTRL		pWpsCtrl = &pAd->StaCfg.WscControl;
-#endif // WSC_STA_SUPPORT //
+#endif /* WSC_STA_SUPPORT */
 	
-				// supported rates array may not be sorted. sort it and find the maximum rate
+				/* supported rates array may not be sorted. sort it and find the maximum rate */
 			    for (idx=0; idx<SupRateLen; idx++)
 				{
 			        if (MaxSupportedRateIn500Kbps < (SupRate[idx] & 0x7f)) 
@@ -1475,36 +1721,41 @@ VOID PeerBeacon(
 			            MaxSupportedRateIn500Kbps = ExtRate[idx] & 0x7f;
 					}
 						
-				// look up the existing table
+				/* look up the existing table */
 				pEntry = MacTableLookup(pAd, Addr2);
-							
-				// Ad-hoc mode is using MAC address as BA session. So we need to continuously find newly joined adhoc station by receiving beacon.
-				// To prevent always check this, we use wcid == RESERVED_WCID to recognize it as newly joined adhoc station.
-				if ((ADHOC_ON(pAd) && (Elem->Wcid == RESERVED_WCID)) ||
+
+				/*
+				   Ad-hoc mode is using MAC address as BA session. So we need to continuously find newly joined adhoc station by receiving beacon.
+				   To prevent always check this, we use wcid == RESERVED_WCID to recognize it as newly joined adhoc station.
+				*/
+				if ((ADHOC_ON(pAd) && ((!pEntry) || (pEntry && IS_ENTRY_NONE(pEntry)))) ||
 					(pEntry && RTMP_TIME_AFTER(Now, pEntry->LastBeaconRxTime + ADHOC_ENTRY_BEACON_LOST_TIME)))
 				{
 					if (pEntry == NULL)
-						// Another adhoc joining, add to our MAC table. 
-						pEntry = MacTableInsertEntry(pAd, Addr2, BSS0, FALSE);
+						/* Another adhoc joining, add to our MAC table. */
+						pEntry = MacTableInsertEntry(pAd, Addr2, BSS0, OPMODE_STA, FALSE);
+
+					if (pEntry == NULL)
+						goto LabelOK;
 
 					if (StaAddMacTableEntry(pAd, 
 											pEntry, 
 											MaxSupportedRateIn500Kbps, 
-											&HtCapability, 
+											pHtCapability, 
 											HtCapabilityLen, 
-											&AddHtInfo,
+											pAddHtInfo,
 											AddHtInfoLen,
 											CapabilityInfo) == FALSE)
 					{
 						DBGPRINT(RT_DEBUG_TRACE, ("ADHOC - Add Entry failed.\n"));
-						return;
+						goto LabelOK;
 					}
 					pEntry->LastBeaconRxTime = 0;
 
 #ifdef ADHOC_WPA2PSK_SUPPORT
-                    //Adhoc support WPA2PSK by Eddy
+                    /* Adhoc support WPA2PSK by Eddy */
                     if ((pAd->StaCfg.AuthMode == Ndis802_11AuthModeWPA2PSK) 
-                        && (pEntry->WPA_Authenticator.WpaState < AS_INITPSK))                        
+                        && (pEntry->WPA_Authenticator.WpaState < AS_INITPSK))
                     {
         				INT               len;
         				PEID_STRUCT         pEid;
@@ -1535,7 +1786,7 @@ VOID PeerBeacon(
 					{
                 		pEntry->PortSecured = WPA_802_1X_PORT_SECURED;
                     }
-#endif // ADHOC_WPA2PSK_SUPPORT //
+#endif /* ADHOC_WPA2PSK_SUPPORT */
 
 					if (pEntry &&
 						(Elem->Wcid == RESERVED_WCID))
@@ -1551,7 +1802,7 @@ VOID PeerBeacon(
 				if (pEntry && IS_ENTRY_CLIENT(pEntry))
 					pEntry->LastBeaconRxTime = Now;
 
-				// At least another peer in this IBSS, declare MediaState as CONNECTED
+				/* At least another peer in this IBSS, declare MediaState as CONNECTED */
 				if (!OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_MEDIA_STATE_CONNECTED))
 				{
 					OPSTATUS_SET_FLAG(pAd, fOP_STATUS_MEDIA_STATE_CONNECTED); 
@@ -1564,39 +1815,35 @@ VOID PeerBeacon(
 					(pWpsCtrl->WscState == WSC_STATE_START) &&
 					(pWpsCtrl->WscConfMode == WSC_ENROLLEE))
 				{
-					WscInitEntryFunc(pEntry);
 					pWpsCtrl->WscState = WSC_STATE_LINK_UP;
 					pWpsCtrl->WscStatus = STATUS_WSC_LINK_UP;
-					RTMPusecDelay(100000); // 100 ms
-					WscSendEapolStart(pAd, pWpsCtrl->WscPeerMAC);
+					RTMPusecDelay(100000); /* 100 ms */
+					WscSendEapolStart(pAd, pWpsCtrl->WscPeerMAC, STA_MODE);
 				}
-#endif // WSC_STA_SUPPORT 
+#endif /* WSC_STA_SUPPORT */
 			}
 
 			if (INFRA_ON(pAd))
 			{
 				BOOLEAN bUseShortSlot, bUseBGProtection;
 
-				// decide to use/change to - 
-				//      1. long slot (20 us) or short slot (9 us) time
-				//      2. turn on/off RTS/CTS and/or CTS-to-self protection
-				//      3. short preamble
+				/*
+				   decide to use/change to - 
+				      1. long slot (20 us) or short slot (9 us) time
+				      2. turn on/off RTS/CTS and/or CTS-to-self protection
+				      3. short preamble
+				*/
 
-#ifdef WMM_ACM_SUPPORT
-				ACMP_BandwidthInfoSet(pAd, QbssLoad.StaNum,
-										QbssLoad.ChannelUtilization,
-										QbssLoad.RemainingAdmissionControl);
-#endif // WMM_ACM_SUPPORT //
 					
-				//bUseShortSlot = pAd->CommonCfg.bUseShortSlotTime && CAP_IS_SHORT_SLOT(CapabilityInfo);
+				/* bUseShortSlot = pAd->CommonCfg.bUseShortSlotTime && CAP_IS_SHORT_SLOT(CapabilityInfo); */
 				bUseShortSlot = CAP_IS_SHORT_SLOT(CapabilityInfo);
 				if (bUseShortSlot != OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_SHORT_SLOT_INUSED))
 					AsicSetSlotTime(pAd, bUseShortSlot);
 
-				bUseBGProtection = (pAd->CommonCfg.UseBGProtection == 1) ||    // always use
+				bUseBGProtection = (pAd->CommonCfg.UseBGProtection == 1) ||    /* always use */
 								   ((pAd->CommonCfg.UseBGProtection == 0) && ERP_IS_USE_PROTECTION(Erp));
 
-				if (pAd->CommonCfg.Channel > 14) // always no BG protection in A-band. falsely happened when switching A/G band to a dual-band AP
+				if (pAd->CommonCfg.Channel > 14)  /* always no BG protection in A-band. falsely happened when switching A/G band to a dual-band AP */
 					bUseBGProtection = FALSE;
 
 				if (bUseBGProtection != OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_BG_PROTECTION_INUSED))
@@ -1616,13 +1863,13 @@ VOID PeerBeacon(
 				}
 				
 #ifdef DOT11_N_SUPPORT
-				// check Ht protection mode. and adhere to the Non-GF device indication by AP.
+				/* check Ht protection mode. and adhere to the Non-GF device indication by AP. */
 				if ((AddHtInfoLen != 0) && 
-					((AddHtInfo.AddHtInfo2.OperaionMode != pAd->MlmeAux.AddHtInfo.AddHtInfo2.OperaionMode) ||
-					(AddHtInfo.AddHtInfo2.NonGfPresent != pAd->MlmeAux.AddHtInfo.AddHtInfo2.NonGfPresent)))
+					((pAddHtInfo->AddHtInfo2.OperaionMode != pAd->MlmeAux.AddHtInfo.AddHtInfo2.OperaionMode) ||
+					(pAddHtInfo->AddHtInfo2.NonGfPresent != pAd->MlmeAux.AddHtInfo.AddHtInfo2.NonGfPresent)))
 				{
-					pAd->MlmeAux.AddHtInfo.AddHtInfo2.NonGfPresent = AddHtInfo.AddHtInfo2.NonGfPresent;
-					pAd->MlmeAux.AddHtInfo.AddHtInfo2.OperaionMode = AddHtInfo.AddHtInfo2.OperaionMode;
+					pAd->MlmeAux.AddHtInfo.AddHtInfo2.NonGfPresent = pAddHtInfo->AddHtInfo2.NonGfPresent;
+					pAd->MlmeAux.AddHtInfo.AddHtInfo2.OperaionMode = pAddHtInfo->AddHtInfo2.OperaionMode;
 					if (pAd->MlmeAux.AddHtInfo.AddHtInfo2.NonGfPresent == 1)
 				{
 						AsicUpdateProtect(pAd, pAd->MlmeAux.AddHtInfo.AddHtInfo2.OperaionMode, ALLN_SETPROTECT, FALSE, TRUE);
@@ -1632,7 +1879,7 @@ VOID PeerBeacon(
 
 					DBGPRINT(RT_DEBUG_TRACE, ("SYNC - AP changed N OperaionMode to %d\n", pAd->MlmeAux.AddHtInfo.AddHtInfo2.OperaionMode));
 				}
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 				
 				if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_SHORT_PREAMBLE_INUSED) && 
 					ERP_IS_USE_BARKER_PREAMBLE(Erp))
@@ -1642,33 +1889,36 @@ VOID PeerBeacon(
 				}
 
 				if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_WMM_INUSED)    &&
-					(EdcaParm.bValid == TRUE)                          &&
-					(EdcaParm.EdcaUpdateCount != pAd->CommonCfg.APEdcaParm.EdcaUpdateCount))
+					(pEdcaParm->bValid == TRUE)                          &&
+					(pEdcaParm->EdcaUpdateCount != pAd->CommonCfg.APEdcaParm.EdcaUpdateCount))
 				{
 					DBGPRINT(RT_DEBUG_TRACE, ("SYNC - AP change EDCA parameters(from %d to %d)\n", 
 						pAd->CommonCfg.APEdcaParm.EdcaUpdateCount,
-						EdcaParm.EdcaUpdateCount));
-					AsicSetEdcaParm(pAd, &EdcaParm);
+						pEdcaParm->EdcaUpdateCount));
+					AsicSetEdcaParm(pAd, pEdcaParm);
 				}
 
-				// copy QOS related information
+				/* copy QOS related information */
 				NdisMoveMemory(&pAd->CommonCfg.APQbssLoad, &QbssLoad, sizeof(QBSS_LOAD_PARM));
 				NdisMoveMemory(&pAd->CommonCfg.APQosCapability, &QosCapability, sizeof(QOS_CAPABILITY_PARM));
 #ifdef DOT11_N_SUPPORT
 #ifdef DOT11N_DRAFT3
-				// 2009: PF#1: 20/40 Coexistence in 2.4 GHz Band
-				// When AP changes "STA Channel Width" and "Secondary Channel Offset" fields of HT Operation Element in the Beacon to 0
+				/* 
+				   2009: PF#1: 20/40 Coexistence in 2.4 GHz Band
+				   When AP changes "STA Channel Width" and "Secondary Channel Offset" fields of HT Operation Element in the Beacon to 0
+				*/
 				if ((AddHtInfoLen != 0) && INFRA_ON(pAd))
 				{
 					BOOLEAN bChangeBW = FALSE;
-					//
-					// 1) HT Information
-					// 2) Secondary Channel Offset Element
-					//
-					// 40 -> 20 case
+					/*
+					     1) HT Information
+					     2) Secondary Channel Offset Element
+					
+					     40 -> 20 case
+					*/
 					if (pAd->CommonCfg.BBPCurrentBW == BW_40)
 					{
-						if (((AddHtInfo.AddHtInfo.ExtChanOffset == EXTCHA_NONE) && (AddHtInfo.AddHtInfo.RecomWidth == 0)) 
+						if (((pAddHtInfo->AddHtInfo.ExtChanOffset == EXTCHA_NONE) && (pAddHtInfo->AddHtInfo.RecomWidth == 0)) 
 							||(NewExtChannelOffset==0x0)
 						)
 						{
@@ -1680,35 +1930,35 @@ VOID PeerBeacon(
 							CntlChannelWidth(pAd, pAd->CommonCfg.Channel, pAd->CommonCfg.CentralChannel, BW_20, 0);
 						}
 					}
-					//
-					// 20 -> 40 case
-					// 1.) Supported Channel Width Set Field of the HT Capabilities element of both STAs is set to a non-zero
-					// 2.) Secondary Channel Offset field is SCA or SCB
-					// 3.) 40MHzRegulatoryClass is TRUE (not implement it)
-					//
+					/*
+					    20 -> 40 case
+					    1.) Supported Channel Width Set Field of the HT Capabilities element of both STAs is set to a non-zero
+					    2.) Secondary Channel Offset field is SCA or SCB
+					    3.) 40MHzRegulatoryClass is TRUE (not implement it)
+					*/
 					else if (((pAd->CommonCfg.BBPCurrentBW == BW_20) ||(NewExtChannelOffset!=0x0)) &&
 							(pAd->CommonCfg.DesiredHtPhy.ChannelWidth != BW_20)
 						)
 					{
-						if ((AddHtInfo.AddHtInfo.ExtChanOffset != EXTCHA_NONE) && (HtCapabilityLen>0) && (HtCapability.HtCapInfo.ChannelWidth == 1))
+						if ((pAddHtInfo->AddHtInfo.ExtChanOffset != EXTCHA_NONE) && (HtCapabilityLen>0) && (pHtCapability->HtCapInfo.ChannelWidth == 1))
 						{
-							if ((AddHtInfo.ControlChan > 2)&& (AddHtInfo.AddHtInfo.ExtChanOffset == EXTCHA_BELOW))
+							if ((pAddHtInfo->ControlChan > 2)&& (pAddHtInfo->AddHtInfo.ExtChanOffset == EXTCHA_BELOW))
 							{
-								pAd->CommonCfg.CentralChannel = AddHtInfo.ControlChan - 2;
+								pAd->CommonCfg.CentralChannel = pAddHtInfo->ControlChan - 2;
 								bChangeBW = TRUE;
 							}
-							else if ((AddHtInfo.AddHtInfo.ExtChanOffset == EXTCHA_ABOVE))
+							else if ((pAddHtInfo->AddHtInfo.ExtChanOffset == EXTCHA_ABOVE))
 							{
-								pAd->CommonCfg.CentralChannel = AddHtInfo.ControlChan + 2;
+								pAd->CommonCfg.CentralChannel = pAddHtInfo->ControlChan + 2;
 								bChangeBW = TRUE;
 							}
 							
 							if (bChangeBW)
 							{
-								pAd->CommonCfg.Channel = AddHtInfo.ControlChan;
+								pAd->CommonCfg.Channel = pAddHtInfo->ControlChan;
 								DBGPRINT(RT_DEBUG_TRACE, ("FallBack from 20MHz to 40MHz(CtrlCh=%d, CentralCh=%d)\n", 
 															pAd->CommonCfg.Channel, pAd->CommonCfg.CentralChannel));
-								CntlChannelWidth(pAd, pAd->CommonCfg.Channel, pAd->CommonCfg.CentralChannel, BW_40, AddHtInfo.AddHtInfo.ExtChanOffset);
+								CntlChannelWidth(pAd, pAd->CommonCfg.Channel, pAd->CommonCfg.CentralChannel, BW_40, pAddHtInfo->AddHtInfo.ExtChanOffset);
 								pAd->MacTab.Content[BSSID_WCID].HTPhyMode.field.BW = 1;
 							}
 						}
@@ -1721,30 +1971,32 @@ VOID PeerBeacon(
 						BuildEffectedChannelList(pAd);
 					}
 				}
-#endif // DOT11N_DRAFT3 //
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11N_DRAFT3 */
+#endif /* DOT11_N_SUPPORT */
 			}
 
-			// only INFRASTRUCTURE mode support power-saving feature
+			/* only INFRASTRUCTURE mode support power-saving feature */
 			if ((INFRA_ON(pAd) && (pAd->StaCfg.Psm == PWR_SAVE)) || (pAd->CommonCfg.bAPSDForcePowerSave))
 			{
 				UCHAR FreeNumber;
-				//  1. AP has backlogged unicast-to-me frame, stay AWAKE, send PSPOLL
-				//  2. AP has backlogged broadcast/multicast frame and we want those frames, stay AWAKE
-				//  3. we have outgoing frames in TxRing or MgmtRing, better stay AWAKE
-				//  4. Psm change to PWR_SAVE, but AP not been informed yet, we better stay AWAKE
-				//  5. otherwise, put PHY back to sleep to save battery.
+				/*
+				     1. AP has backlogged unicast-to-me frame, stay AWAKE, send PSPOLL
+				     2. AP has backlogged broadcast/multicast frame and we want those frames, stay AWAKE
+				     3. we have outgoing frames in TxRing or MgmtRing, better stay AWAKE
+				     4. Psm change to PWR_SAVE, but AP not been informed yet, we better stay AWAKE
+				     5. otherwise, put PHY back to sleep to save battery.
+				*/
 				if (MessageToMe)
 				{
 #ifdef PCIE_PS_SUPPORT
 					if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_ADVANCE_POWER_SAVE_PCIE_DEVICE))
 					{
-						// Restore to correct BBP R3 value
+						/* Restore to correct BBP R3 value */
 						if (pAd->Antenna.field.RxPath > 1)
 						RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, pAd->StaCfg.BBPR3);
-						// Turn clk to 80Mhz.
+						/* Turn clk to 80Mhz. */
 					}
-#endif // PCIE_PS_SUPPORT //
+#endif /* PCIE_PS_SUPPORT */
 					if (pAd->CommonCfg.bAPSDCapable && pAd->CommonCfg.APEdcaParm.bAPSDCapable &&
 						pAd->CommonCfg.bAPSDAC_BE && pAd->CommonCfg.bAPSDAC_BK && pAd->CommonCfg.bAPSDAC_VI && pAd->CommonCfg.bAPSDAC_VO)
 					{
@@ -1758,7 +2010,8 @@ VOID PeerBeacon(
 							RTMP_SET_PSM_BIT(pAd, PWR_ACTIVE);
 							RTMPSendNullFrame(pAd, 
 											  pAd->CommonCfg.TxRate, 
-											  (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_WMM_INUSED) ? TRUE:FALSE));
+											  (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_WMM_INUSED) ? TRUE:FALSE),
+											  PWR_ACTIVE);
 						}
 						else
 						{
@@ -1775,7 +2028,7 @@ VOID PeerBeacon(
 						if (pAd->Antenna.field.RxPath > 1)
 						RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, pAd->StaCfg.BBPR3);
 					}
-#endif // PCIE_PS_SUPPORT //
+#endif /* PCIE_PS_SUPPORT */
 				} 
 				else if ((pAd->TxSwQueue[QID_AC_BK].Number != 0)													||
 						(pAd->TxSwQueue[QID_AC_BE].Number != 0)														||
@@ -1787,15 +2040,15 @@ VOID PeerBeacon(
 						(RTMPFreeTXDRequest(pAd, QID_AC_VO, TX_RING_SIZE - 1, &FreeNumber) != NDIS_STATUS_SUCCESS)	||
 						(RTMPFreeTXDRequest(pAd, QID_MGMT, MGMT_RING_SIZE - 1, &FreeNumber) != NDIS_STATUS_SUCCESS)) 
 				{
-					// TODO: consider scheduled HCCA. might not be proper to use traditional DTIM-based power-saving scheme
-					// can we cheat here (i.e. just check MGMT & AC_BE) for better performance?
+					/* TODO: consider scheduled HCCA. might not be proper to use traditional DTIM-based power-saving scheme */
+					/* can we cheat here (i.e. just check MGMT & AC_BE) for better performance? */
 #ifdef PCIE_PS_SUPPORT
 					if (OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_ADVANCE_POWER_SAVE_PCIE_DEVICE))
 					{
 						if (pAd->Antenna.field.RxPath > 1)
 						RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, pAd->StaCfg.BBPR3);
 					}
-#endif // PCIE_PS_SUPPORT //
+#endif /* PCIE_PS_SUPPORT */
 				}
 				else 
 				{
@@ -1840,17 +2093,35 @@ VOID PeerBeacon(
 
 						if (!OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_DOZE))
 						{
-							// Set a flag to go to sleep . Then after parse this RxDoneInterrupt, will go to sleep mode.
+							/* Set a flag to go to sleep . Then after parse this RxDoneInterrupt, will go to sleep mode. */
 							pAd->ThisTbttNumToNextWakeUp = TbttNumToNextWakeUp;
-		                    AsicSleepThenAutoWakeup(pAd, pAd->ThisTbttNumToNextWakeUp);
+		                                        AsicSleepThenAutoWakeup(pAd, pAd->ThisTbttNumToNextWakeUp);
+							
 						}
 					}
 				}
 			}
 		}
-		// not my BSSID, ignore it
+		/* not my BSSID, ignore it */
 	}
-	// sanity check fail, ignore this frame
+	/* sanity check fail, ignore this frame */
+	goto LabelOK;
+
+LabelErr:
+	DBGPRINT(RT_DEBUG_ERROR, ("%s: Allocate memory fail!!!\n", __FUNCTION__));
+
+LabelOK:
+	if (Ssid != NULL)
+		os_free_mem(NULL, Ssid);
+	if (pEdcaParm != NULL)
+		os_free_mem(NULL, pEdcaParm);
+	if (VarIE != NULL)
+		os_free_mem(NULL, VarIE);
+	if (pHtCapability != NULL)
+		os_free_mem(NULL, pHtCapability);
+	if (pAddHtInfo != NULL)
+		os_free_mem(NULL, pAddHtInfo);
+	return;
 }
 
 /* 
@@ -1868,7 +2139,7 @@ VOID PeerProbeReqAction(
 	UCHAR         SsidLen;
 #ifdef DOT11_N_SUPPORT
 	UCHAR		  HtLen, AddHtLen, NewExtLen;
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 	HEADER_802_11 ProbeRspHdr;
 	NDIS_STATUS   NStatus;
 	PUCHAR        pOutBuffer = NULL;
@@ -1879,6 +2150,12 @@ VOID PeerProbeReqAction(
 	BOOLEAN       Privacy;
 	USHORT        CapabilityInfo;
 
+#ifdef P2P_SUPPORT
+	/* P2P device and Listen State could response Probe Req. */
+	if ((pAd->P2pCfg.DiscCurrentState == P2P_DISC_LISTEN) && !(P2P_CLI_ON(pAd)))
+		MlmeEnqueue(pAd, P2P_DISC_STATE_MACHINE, P2P_DISC_PEER_PROB_REQ, Elem->MsgLen, Elem->Msg, TRUE);
+#endif /* P2P_SUPPORT */
+
 	if (! ADHOC_ON(pAd))
 		return;
 
@@ -1886,13 +2163,16 @@ VOID PeerProbeReqAction(
 	{
 		if ((SsidLen == 0) || SSID_EQUAL(Ssid, SsidLen, pAd->CommonCfg.Ssid, pAd->CommonCfg.SsidLen))
 		{			
-			// allocate and send out ProbeRsp frame
-			NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);  //Get an unused nonpaged memory
+			/* allocate and send out ProbeRsp frame */
+			NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);  /* Get an unused nonpaged memory */
 			if (NStatus != NDIS_STATUS_SUCCESS)
 				return;
 
-			//pAd->StaCfg.AtimWin = 0;  // ??????
-			MgtMacHeaderInit(pAd, &ProbeRspHdr, SUBTYPE_PROBE_RSP, 0, Addr2, pAd->CommonCfg.Bssid);
+			MgtMacHeaderInit(pAd, &ProbeRspHdr, SUBTYPE_PROBE_RSP, 0, Addr2,
+#ifdef P2P_SUPPORT
+								pAd->CurrentAddress,
+#endif /* P2P_SUPPORT */
+								pAd->CommonCfg.Bssid);
 
 			Privacy = (pAd->StaCfg.WepStatus == Ndis802_11Encryption1Enabled) || 
 					  (pAd->StaCfg.WepStatus == Ndis802_11Encryption2Enabled) || 
@@ -1930,11 +2210,11 @@ VOID PeerProbeReqAction(
 				FrameLen += tmp;
 			}
 
-        	// Modify by Eddy, support WPA2PSK in Adhoc mode
+        	/* Modify by Eddy, support WPA2PSK in Adhoc mode */
         	if ((pAd->StaCfg.AuthMode == Ndis802_11AuthModeWPANone)
 #ifdef ADHOC_WPA2PSK_SUPPORT
                 || (pAd->StaCfg.AuthMode == Ndis802_11AuthModeWPA2PSK)
-#endif // ADHOC_WPA2PSK_SUPPORT //
+#endif /* ADHOC_WPA2PSK_SUPPORT */
                 )
         	{
         		ULONG   tmp;
@@ -1944,7 +2224,7 @@ VOID PeerProbeReqAction(
                 RTMPMakeRSNIE(pAd, pAd->StaCfg.AuthMode, pAd->StaCfg.WepStatus, BSS0);
             	if (pAd->StaCfg.AuthMode == Ndis802_11AuthModeWPA2PSK)
                     RSNIe = IE_RSN;
-#endif // ADHOC_WPA2PSK_SUPPORT //
+#endif /* ADHOC_WPA2PSK_SUPPORT */
                 
         		MakeOutgoingFrame(pOutBuffer + FrameLen,        	&tmp,
         						  1,                              	&RSNIe,
@@ -1963,7 +2243,7 @@ VOID PeerProbeReqAction(
 				HtLen = sizeof(pAd->CommonCfg.HtCapability);
 				AddHtLen = sizeof(pAd->CommonCfg.AddHTInfo);
 				NewExtLen = 1;
-				//New extension channel offset IE is included in Beacon, Probe Rsp or channel Switch Announcement Frame
+				/* New extension channel offset IE is included in Beacon, Probe Rsp or channel Switch Announcement Frame */
 				if (pAd->bBroadComHT == TRUE)
 				{
 					epigram_ie_len = pAd->MlmeAux.HtCapabilityLen + 4;
@@ -1990,10 +2270,10 @@ VOID PeerProbeReqAction(
 				}
 				FrameLen += TmpLen;
 			}
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 
 #ifdef WSC_STA_SUPPORT
-		    // add Simple Config Information Element
+		    /* add Simple Config Information Element */
 		    if (pAd->StaCfg.WpsIEProbeResp.ValueLen != 0)
 		    {
 				ULONG WscTmpLen = 0;
@@ -2003,7 +2283,7 @@ VOID PeerProbeReqAction(
 								  END_OF_ARGS);
 				FrameLen += WscTmpLen;
 		    }
-#endif // WSC_STA_SUPPORT //
+#endif /* WSC_STA_SUPPORT */
 
 
 			MiniportMMRequest(pAd, 0, pOutBuffer, FrameLen);
@@ -2043,15 +2323,15 @@ VOID ScanTimeoutAction(
 	else
 		pAd->MlmeAux.Channel = NextChannel(pAd, pAd->MlmeAux.Channel);
 
-	// Only one channel scanned for CISCO beacon request
+	/* Only one channel scanned for CISCO beacon request */
 	if ((pAd->MlmeAux.ScanType == SCAN_CISCO_ACTIVE) || 
 		(pAd->MlmeAux.ScanType == SCAN_CISCO_PASSIVE) ||
 		(pAd->MlmeAux.ScanType == SCAN_CISCO_NOISE) ||
 		(pAd->MlmeAux.ScanType == SCAN_CISCO_CHANNEL_LOAD))
 		pAd->MlmeAux.Channel = 0;
 
-	// this routine will stop if pAd->MlmeAux.Channel == 0
-	ScanNextChannel(pAd); 
+	/* this routine will stop if pAd->MlmeAux.Channel == 0 */
+	ScanNextChannel(pAd, OPMODE_STA); 
 }
 
 /* 
@@ -2064,7 +2344,26 @@ VOID InvalidStateWhenScan(
 	IN MLME_QUEUE_ELEM *Elem) 
 {
 	USHORT Status;
+#ifdef P2P_SUPPORT
+	UCHAR          Ssid[MAX_LEN_OF_SSID], SsidLen, ScanType, BssType;
+#endif /* P2P_SUPPORT */
+
 	DBGPRINT(RT_DEBUG_TRACE, ("AYNC - InvalidStateWhenScan(state=%ld). Reset SYNC machine\n", pAd->Mlme.SyncMachine.CurrState));
+#ifdef P2P_SUPPORT
+	if (MlmeScanReqSanity(pAd, 
+						  Elem->Msg, 
+						  Elem->MsgLen, 
+						  &BssType, 
+						  (PCHAR)Ssid, 
+						  &SsidLen, 
+						  &ScanType))
+	{
+		/* reset Device Discovery State Machine. */
+		MlmeEnqueue(pAd, P2P_CTRL_STATE_MACHINE, P2P_CTRL_DISC_CANL_EVT, 0, NULL, 0);
+		P2PSetNextScanTimer(pAd, 10);
+		return;
+	}
+#endif /* P2P_SUPPORT */
 	pAd->Mlme.SyncMachine.CurrState = SYNC_IDLE;
 	Status = MLME_STATE_MACHINE_REJECT;
 	MlmeEnqueue(pAd, MLME_CNTL_STATE_MACHINE, MT2_SCAN_CONF, 2, &Status, 0);
@@ -2080,7 +2379,13 @@ VOID InvalidStateWhenJoin(
 	IN MLME_QUEUE_ELEM *Elem) 
 {
 	USHORT Status;
-	DBGPRINT(RT_DEBUG_TRACE, ("InvalidStateWhenJoin(state=%ld). Reset SYNC machine\n", pAd->Mlme.SyncMachine.CurrState));
+	DBGPRINT(RT_DEBUG_TRACE, ("InvalidStateWhenJoin(state=%ld, msg=%ld). Reset SYNC machine\n", 
+								pAd->Mlme.SyncMachine.CurrState,
+								Elem->MsgType));
+	if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_BSS_SCAN_IN_PROGRESS))
+	{
+		RTMPResumeMsduTransmission(pAd);
+	}
 	pAd->Mlme.SyncMachine.CurrState = SYNC_IDLE;
 	Status = MLME_STATE_MACHINE_REJECT;
 	MlmeEnqueue(pAd, MLME_CNTL_STATE_MACHINE, MT2_JOIN_CONF, 2, &Status, 0);
@@ -2118,12 +2423,13 @@ VOID EnqueuePsPoll(
     {
 		return;
     }
-#endif // RALINK_ATE //
+#endif /* RALINK_ATE */
 
 	
 	if (pAd->StaCfg.WindowsPowerMode == Ndis802_11PowerModeLegacy_PSP)
     	pAd->PsPollFrame.FC.PwrMgmt = PWR_SAVE;
 	MiniportMMRequest(pAd, 0, (PUCHAR)&pAd->PsPollFrame, sizeof(PSPOLL_FRAME));
+
 }
 
 
@@ -2142,12 +2448,16 @@ VOID EnqueueProbeRequest(
 
 	DBGPRINT(RT_DEBUG_TRACE, ("force out a ProbeRequest ...\n"));
 
-	NState = MlmeAllocateMemory(pAd, &pOutBuffer);  //Get an unused nonpaged memory
+	NState = MlmeAllocateMemory(pAd, &pOutBuffer);  /* Get an unused nonpaged memory */
 	if (NState == NDIS_STATUS_SUCCESS) 
 	{
-		MgtMacHeaderInit(pAd, &Hdr80211, SUBTYPE_PROBE_REQ, 0, BROADCAST_ADDR, BROADCAST_ADDR);
+		MgtMacHeaderInit(pAd, &Hdr80211, SUBTYPE_PROBE_REQ, 0, BROADCAST_ADDR,
+#ifdef P2P_SUPPORT
+							pAd->CurrentAddress,
+#endif /* P2P_SUPPORT */
+							BROADCAST_ADDR);
 
-		// this ProbeRequest explicitly specify SSID to reduce unwanted ProbeResponse
+		/* this ProbeRequest explicitly specify SSID to reduce unwanted ProbeResponse */
 		MakeOutgoingFrame(pOutBuffer,                     &FrameLen,
 						  sizeof(HEADER_802_11),          &Hdr80211,
 						  1,                              &SsidIe,
@@ -2178,8 +2488,7 @@ VOID BuildEffectedChannelList(
 								pAd->MlmeAux.AddHtInfo.ControlChan, 
 								pAd->MlmeAux.AddHtInfo.AddHtInfo.ExtChanOffset));
 
-	// 802.11n D4 11.14.3.3: If no secondary channel has been selected, all channels in the frequency band shall be scanned.
-	//if (pAd->MacTab.Content[BSSID_WCID].HTPhyMode.field.BW == BW_20)	
+	/* 802.11n D4 11.14.3.3: If no secondary channel has been selected, all channels in the frequency band shall be scanned. */
 	{
 		for (k = 0;k < pAd->ChannelListNum;k++)
 		{
@@ -2190,7 +2499,7 @@ VOID BuildEffectedChannelList(
 	}	
 	
 	i = 0;
-	// Find upper and lower channel according to 40MHz current operation. 
+	/* Find upper and lower channel according to 40MHz current operation. */
 	if (pAd->CommonCfg.CentralChannel < pAd->CommonCfg.Channel)
 	{
 		UpperChannel = pAd->CommonCfg.Channel;
@@ -2204,7 +2513,7 @@ VOID BuildEffectedChannelList(
 	else
 	{
 		DBGPRINT(RT_DEBUG_TRACE, ("LinkUP 20MHz . No Effected Channel \n"));
-		// Now operating in 20MHz, doesn't find 40MHz effected channels
+		/* Now operating in 20MHz, doesn't find 40MHz effected channels */
 		return;
 	}
 
@@ -2212,7 +2521,7 @@ VOID BuildEffectedChannelList(
 
 	DBGPRINT(RT_DEBUG_TRACE, ("BuildEffectedChannelList!LowerChannel ~ UpperChannel; %d ~ %d \n", LowerChannel, UpperChannel));
 
-	// Find all channels that are below lower channel..
+	/* Find all channels that are below lower channel.. */
 	if (LowerChannel > 1)
 	{
 		EChannel[0] = LowerChannel - 1;
@@ -2228,13 +2537,13 @@ VOID BuildEffectedChannelList(
 			}
 		}
 	}
-	// Find all channels that are between  lower channel and upper channel.
+	/* Find all channels that are between  lower channel and upper channel. */
 	for (k = LowerChannel;k <= UpperChannel;k++)
 	{
 		EChannel[i] = k;
 		i++;
 	}
-	// Find all channels that are above upper channel..
+	/* Find all channels that are above upper channel.. */
 	if (UpperChannel < 14)
 	{
 		EChannel[i] = UpperChannel + 1;
@@ -2250,8 +2559,10 @@ VOID BuildEffectedChannelList(
 			}
 		}
 	}
-	// Total i channels are effected channels. 
-	// Now find corresponding channel in ChannelList array.  Then set its bEffectedChannel= TRUE
+	/* 
+	    Total i channels are effected channels. 
+	    Now find corresponding channel in ChannelList array.  Then set its bEffectedChannel= TRUE
+	*/
 	for (j = 0;j < i;j++)
 	{
 		for (k = 0;k < pAd->ChannelListNum;k++)
@@ -2271,9 +2582,8 @@ VOID DeleteEffectedChannelList(
 	IN PRTMP_ADAPTER pAd)
 {
 	UCHAR		i;
-	// Clear all bEffectedChannel in ChannelList array.
-	//for (i = 0; i < (pAd->ChannelListNum - 1); i++)
-	for (i = 0; i < pAd->ChannelListNum; i++)		
+	/*Clear all bEffectedChannel in ChannelList array. */
+ 	for (i = 0; i < pAd->ChannelListNum; i++)		
 	{
 		pAd->ChannelList[i].bEffectedChannel = FALSE;
 	}	
@@ -2317,12 +2627,12 @@ VOID CntlChannelWidth(
 	DBGPRINT(RT_DEBUG_TRACE, ("%s: SecondaryChannelOffset[%d] \n",__FUNCTION__,SecondaryChannelOffset));
 
 #ifdef DOT11_N_SUPPORT
-	// Change to AP channel
+	/*Change to AP channel */
 	if (ChannelWidth == BW_40)
 	{
 		if(SecondaryChannelOffset == EXTCHA_ABOVE)
 		{	
-			// Must using 40MHz.
+			/* Must using 40MHz. */
 			pAd->CommonCfg.BBPCurrentBW = BW_40;
 			AsicSwitchChannel(pAd, CentralChannel, FALSE);
 			AsicLockChannel(pAd, CentralChannel);
@@ -2332,13 +2642,13 @@ VOID CntlChannelWidth(
 			Value |= 0x10;
 			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R4, Value);
 
-			//  RX : control channel at lower 
+			/*  RX : control channel at lower */ 
 			RTMP_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R3, &Value);
 			Value &= (~0x20);
 			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, Value);
 #ifdef RTMP_MAC_PCI
 			pAd->StaCfg.BBPR3 = Value;
-#endif // RTMP_MAC_PCI //
+#endif /* RTMP_MAC_PCI */
 
 			RTMP_IO_READ32(pAd, TX_BAND_CFG, &Data);
 			Data &= 0xfffffffe;
@@ -2356,7 +2666,7 @@ VOID CntlChannelWidth(
 		}
 		else if (SecondaryChannelOffset == EXTCHA_BELOW)
 		{	
-			// Must using 40MHz.
+			/* Must using 40MHz. */
 			pAd->CommonCfg.BBPCurrentBW = BW_40;
 			AsicSwitchChannel(pAd, CentralChannel, FALSE);
 			AsicLockChannel(pAd, CentralChannel);
@@ -2375,7 +2685,7 @@ VOID CntlChannelWidth(
 			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, Value);
 #ifdef RTMP_MAC_PCI
 			pAd->StaCfg.BBPR3 = Value;
-#endif // RTMP_MAC_PCI //
+#endif /* RTMP_MAC_PCI */
 
 			if (pAd->MACVersion == 0x28600100)
 			{
@@ -2389,7 +2699,7 @@ VOID CntlChannelWidth(
 		}
 	}
 	else
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 	{
 		pAd->CommonCfg.BBPCurrentBW = BW_20;
 		AsicSwitchChannel(pAd, PrimaryChannel, FALSE);
@@ -2408,7 +2718,7 @@ VOID CntlChannelWidth(
 		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, Value);
 #ifdef RTMP_MAC_PCI
 		pAd->StaCfg.BBPR3 = Value;
-#endif // RTMP_MAC_PCI //
+#endif /* RTMP_MAC_PCI */
 
 		if (pAd->MACVersion == 0x28600100)
 		{
@@ -2427,6 +2737,25 @@ VOID CntlChannelWidth(
 }
 
 
-#endif // DOT11N_DRAFT3 //
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11N_DRAFT3 */
+#endif /* DOT11_N_SUPPORT */
+
+/*
+    ==========================================================================
+    Description:
+        MLME Cancel the SCAN req state machine procedure
+    ==========================================================================
+ */
+VOID ScanCnclAction(
+	IN PRTMP_ADAPTER pAd,
+	IN MLME_QUEUE_ELEM *Elem)
+{
+	BOOLEAN Cancelled;
+
+	RTMPCancelTimer(&pAd->MlmeAux.ScanTimer, &Cancelled);
+	pAd->MlmeAux.Channel = 0;
+	ScanNextChannel(pAd, OPMODE_STA);
+
+	return;
+}
 

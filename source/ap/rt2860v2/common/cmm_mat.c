@@ -45,8 +45,8 @@ extern MATProtoOps MATProtoIPv6Handle;
 extern UCHAR SNAP_802_1H[];
 extern UCHAR SNAP_BRIDGE_TUNNEL[];
 
-#define MAX_MAT_NODE_ENTRY_NUM	128	// We support maximum 128 node entry for our system
-#define MAT_NODE_ENTRY_SIZE	40 //28	// bytes   //change to 40 for IPv6Mac Table
+#define MAX_MAT_NODE_ENTRY_NUM	128	/* We support maximum 128 node entry for our system */
+#define MAT_NODE_ENTRY_SIZE	40 /*28	// bytes   //change to 40 for IPv6Mac Table */
 
 typedef struct _MATNodeEntry
 {
@@ -56,16 +56,16 @@ typedef struct _MATNodeEntry
 
 
 #ifdef KMALLOC_BATCH
-//static MATNodeEntry *MATNodeEntryPoll = NULL;
+/*static MATNodeEntry *MATNodeEntryPoll = NULL; */
 #endif
 
 static MATProtoTable MATProtoTb[]=
 {
-	{ETH_P_IP, 			&MATProtoIPHandle},			// IP handler
-	{ETH_P_ARP, 		&MATProtoARPHandle},		// ARP handler
-	{ETH_P_PPP_DISC,	&MATProtoPPPoEDisHandle}, 	// PPPoE discovery stage handler
-	{ETH_P_PPP_SES,		&MATProtoPPPoESesHandle},	// PPPoE session stage handler
-	{ETH_P_IPV6,		&MATProtoIPv6Handle},		// IPv6 handler
+	{ETH_P_IP, 			&MATProtoIPHandle},			/* IP handler */
+	{ETH_P_ARP, 		&MATProtoARPHandle},		/* ARP handler */
+	{ETH_P_PPP_DISC,	&MATProtoPPPoEDisHandle}, 	/* PPPoE discovery stage handler */
+	{ETH_P_PPP_SES,		&MATProtoPPPoESesHandle},	/* PPPoE session stage handler */
+	{ETH_P_IPV6,		&MATProtoIPv6Handle},		/* IPv6 handler */
 };
 
 #define MAX_MAT_SUPPORT_PROTO_NUM (sizeof(MATProtoTb)/sizeof(MATProtoTable))
@@ -113,7 +113,7 @@ PUCHAR MATDBEntryAlloc(IN MAT_STRUCT *pMatStruct, IN UINT32 size)
 	UCHAR *pPtr = NULL;
 
 	os_alloc_mem(NULL, (PUCHAR *)&pPtr, size);
-	//pPtr = kmalloc(size, MEM_ALLOC_FLAG);
+	/*pPtr = kmalloc(size, MEM_ALLOC_FLAG); */
 
 #endif
 
@@ -171,7 +171,8 @@ VOID dumpPkt(PUCHAR pHeader, int len)
 PUCHAR MATEngineTxHandle(
 	IN PRTMP_ADAPTER	pAd,
 	IN PNDIS_PACKET	    pPkt,
-	IN UINT				ifIdx)
+	IN UINT				ifIdx,
+	IN UCHAR    OpMode)
 {
 	PUCHAR 		pLayerHdr = NULL, pPktHdr = NULL,  pMacAddr = NULL;
 	UINT16		protoType, protoType_ori;
@@ -190,10 +191,10 @@ PUCHAR MATEngineTxHandle(
 	
 	protoType_ori = get_unaligned((PUINT16)(pPktHdr + 12));
 	
-	// Get the upper layer protocol type of this 802.3 pkt.
+	/* Get the upper layer protocol type of this 802.3 pkt. */
 	protoType = OS_NTOHS(protoType_ori);
 
-	// handle 802.1q enabled packet. Skip the VLAN tag field to get the protocol type.
+	/* handle 802.1q enabled packet. Skip the VLAN tag field to get the protocol type. */
 	if (protoType == 0x8100)
 	{
 		protoType_ori = get_unaligned((PUINT16)(pPktHdr + 12 + 4));
@@ -202,22 +203,22 @@ PUCHAR MATEngineTxHandle(
 	}
 
 	
-	// For differnet protocol, dispatch to specific handler
+	/* For differnet protocol, dispatch to specific handler */
 	for (i=0; i < MAX_MAT_SUPPORT_PROTO_NUM; i++)
 	{
 		if (protoType == MATProtoTb[i].protocol)
 		{
-			pHandle = MATProtoTb[i].pHandle;	// the pHandle must not be null!
+			pHandle = MATProtoTb[i].pHandle;	/* the pHandle must not be null! */
 			pLayerHdr = bVLANPkt ? (pPktHdr + MAT_VLAN_ETH_HDR_LEN) : (pPktHdr + MAT_ETHER_HDR_LEN);
 #ifdef CONFIG_AP_SUPPORT
 #ifdef APCLI_SUPPORT
 			IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
 				pMacAddr = &pAd->ApCfg.ApCliTab[ifIdx].CurrentAddress[0];
-#endif // APCLI_SUPPORT //
-#endif // CONFIG_AP_SUPPORT //
+#endif /* APCLI_SUPPORT */
+#endif /* CONFIG_AP_SUPPORT */
 
 #ifdef CONFIG_STA_SUPPORT
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 
 			if (pHandle->tx!=NULL)
 				retSkb = pHandle->tx((PVOID)&pAd->MatCfg, RTPKT_TO_OSPKT(pPkt), pLayerHdr, pMacAddr);
@@ -270,23 +271,23 @@ PUCHAR MATEngineRxHandle(
 	if (!pPktHdr)
 		return NULL;
 
-	// If it's a multicast/broadcast packet, we do nothing.
+	/* If it's a multicast/broadcast packet, we do nothing. */
 	if (IS_GROUP_MAC(pPktHdr))
 		return NULL;
 
-	// Get the upper layer protocol type of this 802.3 pkt and dispatch to specific handler
+	/* Get the upper layer protocol type of this 802.3 pkt and dispatch to specific handler */
 	protoType = OS_NTOHS(get_unaligned((PUINT16)(pPktHdr + 12)));
 	
 	for (i=0; i<MAX_MAT_SUPPORT_PROTO_NUM; i++)
 	{
 		if (protoType == MATProtoTb[i].protocol)
 		{
-			pHandle = MATProtoTb[i].pHandle;	// the pHandle must not be null!
+			pHandle = MATProtoTb[i].pHandle;	/* the pHandle must not be null! */
 			pLayerHdr = (pPktHdr + MAT_ETHER_HDR_LEN);
-//			RTMP_SEM_LOCK(&MATDBLock);
+/*			RTMP_SEM_LOCK(&MATDBLock); */
 			if(pHandle->rx!=NULL)
 				pMacAddr = pHandle->rx((PVOID)&pAd->MatCfg, RTPKT_TO_OSPKT(pPkt), pLayerHdr, NULL);
-//			RTMP_SEM_UNLOCK(&MATDBLock);
+/*			RTMP_SEM_UNLOCK(&MATDBLock); */
 			break;
 		}
 	}
@@ -310,21 +311,21 @@ BOOLEAN MATPktRxNeedConvert(
 #ifdef APCLI_SUPPORT
 		int i = 0;
 		
-		// Check if the packet will be send to apcli interface.
+		/* Check if the packet will be send to apcli interface. */
 		while(i<MAX_APCLI_NUM)
 		{
-			//BSSID match the ApCliBssid ?(from a valid AP)
+			/*BSSID match the ApCliBssid ?(from a valid AP) */
 			if ((pAd->ApCfg.ApCliTab[i].Valid == TRUE) 
 				&& (net_dev == pAd->ApCfg.ApCliTab[i].dev))
 				return TRUE;
 			i++;
 		}
-#endif // APCLI_SUPPORT //
+#endif /* APCLI_SUPPORT */
 	}
-#endif // CONFIG_AP_SUPPORT //
+#endif /* CONFIG_AP_SUPPORT */
 
 #ifdef CONFIG_STA_SUPPORT
-#endif // CONFIG_STA_SUPPORT //
+#endif /* CONFIG_STA_SUPPORT */
 
 	return FALSE;
 	
@@ -340,7 +341,7 @@ NDIS_STATUS MATEngineExit(
 	if(pAd->MatCfg.status == MAT_ENGINE_STAT_EXITED)
 		return TRUE;
 	
-	// For each registered protocol, we call it's exit handler.
+	/* For each registered protocol, we call it's exit handler. */
 	for (i=0; i<MAX_MAT_SUPPORT_PROTO_NUM; i++)
 	{
 			pHandle = MATProtoTb[i].pHandle;
@@ -349,7 +350,7 @@ NDIS_STATUS MATEngineExit(
 	}
 
 #ifdef KMALLOC_BATCH
-	// Free the memory used to store node entries.
+	/* Free the memory used to store node entries. */
 	if (pAd->MatCfg.pMATNodeEntryPoll)
 	{
 		os_free_mem(pAd, pAd->MatCfg.pMATNodeEntryPoll);
@@ -374,8 +375,9 @@ NDIS_STATUS MATEngineInit(
 		return TRUE;
 	
 #ifdef KMALLOC_BATCH
-	// Allocate memory for node entry, we totally allocate 128 entries and link them together.
-	pAd->MatCfg.pMATNodeEntryPoll = kmalloc(sizeof(MATNodeEntry) * MAX_MAT_NODE_ENTRY_NUM, GFP_KERNEL);
+	/* Allocate memory for node entry, we totally allocate 128 entries and link them together. */
+/*	pAd->MatCfg.pMATNodeEntryPoll = kmalloc(sizeof(MATNodeEntry) * MAX_MAT_NODE_ENTRY_NUM, GFP_KERNEL); */
+	os_alloc_mem_suspend(NULL, (UCHAR **)&(pAd->MatCfg.pMATNodeEntryPoll), sizeof(MATNodeEntry) * MAX_MAT_NODE_ENTRY_NUM);
 	if (pAd->MatCfg.pMATNodeEntryPoll != NULL)
 	{
 		MATNodeEntry *pPtr=NULL;
@@ -393,7 +395,7 @@ NDIS_STATUS MATEngineInit(
 	}
 #endif
 
-	// For each specific protocol, call it's init function.
+	/* For each specific protocol, call it's init function. */
 	for (i = 0; i < MAX_MAT_SUPPORT_PROTO_NUM; i++)
 	{
 			pHandle = MATProtoTb[i].pHandle;
@@ -410,14 +412,14 @@ NDIS_STATUS MATEngineInit(
 		}
 	}
 
-	NdisAllocateSpinLock(&pAd->MatCfg.MATDBLock);
+	NdisAllocateSpinLock(pAd, &pAd->MatCfg.MATDBLock);
 	pAd->MatCfg.pPriv = (VOID *)pAd;
 	pAd->MatCfg.status = MAT_ENGINE_STAT_INITED;
 
 	return TRUE;
 
 init_failed:
-	// For each specific protocol, call it's exit function.
+	/* For each specific protocol, call it's exit function. */
 	for (i = 0; i < MAX_MAT_SUPPORT_PROTO_NUM; i++)
 	{
 		if ((pHandle = MATProtoTb[i].pHandle) != NULL)
@@ -435,11 +437,11 @@ init_failed:
 	if (pAd->MatCfg.pMATNodeEntryPoll)
 		os_free_mem(pAd, pAd->MatCfg.pMATNodeEntryPoll);
 	pAd->MatCfg.status = MAT_ENGINE_STAT_EXITED;
-#endif // KMALLOC_BATCH //
+#endif /* KMALLOC_BATCH */
 
 	return FALSE;
 	
 }
 
-#endif // MAT_SUPPORT //
+#endif /* MAT_SUPPORT */
 

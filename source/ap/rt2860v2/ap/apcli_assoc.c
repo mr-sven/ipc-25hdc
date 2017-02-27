@@ -104,20 +104,20 @@ VOID ApCliAssocStateMachineInit(
 		(STATE_MACHINE_FUNC)Drop, APCLI_ASSOC_IDLE,
 		APCLI_ASSOC_MACHINE_BASE);
 
-	// first column
+	/* first column */
 	StateMachineSetAction(S, APCLI_ASSOC_IDLE, APCLI_MT2_MLME_ASSOC_REQ, (STATE_MACHINE_FUNC)ApCliMlmeAssocReqAction);
 	StateMachineSetAction(S, APCLI_ASSOC_IDLE, APCLI_MT2_MLME_DISASSOC_REQ, (STATE_MACHINE_FUNC)ApCliMlmeDisassocReqAction);
 	StateMachineSetAction(S, APCLI_ASSOC_IDLE, APCLI_MT2_PEER_DISASSOC_REQ, (STATE_MACHINE_FUNC)ApCliPeerDisassocAction);
    
-	// second column
+	/* second column */
 	StateMachineSetAction(S, APCLI_ASSOC_WAIT_RSP, APCLI_MT2_MLME_ASSOC_REQ, (STATE_MACHINE_FUNC)ApCliInvalidStateWhenAssoc);
 	StateMachineSetAction(S, APCLI_ASSOC_WAIT_RSP, APCLI_MT2_MLME_DISASSOC_REQ, (STATE_MACHINE_FUNC)ApCliInvalidStateWhenDisassociate);
 	StateMachineSetAction(S, APCLI_ASSOC_WAIT_RSP, APCLI_MT2_PEER_DISASSOC_REQ, (STATE_MACHINE_FUNC)ApCliPeerDisassocAction);
 	StateMachineSetAction(S, APCLI_ASSOC_WAIT_RSP, APCLI_MT2_PEER_ASSOC_RSP, (STATE_MACHINE_FUNC)ApCliPeerAssocRspAction);
 	StateMachineSetAction(S, APCLI_ASSOC_WAIT_RSP, APCLI_MT2_ASSOC_TIMEOUT, (STATE_MACHINE_FUNC)ApCliAssocTimeoutAction);
 
-	// timer init
-	RTMPInitTimer(pAd, &pAd->MlmeAux.ApCliAssocTimer, GET_TIMER_FUNCTION(ApCliAssocTimeout), pAd, FALSE);
+	/* timer init */
+	RTMPInitTimer(pAd, &pAd->ApCliMlmeAux.ApCliAssocTimer, GET_TIMER_FUNCTION(ApCliAssocTimeout), pAd, FALSE);
 
 	for (i=0; i < MAX_APCLI_NUM; i++)
 		pAd->ApCfg.ApCliTab[i].AssocCurrState = APCLI_ASSOC_IDLE;
@@ -192,11 +192,10 @@ static VOID ApCliMlmeAssocReqAction(
 	USHORT ifIndex = (USHORT)(Elem->Priv);
 	PULONG pCurrState = &pAd->ApCfg.ApCliTab[ifIndex].AssocCurrState;
 
-
 	if (ifIndex >= MAX_APCLI_NUM)
 		return;
 
-	// Block all authentication request durning WPA block period
+	/* Block all authentication request durning WPA block period */
 	if (pAd->ApCfg.ApCliTab[ifIndex].bBlockAssoc == TRUE)
 	{
 		DBGPRINT(RT_DEBUG_TRACE, ("APCLI_ASSOC - Block Auth request durning WPA block period!\n"));
@@ -207,10 +206,10 @@ static VOID ApCliMlmeAssocReqAction(
 	}
 	else if(MlmeAssocReqSanity(pAd, Elem->Msg, Elem->MsgLen, ApAddr, &CapabilityInfo, &Timeout, &ListenIntv))
 	{
-		RTMPCancelTimer(&pAd->MlmeAux.ApCliAssocTimer, &Cancelled);
+		RTMPCancelTimer(&pAd->ApCliMlmeAux.ApCliAssocTimer, &Cancelled);
 
-		// allocate and send out AssocRsp frame
-		NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);  //Get an unused nonpaged memory
+		/* allocate and send out AssocRsp frame */
+		NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);  /*Get an unused nonpaged memory */
 		if (NStatus != NDIS_STATUS_SUCCESS)
 		{
 			DBGPRINT(RT_DEBUG_TRACE, ("APCLI_ASSOC - ApCliMlmeAssocReqAction() allocate memory failed \n"));
@@ -223,82 +222,74 @@ static VOID ApCliMlmeAssocReqAction(
 			return;
 		}
 
+
 		DBGPRINT(RT_DEBUG_TRACE, ("APCLI_ASSOC - Send ASSOC request...\n"));
 		ApCliMgtMacHeaderInit(pAd, &AssocHdr, SUBTYPE_ASSOC_REQ, 0, ApAddr, ApAddr, ifIndex);
 
-		// Build basic frame first
+		/* Build basic frame first */
 		MakeOutgoingFrame(pOutBuffer,               &FrameLen,
 			sizeof(HEADER_802_11),    &AssocHdr,
 			2,                        &CapabilityInfo,
 			2,                        &ListenIntv,
 			1,                        &SsidIe,
-			1,                        &pAd->MlmeAux.SsidLen, 
-			pAd->MlmeAux.SsidLen,     pAd->MlmeAux.Ssid,
+			1,                        &pAd->ApCliMlmeAux.SsidLen, 
+			pAd->ApCliMlmeAux.SsidLen,     pAd->ApCliMlmeAux.Ssid,
 			1,                        &SupRateIe,
-			1,                        &pAd->MlmeAux.SupRateLen,
-			pAd->MlmeAux.SupRateLen,  pAd->MlmeAux.SupRate,
+			1,                        &pAd->ApCliMlmeAux.SupRateLen,
+			pAd->ApCliMlmeAux.SupRateLen,  pAd->ApCliMlmeAux.SupRate,
 			END_OF_ARGS);
 
-		if(pAd->MlmeAux.ExtRateLen != 0)
+		if(pAd->ApCliMlmeAux.ExtRateLen != 0)
 		{
 			MakeOutgoingFrame(pOutBuffer + FrameLen,    &tmp,
 				1,                        &ExtRateIe,
-				1,                        &pAd->MlmeAux.ExtRateLen,
-				pAd->MlmeAux.ExtRateLen,  pAd->MlmeAux.ExtRate,                           
+				1,                        &pAd->ApCliMlmeAux.ExtRateLen,
+				pAd->ApCliMlmeAux.ExtRateLen,  pAd->ApCliMlmeAux.ExtRate,                           
 				END_OF_ARGS);
 			FrameLen += tmp;
 		}
 
 #ifdef DOT11_N_SUPPORT
-		// HT
-		if ((pAd->MlmeAux.HtCapabilityLen > 0) && (pAd->CommonCfg.PhyMode >= PHY_11ABGN_MIXED))
+		/* HT */
+		if ((pAd->ApCliMlmeAux.HtCapabilityLen > 0) && (pAd->CommonCfg.PhyMode >= PHY_11ABGN_MIXED))
 		{
 			ULONG TmpLen;
-			//UCHAR HtLen;
-			//UCHAR BROADCOM[4] = {0x0, 0x90, 0x4c, 0x33};
-//2008/12/17:KH modified to fix the low throughput of  AP-Client  on Big-Endian Platform<--
+		    HT_CAPABILITY_IE HtCapabilityTmp;
+
+            NdisZeroMemory(&HtCapabilityTmp, sizeof(HT_CAPABILITY_IE));
+            NdisMoveMemory(&HtCapabilityTmp, &pAd->ApCliMlmeAux.HtCapability, pAd->ApCliMlmeAux.HtCapabilityLen);
+#ifdef DOT11N_SS3_SUPPORT
+			HtCapabilityTmp.MCSSet[2] = (pAd->ApCliMlmeAux.HtCapability.MCSSet[2] & pAd->ApCfg.ApCliTab[ifIndex].RxMcsSet[2]);
+#endif /* DOT11N_SS3_SUPPORT */
+
 #ifdef RT_BIG_ENDIAN
-		        HT_CAPABILITY_IE HtCapabilityTmp;
-#endif			
-
-#ifndef RT_BIG_ENDIAN
-			{
-				MakeOutgoingFrame(pOutBuffer + FrameLen,            &TmpLen,
-							  1,                                &HtCapIe,
-							  1,                                &pAd->MlmeAux.HtCapabilityLen,
-							 pAd->MlmeAux.HtCapabilityLen,          &pAd->MlmeAux.HtCapability, 
-							  END_OF_ARGS);
-			}
-#else
-                	NdisZeroMemory(&HtCapabilityTmp, sizeof(HT_CAPABILITY_IE));
-               	 	NdisMoveMemory(&HtCapabilityTmp, &pAd->MlmeAux.HtCapability, pAd->MlmeAux.HtCapabilityLen);
-        		*(USHORT *)(&HtCapabilityTmp.HtCapInfo) = SWAP16(*(USHORT *)(&HtCapabilityTmp.HtCapInfo));
-        		*(USHORT *)(&HtCapabilityTmp.ExtHtCapInfo) = SWAP16(*(USHORT *)(&HtCapabilityTmp.ExtHtCapInfo));
-
-        		MakeOutgoingFrame(pOutBuffer + FrameLen,         &TmpLen,
-        							1,                           &HtCapIe,
-        							1,                           &pAd->MlmeAux.HtCapabilityLen,
-        							pAd->MlmeAux.HtCapabilityLen,&HtCapabilityTmp, 
-        							END_OF_ARGS);
-#endif
-//2008/12/17:KH modified to fix the low throughput of  AP-Client  on Big-Endian Platform-->	
+        	*(USHORT *)(&HtCapabilityTmp.HtCapInfo) = SWAP16(*(USHORT *)(&HtCapabilityTmp.HtCapInfo));
+        	*(USHORT *)(&HtCapabilityTmp.ExtHtCapInfo) = SWAP16(*(USHORT *)(&HtCapabilityTmp.ExtHtCapInfo));
+#endif /* RT_BIG_ENDINA */
+        	MakeOutgoingFrame(pOutBuffer + FrameLen,         &TmpLen,
+        						1,                           &HtCapIe,
+        						1,                           &pAd->ApCliMlmeAux.HtCapabilityLen,
+        						pAd->ApCliMlmeAux.HtCapabilityLen,&HtCapabilityTmp, 
+        						END_OF_ARGS);
 			FrameLen += TmpLen;
 		}
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 
 #ifdef AGGREGATION_SUPPORT
-		// add Ralink proprietary IE to inform AP this STA is going to use AGGREGATION or PIGGY-BACK+AGGREGATION
-		// Case I: (Aggregation + Piggy-Back)
-		// 1. user enable aggregation, AND
-		// 2. Mac support piggy-back
-		// 3. AP annouces it's PIGGY-BACK+AGGREGATION-capable in BEACON
-		// Case II: (Aggregation)
-		// 1. user enable aggregation, AND
-		// 2. AP annouces it's AGGREGATION-capable in BEACON
+		/*
+			add Ralink proprietary IE to inform AP this STA is going to use AGGREGATION or PIGGY-BACK+AGGREGATION
+			Case I: (Aggregation + Piggy-Back)
+				1. user enable aggregation, AND
+				2. Mac support piggy-back
+				3. AP annouces it's PIGGY-BACK+AGGREGATION-capable in BEACON
+			Case II: (Aggregation)
+				1. user enable aggregation, AND
+				2. AP annouces it's AGGREGATION-capable in BEACON
+		*/
 		if (pAd->CommonCfg.bAggregationCapable)
 		{
 #ifdef PIGGYBACK_SUPPORT
-			if ((pAd->CommonCfg.bPiggyBackCapable) && ((pAd->MlmeAux.APRalinkIe & 0x00000003) == 3))
+			if ((pAd->CommonCfg.bPiggyBackCapable) && ((pAd->ApCliMlmeAux.APRalinkIe & 0x00000003) == 3))
 			{
 				ULONG TmpLen;
 				UCHAR RalinkIe[9] = {IE_VENDOR_SPECIFIC, 7, 0x00, 0x0c, 0x43, 0x03, 0x00, 0x00, 0x00}; 
@@ -307,8 +298,8 @@ static VOID ApCliMlmeAssocReqAction(
 								  END_OF_ARGS);
 				FrameLen += TmpLen;
 			} else
-#endif // PIGGYBACK_SUPPORT //
-			if (pAd->MlmeAux.APRalinkIe & 0x00000001)
+#endif /* PIGGYBACK_SUPPORT */
+			if (pAd->ApCliMlmeAux.APRalinkIe & 0x00000001)
 			{
 				ULONG TmpLen;
 				UCHAR RalinkIe[9] = {IE_VENDOR_SPECIFIC, 7, 0x00, 0x0c, 0x43, 0x01, 0x00, 0x00, 0x00}; 
@@ -327,11 +318,11 @@ static VOID ApCliMlmeAssocReqAction(
 							  END_OF_ARGS);
 			FrameLen += TmpLen;
 		}
-#endif  // AGGREGATION_SUPPORT //
+#endif  /* AGGREGATION_SUPPORT */
 
-		if (pAd->MlmeAux.APEdcaParm.bValid)
+		if (pAd->ApCliMlmeAux.APEdcaParm.bValid)
 		{
-			if (pAd->CommonCfg.bAPSDCapable && pAd->MlmeAux.APEdcaParm.bAPSDCapable)
+			if (pAd->CommonCfg.bAPSDCapable && pAd->ApCliMlmeAux.APEdcaParm.bAPSDCapable)
 			{
 				QBSS_STA_INFO_PARM QosInfo;
 
@@ -345,8 +336,8 @@ static VOID ApCliMlmeAssocReqAction(
 			}
 			else
 			{
-                // The Parameter Set Count is set to ¡§0¡¨ in the association request frames
-                // WmeIe[8] |= (pAd->MlmeAux.APEdcaParm.EdcaUpdateCount & 0x0f);
+                /* The Parameter Set Count is set to ¡§0¡¨ in the association request frames */
+                /* WmeIe[8] |= (pAd->MlmeAux.APEdcaParm.EdcaUpdateCount & 0x0f); */
 			}
 
 			MakeOutgoingFrame(pOutBuffer + FrameLen,    &tmp,
@@ -355,19 +346,19 @@ static VOID ApCliMlmeAssocReqAction(
 			FrameLen += tmp;
 		}
 
-		// Append RSN_IE when WPAPSK OR WPA2PSK,
+		/* Append RSN_IE when WPAPSK OR WPA2PSK, */
 		if (((pAd->ApCfg.ApCliTab[ifIndex].AuthMode == Ndis802_11AuthModeWPAPSK) || 
-            (pAd->ApCfg.ApCliTab[ifIndex].AuthMode == Ndis802_11AuthModeWPA2PSK))            
+            (pAd->ApCfg.ApCliTab[ifIndex].AuthMode == Ndis802_11AuthModeWPA2PSK))
 #ifdef WSC_AP_SUPPORT
 			&& (pAd->ApCfg.ApCliTab[ifIndex].WscControl.WscConfMode == WSC_DISABLE)
-#endif // WSC_AP_SUPPORT //
+#endif /* WSC_AP_SUPPORT */
             )
 		{
 			UCHAR RSNIe = IE_WPA;
 			
 			if (pAd->ApCfg.ApCliTab[ifIndex].AuthMode == Ndis802_11AuthModeWPA2PSK)
 				RSNIe = IE_WPA2;
-			
+
 			MakeOutgoingFrame(pOutBuffer + FrameLen,    				&tmp,
 			              	1,                                      	&RSNIe,
 	                        1,                                      	&pAd->ApCfg.ApCliTab[ifIndex].RSNIE_Len,
@@ -380,7 +371,7 @@ static VOID ApCliMlmeAssocReqAction(
 		MiniportMMRequest(pAd, QID_AC_BE, pOutBuffer, FrameLen);
 		MlmeFreeMemory(pAd, pOutBuffer);
 
-		RTMPSetTimer(&pAd->MlmeAux.ApCliAssocTimer, Timeout);
+		RTMPSetTimer(&pAd->ApCliMlmeAux.ApCliAssocTimer, Timeout);
 		*pCurrState = APCLI_ASSOC_WAIT_RSP;
 	} 
 	else
@@ -418,11 +409,11 @@ static VOID ApCliMlmeDisassocReqAction(
 	PULONG pCurrState = &pAd->ApCfg.ApCliTab[ifIndex].AssocCurrState;
 
 
-	// skip sanity check
+	/* skip sanity check */
 	pDisassocReq = (PMLME_DISASSOC_REQ_STRUCT)(Elem->Msg);
 
-	// allocate and send out DeassocReq frame
-	NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);  //Get an unused nonpaged memory
+	/* allocate and send out DeassocReq frame */
+	NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);  /*Get an unused nonpaged memory */
 	if (NStatus != NDIS_STATUS_SUCCESS) 
 	{
 		DBGPRINT(RT_DEBUG_TRACE, ("APCLI_ASSOC - ApCliMlmeDisassocReqAction() allocate memory failed\n"));
@@ -445,15 +436,15 @@ static VOID ApCliMlmeDisassocReqAction(
 	MiniportMMRequest(pAd, QID_AC_BE, pOutBuffer, FrameLen);
 	MlmeFreeMemory(pAd, pOutBuffer);
 
-	// Set the control aux SSID to prevent it reconnect to old SSID
-	// Since calling this indicate user don't want to connect to that SSID anymore.
-	// 2004-11-10 can't reset this info, cause it may be the new SSID that user requests for
-	// pAd->MlmeAux.SsidLen = MAX_LEN_OF_SSID;
-	// NdisZeroMemory(pAd->MlmeAux.Ssid, MAX_LEN_OF_SSID);
-	// NdisZeroMemory(pAd->MlmeAux.Bssid, MAC_ADDR_LEN);
+	/* Set the control aux SSID to prevent it reconnect to old SSID */
+	/* Since calling this indicate user don't want to connect to that SSID anymore. */
+	/* 2004-11-10 can't reset this info, cause it may be the new SSID that user requests for */
+	/* pAd->MlmeAux.SsidLen = MAX_LEN_OF_SSID; */
+	/* NdisZeroMemory(pAd->MlmeAux.Ssid, MAX_LEN_OF_SSID); */
+	/* NdisZeroMemory(pAd->MlmeAux.Bssid, MAC_ADDR_LEN); */
 
-	//pAd->PortCfg.DisassocReason = REASON_DISASSOC_STA_LEAVING;
-	//COPY_MAC_ADDR(pAd->PortCfg.DisassocSta, pDisassocReq->Addr);
+	/*pAd->PortCfg.DisassocReason = REASON_DISASSOC_STA_LEAVING; */
+	/*COPY_MAC_ADDR(pAd->PortCfg.DisassocSta, pDisassocReq->Addr); */
 
 
     *pCurrState = APCLI_ASSOC_IDLE;
@@ -487,7 +478,7 @@ static VOID ApCliPeerAssocRspAction(
 	UCHAR				CkipFlag;
 	APCLI_CTRL_MSG_STRUCT	ApCliCtrlMsg;
 	HT_CAPABILITY_IE	HtCapability;
-	ADD_HT_INFO_IE		AddHtInfo;	// AP might use this additional ht info IE 
+	ADD_HT_INFO_IE		AddHtInfo;	/* AP might use this additional ht info IE */
 	UCHAR				HtCapabilityLen;
 	UCHAR				AddHtInfoLen;
 	UCHAR				NewExtChannelOffset = 0xff;
@@ -498,14 +489,14 @@ static VOID ApCliPeerAssocRspAction(
 	if (ApCliPeerAssocRspSanity(pAd, Elem->Msg, Elem->MsgLen, Addr2, &CapabilityInfo, &Status, &Aid, SupRate, &SupRateLen, ExtRate, &ExtRateLen, 
 		&HtCapability, &AddHtInfo, &HtCapabilityLen,&AddHtInfoLen,&NewExtChannelOffset, &EdcaParm, &CkipFlag))
 	{
-		// The frame is for me ?
-		if(MAC_ADDR_EQUAL(Addr2, pAd->MlmeAux.Bssid))
+		/* The frame is for me ? */
+		if(MAC_ADDR_EQUAL(Addr2, pAd->ApCliMlmeAux.Bssid))
 		{
 			DBGPRINT(RT_DEBUG_TRACE, ("APCLI_ASSOC - receive ASSOC_RSP to me (status=%d)\n", Status));
-			RTMPCancelTimer(&pAd->MlmeAux.ApCliAssocTimer, &Cancelled);
+			RTMPCancelTimer(&pAd->ApCliMlmeAux.ApCliAssocTimer, &Cancelled);
 			if(Status == MLME_SUCCESS) 
 			{
-				// go to procedure listed on page 376
+				/* go to procedure listed on page 376 */
 				ApCliAssocPostProc(pAd, Addr2, CapabilityInfo, ifIndex, SupRate, SupRateLen,
 					ExtRate, ExtRateLen, &EdcaParm, &HtCapability, HtCapabilityLen, &AddHtInfo);  	
 
@@ -550,7 +541,7 @@ static VOID ApCliPeerDisassocAction(
 
 	if(PeerDisassocSanity(pAd, Elem->Msg, Elem->MsgLen, Addr2, &Reason))
 	{
-		if (MAC_ADDR_EQUAL(pAd->MlmeAux.Bssid, Addr2))
+		if (MAC_ADDR_EQUAL(pAd->ApCliMlmeAux.Bssid, Addr2))
 		{
 			*pCurrState = APCLI_ASSOC_IDLE;
 
@@ -644,19 +635,19 @@ static VOID ApCliAssocPostProc(
 	IN ADD_HT_INFO_IE *pAddHtInfo)
 {
 
-	pAd->MlmeAux.BssType = BSS_INFRA;	
-	pAd->MlmeAux.CapabilityInfo = CapabilityInfo & SUPPORTED_CAPABILITY_INFO;
-	NdisMoveMemory(&pAd->MlmeAux.APEdcaParm, pEdcaParm, sizeof(EDCA_PARM));
+	pAd->ApCliMlmeAux.BssType = BSS_INFRA;	
+	pAd->ApCliMlmeAux.CapabilityInfo = CapabilityInfo & SUPPORTED_CAPABILITY_INFO;
+	NdisMoveMemory(&pAd->ApCliMlmeAux.APEdcaParm, pEdcaParm, sizeof(EDCA_PARM));
 
-	// filter out un-supported rates
-	pAd->MlmeAux.SupRateLen = SupRateLen;
-	NdisMoveMemory(pAd->MlmeAux.SupRate, SupRate, SupRateLen);
-    RTMPCheckRates(pAd, pAd->MlmeAux.SupRate, &pAd->MlmeAux.SupRateLen);
+	/* filter out un-supported rates */
+	pAd->ApCliMlmeAux.SupRateLen = SupRateLen;
+	NdisMoveMemory(pAd->ApCliMlmeAux.SupRate, SupRate, SupRateLen);
+    RTMPCheckRates(pAd, pAd->ApCliMlmeAux.SupRate, &pAd->ApCliMlmeAux.SupRateLen);
 
-	// filter out un-supported rates
-	pAd->MlmeAux.ExtRateLen = ExtRateLen;
-	NdisMoveMemory(pAd->MlmeAux.ExtRate, ExtRate, ExtRateLen);
-    RTMPCheckRates(pAd, pAd->MlmeAux.ExtRate, &pAd->MlmeAux.ExtRateLen);
+	/* filter out un-supported rates */
+	pAd->ApCliMlmeAux.ExtRateLen = ExtRateLen;
+	NdisMoveMemory(pAd->ApCliMlmeAux.ExtRate, ExtRate, ExtRateLen);
+    RTMPCheckRates(pAd, pAd->ApCliMlmeAux.ExtRate, &pAd->ApCliMlmeAux.ExtRateLen);
 
 	DBGPRINT(RT_DEBUG_TRACE, (HtCapabilityLen ? "%s===> 11n HT STA\n" : "%s===> legacy STA\n", __FUNCTION__));
 
@@ -665,9 +656,10 @@ static VOID ApCliAssocPostProc(
 	{
 		ApCliCheckHt(pAd, IfIndex, pHtCapability, pAddHtInfo);
 	}
-#endif // DOT11_N_SUPPORT //
+#endif /* DOT11_N_SUPPORT */
 
 }
 
-#endif // APCLI_SUPPORT //
+
+#endif /* APCLI_SUPPORT */
 

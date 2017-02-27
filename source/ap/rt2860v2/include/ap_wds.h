@@ -33,6 +33,25 @@
 
 #define WDS_ENTRY_RETRY_INTERVAL	(100 * OS_HZ / 1000)
 
+#ifdef WDS_VLAN_SUPPORT /* support WDS VLAN */
+#define WDS_VLAN_INFO_GET(												\
+	__pAd, __VLAN_VID, __VLAN_Priority, __FromWhichBSSID) 				\
+{																		\
+	if ((__FromWhichBSSID >= MIN_NET_DEVICE_FOR_WDS) &&					\
+		(__FromWhichBSSID < (MIN_NET_DEVICE_FOR_WDS+MAX_WDS_ENTRY)) &&	\
+		(__pAd->WdsTab.WdsEntry[										\
+			__FromWhichBSSID - MIN_NET_DEVICE_FOR_WDS].VLAN_VID != 0))	\
+	{																	\
+		__VLAN_VID = __pAd->WdsTab.WdsEntry[							\
+				__FromWhichBSSID - MIN_NET_DEVICE_FOR_WDS].VLAN_VID;	\
+		__VLAN_Priority = __pAd->WdsTab.WdsEntry[						\
+				__FromWhichBSSID - MIN_NET_DEVICE_FOR_WDS].VLAN_Priority;\
+	}																	\
+}
+#else
+#define WDS_VLAN_INFO_GET(												\
+	__pAd, __VLAN_VID, __VLAN_Priority, __FromWhichBSSID)
+#endif /* WDS_VLAN_SUPPORT */
 
 static inline BOOLEAN WDS_IF_UP_CHECK(
 	IN  PRTMP_ADAPTER   pAd, 
@@ -42,8 +61,8 @@ static inline BOOLEAN WDS_IF_UP_CHECK(
 		(ifidx >= MAX_WDS_ENTRY))
 		return FALSE;
 
-//	if(RTMP_OS_NETDEV_STATE_RUNNING(pAd->WdsTab.WdsEntry[ifidx].dev))
-// Patch for wds ,when dirver call apmlmeperiod => APMlmeDynamicTxRateSwitching check if wds device ready
+/*	if(RTMP_OS_NETDEV_STATE_RUNNING(pAd->WdsTab.WdsEntry[ifidx].dev)) */
+/* Patch for wds ,when dirver call apmlmeperiod => APMlmeDynamicTxRateSwitching check if wds device ready */
 if ((pAd->WdsTab.WdsEntry[ifidx].dev != NULL) && (RTMP_OS_NETDEV_STATE_RUNNING(pAd->WdsTab.WdsEntry[ifidx].dev)))
 		return TRUE;
 
@@ -94,15 +113,9 @@ MAC_TABLE_ENTRY *FindWdsEntry(
 VOID WdsTableMaintenance(
     IN PRTMP_ADAPTER    pAd);
 
-VOID RT28xx_WDS_Init(
-	IN PRTMP_ADAPTER pAd,
-	IN PNET_DEV net_dev);
-
 VOID RT28xx_WDS_Close(
 	IN PRTMP_ADAPTER pAd);
 
-VOID RT28xx_WDS_Remove(
-	IN PRTMP_ADAPTER pAd);
 
 VOID WdsDown(
 	IN PRTMP_ADAPTER pAd);
@@ -140,20 +153,22 @@ VOID rtmp_read_wds_from_file(
 VOID WdsPrepareWepKeyFromMainBss(
 	IN  PRTMP_ADAPTER pAd);
 
-INT WdsVirtualIFSendPackets(
-	IN PNDIS_PACKET pSkb, 
-	IN PNET_DEV dev);
 
-INT WdsVirtualIF_open(
-	IN PNET_DEV dev);
+VOID WDS_Init(
+	IN	PRTMP_ADAPTER				pAd,
+	IN	RTMP_OS_NETDEV_OP_HOOK		*pNetDevOps);
 
-INT WdsVirtualIF_close(
-	IN PNET_DEV dev);
+VOID WDS_Remove(
+	IN	PRTMP_ADAPTER				pAd);
 
-INT WdsVirtualIF_ioctl(
-	IN PNET_DEV net_dev, 
-	IN OUT struct ifreq *rq, 
-	IN INT cmd);
+BOOLEAN WDS_StatsGet(
+	IN	PRTMP_ADAPTER				pAd,
+	IN	RT_CMD_STATS				*pStats);
+
+VOID AP_WDS_KeyNameMakeUp(
+	IN	STRING						*pKey,
+	IN	UINT32						KeyMaxSize,
+	IN	INT							KeyId);
 
 /*
 	==========================================================================
@@ -201,5 +216,5 @@ static inline BOOLEAN ValidWdsEntry(
 
 	return result;
 }
-#endif // _AP_WDS_H_ //
+#endif /* _AP_WDS_H_ */
 
