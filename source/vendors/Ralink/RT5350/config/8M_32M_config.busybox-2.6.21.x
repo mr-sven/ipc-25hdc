@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Busybox version: 1.12.1
-# Tue Feb 28 15:18:59 2017
+# Tue Feb 28 15:29:18 2017
 #
 CONFIG_HAVE_DOT_CONFIG=y
 
@@ -182,7 +182,7 @@ CONFIG_LS=y
 # CONFIG_FEATURE_LS_FILETYPES is not set
 # CONFIG_FEATURE_LS_FOLLOWLINKS is not set
 # CONFIG_FEATURE_LS_RECURSIVE is not set
-# CONFIG_FEATURE_LS_SORTFILES is not set
+CONFIG_FEATURE_LS_SORTFILES=y
 # CONFIG_FEATURE_LS_TIMESTAMPS is not set
 # CONFIG_FEATURE_LS_USERNAME is not set
 # CONFIG_FEATURE_LS_COLOR is not set
