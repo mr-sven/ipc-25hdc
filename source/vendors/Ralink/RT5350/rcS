@@ -5,6 +5,7 @@ mkdir -p /var/log
 
 # set system hostname
 sysctl -w kernel.hostname=`nvram_get HostName`
+echo "`nvram_get HostName`" > /etc/hostname
 
 cat /etc_ro/motd
 

@@ -1,7 +1,6 @@
 #!/bin/sh
 
 [ -f /var/run/hardware ] && exit
-
 touch /var/run/hardware
 
 # load wireless module
