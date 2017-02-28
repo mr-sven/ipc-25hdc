@@ -23,7 +23,7 @@ ROMFS_DIRS = \
 	bin \
 	dev dev/pts \
 	etc \
-	etc_ro etc_ro/wlan etc_ro/Wireless \
+	etc_ro etc_ro/wlan etc_ro/default \
 	lib lib/modules lib/ipsec \
 	proc \
 	sbin \
@@ -52,7 +52,7 @@ endif
 	$(ROMFSINST) /etc_ro/profile
 
 	$(ROMFSINST) /etc_ro/wlan/RT5350_AP_1T1R_V1_0.bin
-	$(ROMFSINST) /etc_ro/Wireless/RT2860STA.dat
+	$(ROMFSINST) /etc_ro/default/RT2860.dat
 
 	$(ROMFSINST) /etc_ro/init
 
