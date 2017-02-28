@@ -53,6 +53,7 @@ endif
 
 	$(ROMFSINST) /etc_ro/wlan/RT5350_AP_1T1R_V1_0.bin
 	$(ROMFSINST) /etc_ro/default/RT2860.dat
+	$(ROMFSINST) /etc_ro/default/FACTORY.dat
 
 	$(ROMFSINST) /etc_ro/init
 
