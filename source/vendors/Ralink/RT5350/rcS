@@ -6,10 +6,10 @@ cat /etc_ro/motd
 #goahead&
 
 #for telnet debugging
-telnetd
+#telnetd
 
 #for syslogd
 mkdir -p /var/log
 
-/sbin/internet.sh
-/sbin/ntp.sh
+#/sbin/internet.sh
+#/sbin/ntp.sh

@@ -18,8 +18,7 @@ ROMFS_DIRS = \
 	bin \
 	dev dev/pts \
 	etc \
-	etc_ro \
-	etc_ro/wlan \
+	etc_ro etc_ro/wlan etc_ro/Wireless \
 	lib lib/modules lib/ipsec \
 	proc \
 	sbin \
@@ -46,6 +45,7 @@ endif
 	$(ROMFSINST) /etc/fstab
 
 	$(ROMFSINST) /etc_ro/wlan/RT5350_AP_1T1R_V1_0.bin
+	$(ROMFSINST) /etc_ro/Wireless/RT2860STA.dat
 
 romfs.post:: 
 	[ -d $(IMAGEDIR) ] || mkdir -p $(IMAGEDIR)
