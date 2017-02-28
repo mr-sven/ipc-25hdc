@@ -76,4 +76,8 @@ $ LZMA_PATH=/opt/buildroot-gcc342/bin make
 |  13 |    out    | Yellow LED on network connector socket |
 |  14 |     in    | IR-Filter active on Cam                |
 
+# Build software
 
+```bash
+
+$ make menuconfig
