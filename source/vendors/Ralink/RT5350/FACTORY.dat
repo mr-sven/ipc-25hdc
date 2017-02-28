@@ -1,0 +1,5 @@
+#The word of "Default" must not be removed
+Default
+HostName=ralink
+Login=admin
+Password=admin
