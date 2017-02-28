@@ -7,6 +7,11 @@ RAMDISK_SIZE  := $(shell echo $(CONFIG_BLK_DEV_RAM_SIZE))
 MKIMAGE_DIR = $(ROOTDIR)/user/mkimage
 CUR_DIR = $(shell pwd)
 COMP = lzma
+
+ifneq ($(CONFIG_LZMA_PATH),)
+LZMA_PATH = $(CONFIG_LZMA_PATH)
+endif
+
 ifdef LZMA_PATH
 COMP_BIN = $(LZMA_PATH)/$(COMP)
 else

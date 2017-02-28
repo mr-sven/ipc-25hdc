@@ -57,6 +57,7 @@ echo "fi"
 
 cat <<!EOF
 string 'Cross Compiler Path' 			CONFIG_CROSS_COMPILER_PATH /opt/buildroot-gcc342/bin
+string 'LZMA Path' 				CONFIG_LZMA_PATH /opt/buildroot-gcc342/bin
 comment ' '
 bool 'Default all settings (lose changes)'	CONFIG_DEFAULTS_OVERRIDE
 bool 'Customize Kernel Settings'		CONFIG_DEFAULTS_KERNEL
