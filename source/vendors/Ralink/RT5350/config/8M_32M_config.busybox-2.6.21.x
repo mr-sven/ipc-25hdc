@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Busybox version: 1.12.1
-# Tue Feb 14 12:03:06 2017
+# Tue Feb 28 11:13:48 2017
 #
 CONFIG_HAVE_DOT_CONFIG=y
 
@@ -743,7 +743,7 @@ CONFIG_PS=y
 # CONFIG_FEATURE_PS_TIME is not set
 # CONFIG_FEATURE_PS_UNUSUAL_SYSTEMS is not set
 # CONFIG_RENICE is not set
-# CONFIG_BB_SYSCTL is not set
+CONFIG_BB_SYSCTL=y
 # CONFIG_TOP is not set
 # CONFIG_FEATURE_TOP_CPU_USAGE_PERCENTAGE is not set
 # CONFIG_FEATURE_TOP_CPU_GLOBAL_PERCENTS is not set
@@ -768,7 +768,7 @@ CONFIG_ASH=y
 # CONFIG_ASH_JOB_CONTROL is not set
 # CONFIG_ASH_READ_NCHARS is not set
 # CONFIG_ASH_READ_TIMEOUT is not set
-# CONFIG_ASH_ALIAS is not set
+CONFIG_ASH_ALIAS=y
 # CONFIG_ASH_MATH_SUPPORT is not set
 # CONFIG_ASH_MATH_SUPPORT_64 is not set
 # CONFIG_ASH_GETOPTS is not set

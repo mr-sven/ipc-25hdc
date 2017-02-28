@@ -39,13 +39,17 @@ ifneq	($(LINUXDIR),linux-2.4.x)
 	@if [ \! -d $(ROMFSDIR)/dev ];then mkdir -p $(ROMFSDIR)/dev;fi;
 	./makedevlinks $(ROMFSDIR)
 endif
+	$(ROMFSINST) /etc/fstab
+
 	$(ROMFSINST) /etc_ro/rcS
 	$(ROMFSINST) /etc_ro/inittab
 	$(ROMFSINST) /etc_ro/motd
-	$(ROMFSINST) /etc/fstab
+	$(ROMFSINST) /etc_ro/profile
 
 	$(ROMFSINST) /etc_ro/wlan/RT5350_AP_1T1R_V1_0.bin
 	$(ROMFSINST) /etc_ro/Wireless/RT2860STA.dat
+
+	$(ROMFSINST) /etc_ro/init
 
 romfs.post:: 
 	[ -d $(IMAGEDIR) ] || mkdir -p $(IMAGEDIR)

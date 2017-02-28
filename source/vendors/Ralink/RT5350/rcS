@@ -1,7 +1,22 @@
 #!/bin/sh
 mount -a
 mkdir -p /var/run
+mkdir -p /var/log
+
+# set system hostname
+sysctl -w kernel.hostname=`nvram_get HostName`
+
 cat /etc_ro/motd
+
+# start init scripts
+for i in /etc_ro/init/*.sh; do
+    if [ -r $i ]; then
+        . $i
+    fi
+done
+
+. /etc/profile
+
 #nvram_daemon&
 #goahead&
 
@@ -9,7 +24,6 @@ cat /etc_ro/motd
 #telnetd
 
 #for syslogd
-mkdir -p /var/log
 
 #/sbin/internet.sh
 #/sbin/ntp.sh
