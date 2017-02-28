@@ -81,3 +81,13 @@ $ LZMA_PATH=/opt/buildroot-gcc342/bin make
 ```bash
 
 $ make menuconfig
+# Select the Product you wish to target  ---> 
+#    Ralink Products ---> RT5350
+#    Default Configuration File ---> 8M/32M(WebCam)
+#Kernel/Library/Defaults Selection  --->
+#    Default all settings (lose changes) ---> *
+
+$ make dep
+
+$ make 
+```
