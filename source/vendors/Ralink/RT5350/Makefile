@@ -28,7 +28,7 @@ ROMFS_DIRS = \
 	proc \
 	sbin \
 	sys \
-	usr usr/bin usr/sbin usr/codepages \
+	usr usr/bin usr/sbin usr/codepages usr/share usr/share/udhcpc \
 	var 
 
 clean:
@@ -52,10 +52,11 @@ endif
 	$(ROMFSINST) /etc_ro/profile
 
 	$(ROMFSINST) /etc_ro/wlan/RT5350_AP_1T1R_V1_0.bin
-	$(ROMFSINST) /etc_ro/default/RT2860.dat
 	$(ROMFSINST) /etc_ro/default/FACTORY.dat
 
 	$(ROMFSINST) /etc_ro/init
+
+	$(ROMFSINST) /usr/share/udhcpc/default.script
 
 romfs.post:: 
 	[ -d $(IMAGEDIR) ] || mkdir -p $(IMAGEDIR)
