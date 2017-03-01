@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Busybox version: 1.12.1
-# Tue Feb 28 15:29:18 2017
+# Wed Mar  1 15:22:42 2017
 #
 CONFIG_HAVE_DOT_CONFIG=y
 
@@ -769,7 +769,7 @@ CONFIG_ASH=y
 # CONFIG_ASH_READ_NCHARS is not set
 # CONFIG_ASH_READ_TIMEOUT is not set
 CONFIG_ASH_ALIAS=y
-# CONFIG_ASH_MATH_SUPPORT is not set
+CONFIG_ASH_MATH_SUPPORT=y
 # CONFIG_ASH_MATH_SUPPORT_64 is not set
 # CONFIG_ASH_GETOPTS is not set
 # CONFIG_ASH_BUILTIN_ECHO is not set
