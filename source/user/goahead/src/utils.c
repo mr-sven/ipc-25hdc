@@ -233,46 +233,6 @@ int checkSemicolon(char *str)
 }
 
 /*
- * argument: ip address
- * return: 1 = the given ip address is within LAN's scope
- *         0 = otherwise
- */
-int isInLan(char *radius_ip_addr)
-{
-    char lan_if_addr[16];
-    char lan_if_netmask[16];
-
-    struct in_addr lan_ip;
-    struct in_addr lan_netmask;
-    struct in_addr radius_ip;
-
-    if ((getIfIp(getLanIfName(), lan_if_addr)) == -1) {
-        printf("getLanIP error\n");
-        return 0;
-    }
-    if ((getIfNetmask(getLanIfName(), lan_if_netmask)) == -1) {
-        printf("getLanNetmask error\n");
-        return 0;
-    }
-
-    inet_aton(lan_if_addr, &lan_ip);
-    inet_aton(lan_if_netmask, &lan_netmask);
-    inet_aton(radius_ip_addr, &radius_ip);
-
-    printf("lan_ip:%08x\n", lan_ip.s_addr);
-    printf("lan_netmask:%08x\n", lan_netmask.s_addr);
-    printf("radius_ip:%08x\n", radius_ip.s_addr);
-
-    if ((lan_ip.s_addr & lan_netmask.s_addr) == (radius_ip.s_addr & lan_netmask.s_addr) ){
-        printf("in Lan\n");
-        return 1;
-    } else {
-        printf("not in lan\n");
-        return 0;
-    }
-}
-
-/*
  * substitution of getNthValue which dosen't destroy the original value
  */
 int getNthValueSafe(int index, char *value, char delimit, char *result, int len)
@@ -465,28 +425,6 @@ int ledAlways(int gpio, int on)
 		return gpioLedSet(gpio, 0, RALINK_GPIO_LED_INFINITY, 1, 1, RALINK_GPIO_LED_INFINITY);
 }
 
-int ledWps(int gpio, int mode)
-{
-	switch (mode) {
-		case WPS_LED_RESET:
-			return gpioLedSet(gpio, 0, RALINK_GPIO_LED_INFINITY, 1, 1, RALINK_GPIO_LED_INFINITY);
-			break;
-		case WPS_LED_PROGRESS:
-			return gpioLedSet(gpio, 2, 1, RALINK_GPIO_LED_INFINITY, 1, RALINK_GPIO_LED_INFINITY);
-			break;
-		case WPS_LED_ERROR:
-			return gpioLedSet(gpio, 1, 1, RALINK_GPIO_LED_INFINITY, 1, RALINK_GPIO_LED_INFINITY);
-			break;
-		case WPS_LED_SESSION_OVERLAP:
-			return gpioLedSet(gpio, 1, 1, 10, 5, RALINK_GPIO_LED_INFINITY);
-			break;
-		case WPS_LED_SUCCESS:
-			gpioLedSet(gpio, 3000, 1, 1, 1, 1);
-			break;
-	}
-	return 0;
-}
-
 /*
  * concatenate a string with an integer
  * ex: racat("SSID", 1) will return "SSID1"
@@ -511,43 +449,6 @@ void websLongWrite(webs_t wp, char *longstr)
     }
     return;
 }
-
-/*********************************************************************
- * Web Related Utilities
- */
-
-void formDefineUtilities(void)
-{
-	websAspDefine(T("getModIns"), getModIns);
-	websAspDefine(T("getCfgGeneral"), getCfgGeneral);
-	websAspDefine(T("getCfgToHTML"), getCfgToHTML);
-	websAspDefine(T("getCfgNthGeneral"), getCfgNthGeneral);
-	websAspDefine(T("getCfgZero"), getCfgZero);
-	websAspDefine(T("getCfgNthZero"), getCfgNthZero);
-	websAspDefine(T("getCfg2General"), getCfg2General);
-	websAspDefine(T("getCfg2NthGeneral"), getCfg2NthGeneral);
-	websAspDefine(T("getCfg2Zero"), getCfg2Zero);
-	websAspDefine(T("getCfg2NthZero"), getCfg2NthZero);
-	websAspDefine(T("getCfg3General"), getCfg3General);
-	websAspDefine(T("getCfg3Zero"), getCfg3Zero);
-	websAspDefine(T("getDpbSta"), getDpbSta);
-	websAspDefine(T("getLangBuilt"), getLangBuilt);
-	websAspDefine(T("getMiiInicBuilt"), getMiiInicBuilt);
-	websAspDefine(T("getPlatform"), getPlatform);
-	websAspDefine(T("getStationBuilt"), getStationBuilt);
-	websAspDefine(T("getSysBuildTime"), getSysBuildTime);
-	websAspDefine(T("getSdkVersion"), getSdkVersion);
-	websAspDefine(T("getSysUptime"), getSysUptime);
-	websAspDefine(T("getPortStatus"), getPortStatus);
-	websAspDefine(T("isOnePortOnly"), isOnePortOnly);
-	websFormDefine(T("forceMemUpgrade"), forceMemUpgrade);
-	websFormDefine(T("setOpMode"), setOpMode);
-#if defined CONFIG_USB_STORAGE && defined CONFIG_USER_STORAGE
-	websFormDefine(T("ScanUSBFirmware"), ScanUSBFirmware);
-#endif
-	websAspDefine(T("getHWNATBuilt"), getHWNATBuilt);
-}
-
 
 /* 
  * arguments: type - 0 = return the status of module insertion (default)
@@ -776,130 +677,6 @@ static int getCfgNthZero(int eid, webs_t wp, int argc, char_t **argv)
  * description: read general configurations from nvram
  *              if value is NULL -> ""
  */
-#if defined (RTDEV_SUPPORT)
-static int getCfg2General(int eid, webs_t wp, int argc, char_t **argv)
-{
-	int type;
-	char_t *field;
-	char *value;
-
-	if (ejArgs(argc, argv, T("%d %s"), &type, &field) < 2) {
-		return websWrite(wp, T("Insufficient args\n"));
-	}
-	value = (char *) nvram_bufget(RTDEV_NVRAM, field);
-	if (1 == type) {
-		if (NULL == value)
-			return websWrite(wp, T(""));
-		return websWrite(wp, T("%s"), value);
-	}
-	if (NULL == value)
-		ejSetResult(eid, "");
-	ejSetResult(eid, value);
-	return 0;
-}
-
-/* 
- * arguments: type - 0 = return the configuration of 'field' (default)
- *                   1 = write the configuration of 'field' 
- *            field - parameter name in nvram
- *            idx - index of nth
- * description: read general configurations from nvram (if value is NULL -> "")
- *              parse it and return the Nth value delimited by semicolon
- */
-static int getCfg2NthGeneral(int eid, webs_t wp, int argc, char_t **argv)
-{
-	int type, idx;
-	char_t *field;
-	char *value;
-	char nth[128];
-
-	memset(nth, 0, 128);
-	if (ejArgs(argc, argv, T("%d %s %d"), &type, &field, &idx) < 3) {
-		return websWrite(wp, T("Insufficient args\n"));
-	}
-	value = (char *) nvram_bufget(RTDEV_NVRAM, field);
-	if (1 == type) {
-		if (NULL == value)
-			return websWrite(wp, T(""));
-		getNthValueSafe(idx, value, ';', nth, 128);
-		if (NULL == nth)
-			return websWrite(wp, T(""));
-		return websWrite(wp, T("%s"), nth);
-	}
-	if (NULL == value)
-		ejSetResult(eid, "");
-	getNthValueSafe(idx, value, ';', nth, 128);
-	if (NULL == nth)
-		ejSetResult(eid, "");
-	ejSetResult(eid, value);
-	return 0;
-}
-
-/*
- * arguments: type - 0 = return the configuration of 'field' (default)
- *                   1 = write the configuration of 'field' 
- *            field - parameter name in nvram
- * description: read general configurations from nvram
- *              if value is NULL -> "0"
- */
-static int getCfg2Zero(int eid, webs_t wp, int argc, char_t **argv)
-{
-	int type;
-	char_t *field;
-	char *value;
-
-	if (ejArgs(argc, argv, T("%d %s"), &type, &field) < 2) {
-		return websWrite(wp, T("Insufficient args\n"));
-	}
-	value = (char *) nvram_bufget(RTDEV_NVRAM, field);
-	if (1 == type) {
-		if (!strcmp(value, ""))
-			return websWrite(wp, T("0"));
-		return websWrite(wp, T("%s"), value);
-	}
-	if (!strcmp(value, ""))
-		ejSetResult(eid, "0");
-	ejSetResult(eid, value);
-	return 0;
-}
-
-/* 
- * arguments: type - 0 = return the configuration of 'field' (default)
- *                   1 = write the configuration of 'field' 
- *            field - parameter name in nvram
- *            idx - index of nth
- * description: read general configurations from nvram (if value is NULL -> "0")
- *              parse it and return the Nth value delimited by semicolon
- */
-static int getCfg2NthZero(int eid, webs_t wp, int argc, char_t **argv)
-{
-	int type, idx;
-	char_t *field;
-	char *value;
-	char nth[128];
-
-	memset(nth, 0, 128);
-	if (ejArgs(argc, argv, T("%d %s %d"), &type, &field, &idx) < 3) {
-		return websWrite(wp, T("Insufficient args\n"));
-	}
-	value = (char *) nvram_bufget(RTDEV_NVRAM, field);
-	if (1 == type) {
-		if (!strcmp(value, ""))
-			return websWrite(wp, T("0"));
-		getNthValueSafe(idx, value, ';', nth, 128);
-		if (NULL == nth)
-			return websWrite(wp, T("0"));
-		return websWrite(wp, T("%s"), nth);
-	}
-	if (!strcmp(value, ""))
-		ejSetResult(eid, "0");
-	getNthValueSafe(idx, value, ';', nth, 128);
-	if (NULL == nth)
-		ejSetResult(eid, "0");
-	ejSetResult(eid, value);
-	return 0;
-}
-#else
 static int  getCfg2General(int eid, webs_t wp, int argc, char_t **argv)
 {
 	return 0;
@@ -919,82 +696,10 @@ static int  getCfg2NthZero(int eid, webs_t wp, int argc, char_t **argv)
 {
 	return 0;
 }
-#endif
-
-#if defined (CONFIG_RT2561_AP) || defined (CONFIG_RT2561_AP_MODULE)
-/* 
- * arguments: type - 0 = return the configuration of 'field' (default)
- *                   1 = write the configuration of 'field' 
- *            field - parameter name in nvram
- * description: read general configurations from nvram
- *              if value is NULL -> ""
- */
-static int getCfg3General(int eid, webs_t wp, int argc, char_t **argv)
-{
-	int type;
-	char_t *field;
-	char *value;
-	
-	if (ejArgs(argc, argv, T("%d %s"), &type, &field) < 2) {
-		return websWrite(wp, T("Insufficient args\n"));
-	}
-	value = (char *) nvram_bufget(RTDEV_NVRAM, field);
-	if (1 == type) {
-		if (NULL == value)
-			return websWrite(wp, T(""));
-		return websWrite(wp, T("%s"), value);
-	}
-	if (NULL == value)
-		ejSetResult(eid, "");
-	ejSetResult(eid, value);
-	return 0;
-}
-
-/*
- * arguments: type - 0 = return the configuration of 'field' (default)
- *                   1 = write the configuration of 'field' 
- *            field - parameter name in nvram
- * description: read general configurations from nvram
- *              if value is NULL -> "0"
- */
-static int getCfg3Zero(int eid, webs_t wp, int argc, char_t **argv)
-{
-	int type;
-	char_t *field;
-	char *value;
-
-	if (ejArgs(argc, argv, T("%d %s"), &type, &field) < 2) {
-		return websWrite(wp, T("Insufficient args"));
-	}
-	value = (char *) nvram_bufget(RTDEV_NVRAM, field);
-	if (1 == type) {
-		if (!strcmp(value, ""))
-			return websWrite(wp, T("0"));
-		return websWrite(wp, T("%s"), value);
-	}
-	if (!strcmp(value, ""))
-		ejSetResult(eid, "0");
-	ejSetResult(eid, value);
-	return 0;
-}
-#else
-static int  getCfg3General(int eid, webs_t wp, int argc, char_t **argv)
-{
-	return 0;
-}
-static int  getCfg3Zero(int eid, webs_t wp, int argc, char_t **argv)
-{
-	return 0;
-}
-#endif
 
 static int getDpbSta(int eid, webs_t wp, int argc, char_t **argv)
 {
-#if defined (CONFIG_RT2860V2_STA_DPB) || defined (CONFIG_RT2860V2_STA_ETH_CONVERT)
-	return websWrite(wp, T("1"));
-#else
 	return websWrite(wp, T("0"));
-#endif
 }
 
 static int getLangBuilt(int eid, webs_t wp, int argc, char_t **argv)
@@ -1041,64 +746,18 @@ static int getMiiInicBuilt(int eid, webs_t wp, int argc, char_t **argv)
 static int getPlatform(int eid, webs_t wp, int argc, char_t **argv)
 {
 	char platform[8];
-#if defined CONFIG_RALINK_RT2883
-	strcpy(platform, "RT2883");
-#elif defined CONFIG_RALINK_RT3052
-	strcpy(platform, "RT3052");
-#elif defined CONFIG_RALINK_RT3883
-	strcpy(platform, "RT3883");
-#elif defined CONFIG_RALINK_RT3352
-	strcpy(platform, "RT3352");
-#elif defined CONFIG_RALINK_RT5350
 	strcpy(platform, "RT5350");
-#elif defined CONFIG_RALINK_RT6855
-	strcpy(platform, "RT6855");
-#elif defined CONFIG_RALINK_RT6352
-	strcpy(platform, "RT6352");
-#elif defined CONFIG_RALINK_RT71100
-	strcpy(platform, "RT71100");
-#else
-	strcpy(platform, "RT2880");
-#endif
-
-#ifdef CONFIG_RAETH_ROUTER
-	return websWrite(wp, T("%s with IC+ MACPHY"), platform);
-#endif
-#ifdef CONFIG_ICPLUS_PHY
-    return websWrite(wp, T("%s with IC+ PHY"), platform);
-#endif
-#ifdef CONFIG_RT_MARVELL
-	return websWrite(wp, T("%s with MARVELL"), platform);
-#endif
-#ifdef CONFIG_MAC_TO_MAC_MODE
-	return websWrite(wp, T("%s with Vitesse"), platform);
-#endif
-#ifdef CONFIG_RT_3052_ESW
-	return websWrite(wp, T("%s embedded switch"), platform);
-#endif
-#if defined (CONFIG_GE1_RGMII_AN) && defined (CONFIG_GE2_RGMII_AN)
-	return websWrite(wp, T("%s with Two Giga PHY"), platform);
-#endif
-    
-	return 0;
+	return websWrite(wp, T("%s webcam"), platform);
 }
 
 static int getHWNATBuilt(int eid, webs_t wp, int argc, char_t **argv)
 {
-#ifdef CONFIG_RA_NAT_HW
-	return websWrite(wp, T("1"));
-#else
 	return websWrite(wp, T("0"));
-#endif
 }
 
 static int getStationBuilt(int eid, webs_t wp, int argc, char_t **argv)
 {
-#if defined CONFIG_RT2860V2_STA || defined CONFIG_RT2860V2_STA_MODULE
 	return websWrite(wp, T("1"));
-#else
-	return websWrite(wp, T("0"));
-#endif
 }
 
 /*
@@ -1160,75 +819,12 @@ static int getSysUptime(int eid, webs_t wp, int argc, char_t **argv)
 
 static int getPortStatus(int eid, webs_t wp, int argc, char_t **argv)
 {
-#if (defined (CONFIG_RAETH_ROUTER) || defined CONFIG_RT_3052_ESW) && defined (CONFIG_USER_ETHTOOL)
-	int port, rc;
-	FILE *fp;
-	char buf[1024];
-
-	for(port=0; port<5; port++){
-		char *pos;
-		char link = '0';
-		int speed = 100;
-		char duplex = 'F';
-		FILE *proc_file = fopen("/proc/rt2880/gmac", "w");
-		if(!proc_file){
-			websWrite(wp, T("-1"));		// indicate error
-			return 0;
-		}
-		fprintf(proc_file, "%d", port);
-		fclose(proc_file);
-
-		if((fp = popen("ethtool eth2", "r")) == NULL){
-			websWrite(wp, T("-1"));		// indicate error
-			return 0;
-		}
-		rc = fread(buf, 1, 1024, fp);
-		pclose(fp);
-		if(rc == -1){
-			websWrite(wp, T("-1"));		// indicate error
-			return 0;
-		}else{
-			// get Link status
-			if((pos = strstr(buf, "Link detected: ")) != NULL){
-				pos += strlen("Link detected: ");
-				if(*pos == 'y')
-					link = '1';
-			}
-			// get speed
-			if((pos = strstr(buf, "Speed: ")) != NULL){
-				pos += strlen("Speed: ");
-				if(*pos == '1' && *(pos+1) == '0' && *(pos+2) == 'M')
-					speed = 10;
-				if(*pos == '1' && *(pos+1) == '0' && *(pos+2) == '0' && *(pos+3) == '0' && *(pos+4) == 'M')
-					speed = 1000;
-			}
-			// get duplex
-			if((pos = strstr(buf, "Duplex: ")) != NULL){
-				pos += strlen("Duplex: ");
-				if(*pos == 'H')
-					duplex = 'H';
-			}
-
-			websWrite(wp, T("%c,%d,%c,"), link, speed, duplex);
-		}
-	}
-	return 0;
-#else
 	websWrite(wp, T("-1"));
 	return 0;
-#endif
-
 }
 
 inline int getOnePortOnly(void)
 {
-#if defined CONFIG_RAETH_ROUTER || defined CONFIG_MAC_TO_MAC_MODE || defined CONFIG_RT_3052_ESW
-	return 0;
-#elif defined CONFIG_ICPLUS_PHY
-	return 1;
-#else
-	return 0;
-#endif
 	return 0;
 }
 
@@ -1295,234 +891,9 @@ static void forceMemUpgrade(webs_t wp, char_t *path, char_t *query)
     websDone(wp, 200);	
 }
 
-#if defined CONFIG_USB_STORAGE && defined CONFIG_USER_STORAGE
-static void ScanUSBFirmware(webs_t wp, char_t *path, char_t *query)
-{
-	setFirmwarePath();
-	printf("%s enter\n", __FUNCTION__);
-
-	websRedirect(wp, "adm/upload_firmware.asp");
-}
-#endif
-
 /* goform/setOpMode */
 static void setOpMode(webs_t wp, char_t *path, char_t *query)
 {
-	char_t	*mode, *nat_en, *tcp_timeout, *udp_timeout;
-	const char	*old_mode = nvram_bufget(RT2860_NVRAM, "OperationMode");
-	const char	*old_nat = nvram_bufget(RT2860_NVRAM, "natEnabled");
-	int		need_commit = 0;
-#if defined CONFIG_RAETH_ROUTER || defined CONFIG_MAC_TO_MAC_MODE || defined CONFIG_RT_3052_ESW || defined CONFIG_ICPLUS_PHY
-#else
-	char	*wan_ip, *lan_ip;
-#endif
-#if defined (CONFIG_RT2860V2_STA_DPB) || defined (CONFIG_RT2860V2_STA_ETH_CONVERT)
-	char_t	*econv = "", *econv_mode, *econv_mac;
-#endif
-#if defined (RT2860_APCLI_SUPPORT)
-	char_t	*apcli = "";
-#endif
-#if defined (CONFIG_RTDEV_MII)
-	char_t	*mii;
-#endif
-
-	mode = websGetVar(wp, T("opMode"), T("0")); 
-	nat_en = websGetVar(wp, T("natEnbl"), T("0"));
-	tcp_timeout = websGetVar(wp, T("tcp_timeout"), T(""));
-	udp_timeout = websGetVar(wp, T("udp_timeout"), T(""));
-#ifdef CONFIG_RA_NAT_HW
-	char_t	*hwnat_en = websGetVar(wp, T("hwnatEnbl"), T("0"));;
-	const char	*old_hwnat = nvram_bufget(RT2860_NVRAM, "hwnatEnabled");
-#endif
-	if (strcmp(tcp_timeout, nvram_get(RT2860_NVRAM, "TcpTimeout")) || 
-		strcmp(udp_timeout, nvram_get(RT2860_NVRAM, "UdpTimeout")))
-	{
-		nvram_set(RT2860_NVRAM, "TcpTimeout", tcp_timeout); 
-		nvram_set(RT2860_NVRAM, "UdpTimeout", udp_timeout);
-		need_commit = 1;
-	}
-
-	if (!strncmp(old_mode, "0", 2)) {
-	}
-	else if (!strncmp(old_mode, "1", 2) || !strncmp(old_mode, "3", 2)) {
-		if (!strncmp(mode, "0", 2)) {
-#if defined CONFIG_RAETH_ROUTER || defined CONFIG_MAC_TO_MAC_MODE || defined CONFIG_RT_3052_ESW || defined CONFIG_ICPLUS_PHY
-#else
-			/*
-			 * mode: gateway (or ap-client) -> bridge
-			 * config: wan_ip(wired) overwrites lan_ip(bridge)
-			 */
-			wan_ip = nvram_bufget(RT2860_NVRAM, "wan_ipaddr");
-			nvram_bufset(RT2860_NVRAM, "lan_ipaddr", wan_ip);
-			need_commit = 1;
-#endif
-		}
-		if (!strncmp(mode, "2", 2)) {
-#if defined CONFIG_RAETH_ROUTER || defined CONFIG_MAC_TO_MAC_MODE || defined CONFIG_RT_3052_ESW || defined CONFIG_ICPLUS_PHY
-#else
-			/*
-			 * mode: gateway (or ap-client) -> ethernet-converter
-			 * config: wan_ip(wired) overwrites lan_ip(wired) 
-			 *         lan_ip(wireless) overwrites wan_ip(wireless)
-			 */
-			wan_ip = nvram_bufget(RT2860_NVRAM, "wan_ipaddr");
-			lan_ip = nvram_bufget(RT2860_NVRAM, "lan_ipaddr");
-			nvram_bufset(RT2860_NVRAM, "lan_ipaddr", wan_ip);
-			nvram_bufset(RT2860_NVRAM, "wan_ipaddr", lan_ip);
-			need_commit = 1;
-#endif
-		}
-	}
-	else if (!strncmp(old_mode, "2", 2)) {
-		if (!strncmp(mode, "0", 2)) {
-			/*
-			 * mode: wireless-isp -> bridge
-			 * config: lan_ip(wired) overwrites lan_ip(bridge) -> the same
-			 */
-		}
-		else if (!strncmp(mode, "1", 2) || !strncmp(mode, "3", 2)) {
-#if defined CONFIG_RAETH_ROUTER || defined CONFIG_MAC_TO_MAC_MODE || defined CONFIG_RT_3052_ESW || defined CONFIG_ICPLUS_PHY
-#else
-			/*
-			 * mode: ethernet-converter -> gateway (or ap-client)
-			 * config: lan_ip(wired) overwrites wan_ip(wired) 
-			 *         wan_ip(wireless) overwrites lan_ip(wireless)
-			 */
-			wan_ip = nvram_bufget(RT2860_NVRAM, "wan_ipaddr");
-			lan_ip = nvram_bufget(RT2860_NVRAM, "lan_ipaddr");
-			nvram_bufset(RT2860_NVRAM, "lan_ipaddr", wan_ip);
-			nvram_bufset(RT2860_NVRAM, "wan_ipaddr", lan_ip);
-			need_commit = 1;
-#endif
-		}
-	}
-
-#if defined (CONFIG_RT2860V2_STA_DPB) || defined (CONFIG_RT2860V2_STA_ETH_CONVERT)
-	if (!strncmp(mode, "0", 2)) {
-		const char *old;
-
-		econv = websGetVar(wp, T("ethConv"), T("0"));
-		econv_mode = websGetVar(wp, T("oEthConvMode"), T("0"));
-		econv_mac = websGetVar(wp, T("oEthConvMac"), T(""));
-		old = nvram_bufget(RT2860_NVRAM, "ethConvert");
-		if (strncmp(old, econv, 2)) {
-			nvram_bufset(RT2860_NVRAM, "ethConvert", econv);
-			need_commit = 1;
-		}
-		if (!strcmp(econv_mode, "0"))
-			nvram_bufset(RT2860_NVRAM, "ethConvertMAC", "00:00:00:00:00:00");
-		else if (!strcmp(econv_mode, "1"))
-			nvram_bufset(RT2860_NVRAM, "ethConvertMAC", "FF:FF:FF:FF:FF:FF");
-		else
-			nvram_bufset(RT2860_NVRAM, "ethConvertMAC", econv_mac);
-		if (!strncmp(econv, "1", 2)) {
-			//disable dhcp server in this mode
-			old = nvram_bufget(RT2860_NVRAM, "dhcpEnabled");
-			if (!strncmp(old, "1", 2)) {
-				nvram_bufset(RT2860_NVRAM, "dhcpEnabled", "0");
-				need_commit = 1;
-			}
-		}
-	}
-#endif
-#if defined (RT2860_APCLI_SUPPORT)
-	if (!strncmp(mode, "0", 2)) {
-		apcli = websGetVar(wp, T("apcliEnbl"), T("0"));
-		nvram_bufset(RT2860_NVRAM, "apClient", apcli);
-		need_commit = 1;
-	}
-#endif
-
-	//new OperationMode
-	if (strncmp(mode, old_mode, 2)) {
-		nvram_bufset(RT2860_NVRAM, "OperationMode", mode);
-
-		//from or to ap client mode
-		if (!strncmp(mode, "3", 2))
-			nvram_bufset(RT2860_NVRAM, "ApCliEnable", "1");
-		else if (!strncmp(old_mode, "3", 2))
-			nvram_bufset(RT2860_NVRAM, "ApCliEnable", "0");
-		need_commit = 1;
-	}
-
-	if (strncmp(nat_en, old_nat, 2)) {
-		nvram_bufset(RT2860_NVRAM, "natEnabled", nat_en);
-		need_commit = 1;
-	}
-#ifdef CONFIG_RA_NAT_HW
-	if (strncmp(hwnat_en, old_hwnat, 2)) {
-		nvram_bufset(RT2860_NVRAM, "hwnatEnabled", hwnat_en);
-		need_commit = 1;
-	}
-#endif
-
-	// For 100PHY  ( Ethernet Convertor with one port only)
-	// If this is one port only board(IC+ PHY) then redirect
-	// the user browser to our alias ip address.
-	if( getOnePortOnly() ){
-		//     old mode is Gateway, and new mode is BRIDGE/WirelessISP/Apcli
-		if (    (!strcmp(old_mode, "1") && !strcmp(mode, "0"))  ||
-				(!strcmp(old_mode, "1") && !strcmp(mode, "2"))  ||
-				(!strcmp(old_mode, "1") && !strcmp(mode, "3"))  ){
-			char redirect_url[512];
-			const char *lan_ip = nvram_bufget(RT2860_NVRAM, "lan_ipaddr");
-
-			if(! strlen(lan_ip))
-				lan_ip = "10.10.10.254";
-			snprintf(redirect_url, 512, "http://%s", lan_ip);
-			redirect_wholepage(wp, redirect_url);
-			goto final;
-        }
-
-		//     old mode is BRIDGE/WirelessISP/Apcli, and new mode is Gateway
-		if (    (!strcmp(old_mode, "0") && !strcmp(mode, "1"))  ||
-				(!strcmp(old_mode, "2") && !strcmp(mode, "1"))  ||
-				(!strcmp(old_mode, "3") && !strcmp(mode, "1"))  ){
-			redirect_wholepage(wp, "http://172.32.1.254");
-			goto final;
-		}
-	}
-    
-#if defined (CONFIG_RTDEV_MII)
-	mii = websGetVar(wp, T("miiMode"), T("0"));
-	if (!strncmp(mode, "0", 2)) {
-		const char *old_mii = nvram_bufget(RTDEV_NVRAM, "InicMiiEnable");
-
-		if (strncmp(mii, old_mii, 2)) {
-			nvram_set(RTDEV_NVRAM, "InicMiiEnable", mii);
-			need_commit = 1; //force to run initInternet
-		}
-	}
-	else {
-		nvram_set(RTDEV_NVRAM, "InicMiiEnable", "0");
-		need_commit = 1; //force to run initInternet
-	}
-#endif
-
-	websHeader(wp);
-	websWrite(wp, T("<h2>Operation Mode</h2>\n"));
-	websWrite(wp, T("mode: %s<br>\n"), mode);
-	if (strncmp(mode, "0", 2))
-		websWrite(wp, T("NAT enabled: %s<br>\n"), nat_en);
-#if defined (CONFIG_RT2860V2_STA_DPB) || defined (CONFIG_RT2860V2_STA_ETH_CONVERT)
-	else
-		websWrite(wp, T("DPB station: %s<br>\n"), econv);
-#endif
-#if defined (CONFIG_RTDEV_MII)
-	websWrite(wp, T("INIC MII mode: %s<br>\n"), mii);
-#endif
-	websFooter(wp);
-	websDone(wp, 200);
-
-final:
-	sleep(1);	// wait for websDone() to finish tcp http session(close socket)
-
-	//restart internet if any changes
-	if (need_commit) {
-		nvram_commit(RT2860_NVRAM);
-		updateFlash8021x(RT2860_NVRAM);
-		initInternet();
-	}
 }
 
 void ConverterStringToDisplay(char *str)

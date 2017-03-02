@@ -1,5 +1,6 @@
 #The word of "Default" must not be removed
 Default
+WebInit=1
 HostName=ralink
 Login=admin
 Password=admin

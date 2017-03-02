@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Busybox version: 1.12.1
-# Thu Mar  2 08:22:48 2017
+# Thu Mar  2 16:37:58 2017
 #
 CONFIG_HAVE_DOT_CONFIG=y
 
@@ -676,9 +676,9 @@ CONFIG_IFUPDOWN_IFSTATE_PATH=""
 # CONFIG_NC is not set
 # CONFIG_NC_SERVER is not set
 # CONFIG_NC_EXTRA is not set
-# CONFIG_NETSTAT is not set
-# CONFIG_FEATURE_NETSTAT_WIDE is not set
-# CONFIG_FEATURE_NETSTAT_PRG is not set
+CONFIG_NETSTAT=y
+CONFIG_FEATURE_NETSTAT_WIDE=y
+CONFIG_FEATURE_NETSTAT_PRG=y
 # CONFIG_NSLOOKUP is not set
 CONFIG_PING=y
 # CONFIG_PING6 is not set
