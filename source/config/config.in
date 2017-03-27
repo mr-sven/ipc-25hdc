@@ -13,6 +13,7 @@ bool 'Build libpcap'		CONFIG_LIB_LIBPCAP_FORCE
 bool 'Build libevent'		CONFIG_LIB_LIBEVENT_FORCE
 bool 'Build libncurse'		CONFIG_LIB_NCURSE_FORCE
 bool 'Build libflex'		CONFIG_LIB_FLEX_FORCE
+bool 'Build libjpeg'		CONFIG_LIB_LIBJPEG_FORCE
 bool 'Build libupnp1.3.1 (UPnP + IXML + ThreadUtil)'	CONFIG_LIB_LIBUPNP_FORCE
 bool 'Build libdb'		CONFIG_LIB_LIBDB_FORCE
 bool 'Build pcre'		CONFIG_LIB_PCRE_FORCE
