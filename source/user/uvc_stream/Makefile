@@ -9,9 +9,11 @@
 
 APP_BINARY=uvc_stream
 
-LFLAGS += -lpthread
+CFLAGS += -O2 -DLINUX -Wall
 
-OBJECTS=uvc_stream.o color.o utils.o v4l2uvc.o
+LFLAGS += -lpthread 
+
+OBJECTS=uvc_stream.o color.o utils.o v4l2uvc.o control.o
 
 all: uga_buga
 

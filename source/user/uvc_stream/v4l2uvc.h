@@ -33,11 +33,8 @@
 
 #include "uvcvideo.h"
 
-
 #define NB_BUFFER 4
 #define DHT_SIZE 432
-
-
 
 struct vdIn {
     int fd;
@@ -77,8 +74,7 @@ struct vdIn {
     int recordtime;
 };
 int
-init_videoIn(struct vdIn *vd, char *device, int width, int height, int fps,
-	     int format, int grabmethod);
+init_videoIn(struct vdIn *vd, char *device, int width, int height, int fps, int format, int grabmethod);
 int enum_controls(int vd);
 int save_controls(int vd);
 int load_controls(int vd);

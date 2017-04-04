@@ -39,6 +39,5 @@
 
 #include <stdio.h>
 
-int jpeg_decode(unsigned char **pic, unsigned char *buf, int *width,
-		int *height);
-int print_picture(FILE* file, unsigned char *buf, int size);
+int print_picture(int fd, unsigned char *buf, int size);
+//int print_picture(FILE* file, unsigned char *buf, int size);

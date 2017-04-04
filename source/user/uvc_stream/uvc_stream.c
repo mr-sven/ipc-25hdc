@@ -57,71 +57,109 @@
 #include <getopt.h>
 #include <pthread.h>
 
+#include "control.h"
 #include "v4l2uvc.h"
 #include "utils.h"
 
-#define SOURCE_VERSION "1.0"
-
+#define SOURCE_VERSION "1.3.1"
 #define BOUNDARY "arflebarfle"
 
+typedef enum { SNAPSHOT, STREAM } answer_t;
+
 /* globals */
-struct vdIn *videoIn;
-int stop=0;
+int stop=0, sd;
+int force_delay=0;
+struct control_data cd, *cdata;
 
-/* reader writer solution */
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t db = PTHREAD_MUTEX_INITIALIZER;
-int reader_cnt = 0;
+/* signal fresh frames */
+pthread_mutex_t db        = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t  db_update = PTHREAD_COND_INITIALIZER;
 
-/* global JPG frame */
+/* global JPG frame, this is more or less the "database" */
 unsigned char *g_buf = NULL;
 int g_size = 0;
 
 /* thread for clients that connected to this server */
 void *client_thread( void *arg ) {
-  FILE *fp = (FILE*)arg;
-  unsigned char *frame = (unsigned char *) calloc(1, (size_t)videoIn->framesizeIn);
+  int fd = *((int *)arg);
+  fd_set fds;
+  unsigned char *frame = (unsigned char *)calloc(1, (size_t)cd.videoIn->framesizeIn);
   int ok = 1, frame_size=0;
+  char buffer[1024] = {0};
+  struct timeval to;
+  answer_t answer = STREAM;
 
-  ok = fputs("HTTP/1.0 200 OK\r\n" \
-             "Server: UVC Streamer\r\n" \
-             "Content-Type: multipart/x-mixed-replace;boundary=" BOUNDARY "\r\n" \
-             "\r\n" \
-             "--" BOUNDARY "\n", fp);
+  if (arg!=NULL) free(arg); else exit(1);
+
+  /* set timeout to 5 seconds */
+  to.tv_sec  = 5;
+  to.tv_usec = 0;
+  FD_ZERO(&fds);
+  FD_SET(fd, &fds);
+  if( select(fd+1, &fds, NULL, NULL, &to) <= 0) {
+    close(fd);
+    free(frame);
+    return NULL;
+  }
+
+  /* find out if we should deliver something other than a stream */
+  read(fd, buffer, sizeof(buffer));
+  if ( strstr(buffer, "snapshot") != NULL ) {
+    answer = SNAPSHOT;
+  }
+
+  if( answer == SNAPSHOT) {
+    sprintf(buffer, "HTTP/1.0 200 OK\r\n" \
+                    "Server: UVC Streamer\r\n" \
+                    "Content-type: image/jpeg\r\n"
+                    "\r\n");
+    cd.snapshot = 0;                
+  } else {
+    sprintf(buffer, "HTTP/1.0 200 OK\r\n" \
+                    "Server: UVC Streamer\r\n" \
+                    "Content-Type: multipart/x-mixed-replace;boundary=" BOUNDARY "\r\n" \
+                    "Cache-Control: no-cache\r\n" \
+                    "Cache-Control: private\r\n" \
+                    "Pragma: no-cache\r\n" \
+                    "\r\n" \
+                    "--" BOUNDARY "\n");
+  }
+  ok = ( write(fd, buffer, strlen(buffer)) >= 0)?1:0;
 
   while ( ok >= 0 && !stop ) {
-    pthread_mutex_lock( &mutex );
-    reader_cnt += 1;
-    if ( reader_cnt == 1 ) {
-      pthread_mutex_lock( &db );
+
+    /* having a problem with windows (do we not always) browsers not updating the 
+       stream display, unless the browser cache is disabled - try and implement a delay
+       to allow movement to end before streem goes on - kind of works, but not well enough */
+       
+    if (cd.moved > 0){
+      SLEEP(1,0);
+      cd.moved = 0;
     }
-    pthread_mutex_unlock( &mutex );
+    /* wait for fresh frames */
+    pthread_cond_wait(&db_update, &db);
 
     /* read buffer */
     frame_size = g_size;
     memcpy(frame, g_buf, frame_size);
 
-    pthread_mutex_lock( &mutex );
-    reader_cnt -= 1;
-    if ( reader_cnt == 0 ) {
-      pthread_mutex_unlock( &db );
+    pthread_mutex_unlock( &db );
+
+    if ( answer == STREAM ) {
+      sprintf(buffer, "Content-type: image/jpeg\n\n");
+      ok = ( write(fd, buffer, strlen(buffer)) >= 0)?1:0;
+      if( ok < 0 ) break;
     }
-    pthread_mutex_unlock( &mutex );
+    
+    ok = print_picture(fd, frame, frame_size);
+    if( ok < 0 || answer == SNAPSHOT ) break;
 
-    /* send picture to client */
-    ok = fputs("Content-type: image/jpeg\n\n", fp);
+    sprintf(buffer, "\n--" BOUNDARY "\n");
+    ok = ( write(fd, buffer, strlen(buffer)) >= 0)?1:0;
     if( ok < 0 ) break;
-
-    ok = print_picture(fp, frame, frame_size);
-    if( ok < 0 ) break;
-
-    ok = fputs("\n--" BOUNDARY "\n", fp);
-    if( ok < 0 ) break;
-
-    usleep(1000*1000/videoIn->fps);
   }
-
-  fclose(fp);
+  
+  close(fd);
   free(frame);
 
   return NULL;
@@ -131,16 +169,25 @@ void *client_thread( void *arg ) {
 void *cam_thread( void *arg ) {
   while( !stop ) {
     /* grab a frame */
-    if( uvcGrab(videoIn) < 0 ) {
+    if( uvcGrab(cd.videoIn) < 0 ) {
       fprintf(stderr, "Error grabbing\n");
       exit(1);
     }
 
     /* copy frame to global buffer */
     pthread_mutex_lock( &db );
-    g_size = videoIn->buf.bytesused;
-    memcpy(g_buf, videoIn->tmpbuffer, videoIn->buf.bytesused);
+
+    g_size = cd.videoIn->buf.bytesused;
+    memcpy(g_buf, cd.videoIn->tmpbuffer, cd.videoIn->buf.bytesused);
+
+    /* signal fresh_frame */
+    pthread_cond_broadcast(&db_update);
     pthread_mutex_unlock( &db );
+
+    /* only use usleep if the fps is below 5, otherwise the overhead is too long */
+    if ( cd.videoIn->fps < 5 ) {
+      usleep(1000*1000/cd.videoIn->fps);
+    }
   }
 
   return NULL;
@@ -152,25 +199,30 @@ void help(char *progname)
   fprintf(stderr, "Usage: %s\n" \
                   " [-h | --help ]........: display this help\n" \
                   " [-d | --device ]......: video device to open (your camera)\n" \
-                  " [-r | --resolution ]..: 1280X720, 640x480, 320x240, 160x120\n" \
+                  " [-r | --resolution ]..: 1280x720, 960x720, 640x480, 320x240, 160x120\n" \
                   " [-f | --fps ].........: frames per second\n" \
-                  " [-m | --mode ]........: YUV, MJPG\n" \
                   " [-p | --port ]........: TCP-port for the server\n" \
+                  " [-c | --control_port ]: TCP-port for the motor control server\n" \
+                  
                   " [-v | --version ].....: display version information\n" \
-                  " [-b | --background]...: fork to the background, daemon mode\n", progname);
+                  " [-b | --background]...: fork to the background, daemon mode\n" \
+                  " --disable_control.....: disable the motor control server\n", progname);
   fprintf(stderr, "------------------------------------------------------------------\n");
 }
 
-void signal_handler(int sig) {
+void signal_handler(int sigm) {
   /* signal "stop" to threads */
   stop = 1;
 
   /* cleanup most important structures */
-  fprintf(stderr, "shutdown...wait for 3secs \n");
-  usleep(3000*1000);
-  close_v4l2(videoIn);
-  free(videoIn);
-
+  fprintf(stderr, "shutdown...\n");
+  usleep(1000*1000);
+  close_v4l2(cd.videoIn);
+  free(cd.videoIn);
+  if (close (sd) < 0)
+	  perror ("close sd");;
+  pthread_cond_destroy(&db_update);
+  pthread_mutex_destroy(&db);
   exit(0);
   return;
 }
@@ -220,13 +272,18 @@ Main
 int main(int argc, char *argv[])
 {
   struct sockaddr_in addr;
-  int sd, port = htons(8080), cfd, on;
-  FILE *fp;
-  pthread_t client, cam;
+  int on=1, disable_control_port = 0;
+  pthread_t client, cam, cntrl;
   char *dev = "/dev/video0";
-  int mode, width=640, height=480, fps=25, daemon=0;
-  int format = V4L2_PIX_FMT_MJPEG;
+  int fps=5, daemon=0;
 
+
+  cd.width=640;
+  cd.height=480;
+   
+  cdata = &cd;  
+  cd.control_port = htons(8081);
+  cd.stream_port = htons(8080);
   while(1) {
     int option_index = 0, c=0;
     static struct option long_options[] = \
@@ -245,8 +302,9 @@ int main(int argc, char *argv[])
       {"version", no_argument, 0, 0},
       {"b", no_argument, 0, 0},
       {"background", no_argument, 0, 0},
-      {"m", required_argument, 0, 0},
-      {"mode", required_argument, 0, 0},
+      {"c", required_argument, 0, 0},
+      {"control_port", required_argument, 0, 0},
+      {"disable_control", no_argument, 0, 0},
       {0, 0, 0, 0}
     };
 
@@ -275,11 +333,14 @@ int main(int argc, char *argv[])
       /* r, resolution */
       case 4:
       case 5:
-        if ( strcmp("1280x720", optarg) == 0 ) { width=1280; height=720; }
-        else if ( strcmp("640x480", optarg) == 0 ) { width=640; height=480; }
-        else if ( strcmp("320x240", optarg) == 0 ) { width=320; height=240; }
-        else if ( strcmp("160x120", optarg) == 0 ) { width=160; height=120; }
-        else fprintf(stderr, "ignoring unsupported resolution\n");
+        if ( strcmp("1280x720", optarg) == 0 ) { cd.width=1280; cd.height=720; }
+        else if ( strcmp("960x720", optarg) == 0 ) { cd.width=960; cd.height=720; }
+        else if ( strcmp("640x480", optarg) == 0 ) { cd.width=640; cd.height=480; }
+        else if ( strcmp("320x240", optarg) == 0 ) { cd.width=320; cd.height=240; }
+        else if ( strcmp("160x120", optarg) == 0 ) { cd.width=160; cd.height=120; }
+        else { 
+              fprintf(stderr, "ignoring unsupported resolution\n");
+        }      
         break;
 
       /* f, fps */
@@ -291,7 +352,7 @@ int main(int argc, char *argv[])
       /* p, port */
       case 8:
       case 9:
-        port=htons(atoi(optarg));
+        cd.stream_port=htons(atoi(optarg));
         break;
 
       /* v, version */
@@ -303,22 +364,21 @@ int main(int argc, char *argv[])
         return 0;
         break;
 
-      /* b, background */
+      /* v, version */
       case 12:
       case 13:
         daemon=1;
         break;
+        
+      /* c, control_port */
       case 14:
       case 15:
-	if (strcasecmp(optarg, "yuv") == 0) {
-	    format = V4L2_PIX_FMT_YUYV;
-	} else if (strcasecmp(optarg, "mjpg") == 0) {
-	    format = V4L2_PIX_FMT_MJPEG;
-	} else {
-	    printf("Unknown format specified. Aborting.\n");
-	    return 0;
-	}
-	break;
+        cd.control_port=htons(atoi(optarg));
+        break;
+      /* disable_control */  
+      case 16:
+        disable_control_port = 1;
+        break;
       default:
         help(argv[0]);
         return 0;
@@ -338,19 +398,25 @@ int main(int argc, char *argv[])
   }
 
   /* allocate webcam datastructure */
-  videoIn = (struct vdIn *) calloc(1, sizeof(struct vdIn));
+  cd.videoIn = (struct vdIn *) calloc(1, sizeof(struct vdIn));
 
-  fprintf(stderr, "Using V4L2 device: %s\n", dev);
-  fprintf(stderr, "Resolution.......: %i x %i\n", width, height);
-  fprintf(stderr, "frames per second: %i\n", fps);
-  fprintf(stderr, "TCP port.........: %i\n", ntohs(port));
+  fprintf(stderr, "Using V4L2 device.....: %s\n", dev);
+  fprintf(stderr, "Resolution............: %i x %i\n", cdata->width, cdata->height);
+  fprintf(stderr, "frames per second.....: %i\n", fps);
+  fprintf(stderr, "TCP port..............: %i\n", ntohs(cd.stream_port));
+  if (disable_control_port == 1){
+    fprintf(stderr, "motor control server..: disabled\n");
+  } else {
+    fprintf(stderr, "motor control TCP port: %i\n", ntohs(cd.control_port));
+  }  
 
   /* open video device and prepare data structure */
-  if (init_videoIn(videoIn, dev, width, height, fps, format, 1) < 0) {
+  cd.video_dev = init_videoIn(cd.videoIn, dev, cd.width, cd.height, fps, V4L2_PIX_FMT_MJPEG, 1);
+  if (cd.video_dev < 0) {
     fprintf(stderr, "init_VideoIn failed\n");
     exit(1);
   }
-
+  
   /* open socket for server */
   sd = socket(PF_INET, SOCK_STREAM, 0);
   if ( sd < 0 ) {
@@ -367,10 +433,11 @@ int main(int argc, char *argv[])
   /* configure server address to listen to all local IPs */
   memset(&addr, 0, sizeof(addr));
   addr.sin_family = AF_INET;
-  addr.sin_port = port;
-  addr.sin_addr.s_addr = INADDR_ANY;
+  addr.sin_port = cd.stream_port;
+  addr.sin_addr.s_addr = htonl(INADDR_ANY);
   if ( bind(sd, (struct sockaddr*)&addr, sizeof(addr)) != 0 ) {
     fprintf(stderr, "bind failed\n");
+    perror("Bind");
     exit(1);
   }
 
@@ -381,17 +448,24 @@ int main(int argc, char *argv[])
   }
 
   /* start to read the camera, push picture buffers into global buffer */
-  videoIn->tmpbuffer = (unsigned char *) calloc(1, (size_t)videoIn->framesizeIn);
-  g_buf = (unsigned char *) calloc(1, (size_t)videoIn->framesizeIn);
+  cd.videoIn->tmpbuffer = (unsigned char *) calloc(1, (size_t)cd.videoIn->framesizeIn);
+                  g_buf = (unsigned char *) calloc(1, (size_t)cd.videoIn->framesizeIn);
   pthread_create(&cam, 0, cam_thread, NULL);
   pthread_detach(cam);
 
+  /* start motor control server */
+  if (disable_control_port == 0){
+    pthread_create(&cntrl, NULL, &uvcstream_control, cdata);
+    pthread_detach(cntrl);
+  }  
+
   /* create a child for every client that connects */
   while ( 1 ) {
-    cfd = accept(sd, 0, 0);
-    fp = fdopen(cfd, "r+");
-    pthread_create(&client, NULL, &client_thread, fp);
+    int *pfd = (int *)calloc(1, sizeof(int));
+    *pfd = accept(sd, 0, 0);
+    pthread_create(&client, NULL, &client_thread, pfd);
     pthread_detach(client);
+    
   }
 
   return 0;
