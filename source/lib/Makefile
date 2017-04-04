@@ -81,9 +81,6 @@ endif
 ifeq ($(CONFIG_LIB_FLEX_FORCE),y)
     DIRS += libflex
 endif
-ifeq ($(CONFIG_LIB_LIBJPEG_FORCE),y)
-    DIRS += libjpeg
-endif
 ifeq ($(CONFIG_LIB_LIBUPNP_FORCE),y)
     DIRS += libupnp
 endif
@@ -156,9 +153,6 @@ ifeq ($(CONFIG_LIB_NCURSE_FORCE),y)
 endif
 ifeq ($(CONFIG_LIB_FLEX_FORCE),y)
 	@$(MAKE) -C libflex shared
-endif
-ifeq ($(CONFIG_LIB_LIBJPEG_FORCE),y)
-	@$(MAKE) -C libjpeg shared
 endif
 ifeq ($(CONFIG_LIB_LIBUPNP_FORCE),y)
 	@$(MAKE) -C libupnp shared
@@ -520,9 +514,6 @@ ifeq ($(CONFIG_LIB_LIBNTFS3G_FORCE),y)
 endif
 ifeq ($(CONFIG_LIB_FLEX_FORCE),y)
 	$(MAKE) -C libflex clean
-endif
-ifeq ($(CONFIG_LIB_LIBJPEG_FORCE),y)
-	@$(MAKE) -C libjpeg clean
 endif
 ifeq ($(CONFIG_LIB_USB0112_FORCE),y)
 	$(MAKE) -C libusb-0.1.12 clean
