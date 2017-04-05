@@ -3,13 +3,37 @@
 [ -f /var/run/network ] && exit
 touch /var/run/network
 
+interfaceMode()
+{
+    INT=$1
+    TYPE=$2
+
+    mode=`nvram_get ${TYPE}_mode`
+
+    # select network mode
+    case "$mode" in
+        dhcp)
+            udhcpc -i $INT -n -p /var/run/udhcpc.$INT.pid
+            ;;
+        static)
+            
+            ;;
+    esac
+
+}
+
+# enable loopback
+ifconfig lo 127.0.0.1 up
+
 # wifi config
 wifi_enabled=`nvram_get wifi_enabled`
+
+# lan config
+lan_enabled=`nvram_get lan_enabled`
 
 if [ "$wifi_enabled" == "y" ] ; then
 
     # load nvram data
-    wifi_mode=`nvram_get wifi_mode`
     SSID=`nvram_get SSID`
     WPAPSK=`nvram_get WPAPSK`
     WirelessMode=`nvram_get WirelessMode`
@@ -46,13 +70,27 @@ EOL
     # enable wifi interface
     ifconfig $WIFI_INT up
 
-    # select network mode
-    case "$wifi_mode" in
-        dhcp)
-            udhcpc -i $WIFI_INT -n
-            ;;
-        static)
-            
-            ;;
-    esac
+    interfaceMode $WIFI_INT wifi
+fi
+
+if [ "$lan_enabled" == "y" ] ; then
+
+    LAN_INT=eth2
+
+    # enable lan interface
+    ifconfig $LAN_INT up
+
+    # switch config
+    switch reg w 14 5555      # PFC1: Priority Flow Control –1
+    switch reg w 40 1001      # PVIDC0: PVID Configuration 0
+    switch reg w 44 1001      # PVIDC1: PVID Configuration 1
+    switch reg w 48 1001      # PVIDC2: PVID Configuration 2
+    switch reg w 4c 1         # PVIDC3: PVID Configuration 3
+    switch reg w 50 2001      # VLANI0: VLAN Identifier 0
+    switch reg w 70 ffffffff  # VMSC0: VLAN Member Port Configuration 0
+    switch reg w 98 7f7f      # POC2: Port Control 2
+    switch reg w a4 5         # LEDP0: LED Port0
+    switch clear
+
+    interfaceMode $LAN_INT lan
 fi

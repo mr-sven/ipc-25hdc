@@ -12,6 +12,9 @@ cat /etc_ro/motd
 # start init scripts
 for i in /etc_ro/init/*.sh; do
     if [ -r $i ]; then
+        echo "------------------- START ------------------"
+        echo $i
+        echo "--------------------------------------------"
         . $i
     fi
 done

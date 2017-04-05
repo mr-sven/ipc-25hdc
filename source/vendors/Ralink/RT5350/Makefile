@@ -50,6 +50,9 @@ endif
 	$(ROMFSINST) /etc_ro/inittab
 	$(ROMFSINST) /etc_ro/motd
 	$(ROMFSINST) /etc_ro/profile
+	$(ROMFSINST) /etc_ro/passwd
+	$(ROMFSINST) /etc_ro/group
+	$(ROMFSINST) /etc_ro/shadow
 
 	$(ROMFSINST) /etc_ro/wlan/RT5350_AP_1T1R_V1_0.bin
 	$(ROMFSINST) /etc_ro/default/FACTORY.dat
@@ -64,16 +67,16 @@ romfs.post::
 	#Squash File System
 	 rm -f $(RAMDISK)  
 ifeq	($(LINUXDIR),linux-2.4.x)
-	$(CONFIG_CROSS_COMPILER_PATH)/mksquashfs_lzma-3.0 $(ROMFSDIR) $(RAMDISK)
+	$(CONFIG_CROSS_COMPILER_PATH)/mksquashfs_lzma-3.0 $(ROMFSDIR) $(RAMDISK) -all-root
 else
 	#linux2.6.x support squashfs with lzma
 ifeq	($(CONFIG_BLK_DEV_INITRD),)
 
 ifeq	($(LINUXDIR),linux-2.6.21.x)
-	$(CONFIG_CROSS_COMPILER_PATH)/mksquashfs_lzma-3.2 $(ROMFSDIR) $(RAMDISK)
+	$(CONFIG_CROSS_COMPILER_PATH)/mksquashfs_lzma-3.2 $(ROMFSDIR) $(RAMDISK) -all-root
 endif
 ifeq	($(LINUXDIR),linux-2.6.36.x)
-	$(CONFIG_CROSS_COMPILER_PATH)/mksquashfs_lzma-4.2 $(ROMFSDIR) $(RAMDISK)
+	$(CONFIG_CROSS_COMPILER_PATH)/mksquashfs_lzma-4.2 $(ROMFSDIR) $(RAMDISK) -all-root
 endif
 endif
 endif
