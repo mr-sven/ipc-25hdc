@@ -88,6 +88,13 @@ $ make menuconfig
 #    Default all settings (lose changes) ---> *
 
 $ make dep
-
 $ make 
+
+```
+Sometimes build will fail after setting defaults with error in OpenSSL Makefile.
+```bash
+
+$ touch user/openssl-0.9.8e/Makefile
+$ make
+
 ```
