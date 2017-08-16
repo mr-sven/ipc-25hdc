@@ -40,7 +40,7 @@ extern void TimerCB(PRTMP_ADAPTER pAd);
 
 
 INT RtmpAsicSendCommandToSwMcu(
-	IN RTMP_ADAPTER *pAd, 
+	IN PRTMP_ADAPTER pAd, 
 	IN UCHAR Command, 
 	IN UCHAR Token,
 	IN UCHAR Arg0, 
@@ -48,7 +48,7 @@ INT RtmpAsicSendCommandToSwMcu(
 {
 	BBP_CSR_CFG_STRUC  BbpCsr, BbpCsr2;
 	int             j, k;
-	UINT16 Temp;
+	//UINT16 Temp;
 #ifdef LED_CONTROL_SUPPORT
 	PSWMCU_LED_CONTROL pSWMCULedCntl = &pAd->LedCntl.SWMCULedCntl;
 #endif /* LED_CONTROL_SUPPORT */
