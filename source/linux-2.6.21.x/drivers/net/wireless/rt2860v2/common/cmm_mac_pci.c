@@ -1914,9 +1914,9 @@ BOOLEAN RT28xxPciAsicRadioOff(
 	BOOLEAN		Cancelled;
 #endif /* PCIE_PS_SUPPORT */	
 #endif /* CONFIG_STA_SUPPORT */
-#if defined(CONFIG_STA_SUPPORT) || defined(RT2860)
+#if defined(PCIE_PS_SUPPORT) || defined(RT2860)
 	BOOLEAN		brc = FALSE;
-#endif /* defined(CONFIG_STA_SUPPORT) || defined(RT2860) */
+#endif /* defined(PCIE_PS_SUPPORT) || defined(RT2860) */
 
     UINT32		RxDmaIdx, RxCpuIdx;
 	DBGPRINT(RT_DEBUG_TRACE, ("%s ===> Lv= %d, TxCpuIdx = %d, TxDmaIdx = %d. RxCpuIdx = %d, RxDmaIdx = %d.\n", 
