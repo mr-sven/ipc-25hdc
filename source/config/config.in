@@ -120,6 +120,7 @@ bool 'dnsmasq (DNS forwarder, DHCP server)'	CONFIG_USER_DNSMASQ
 bool 'disktype(detect format of a disk)'	CONFIG_USER_DISKTYPE
 bool 'echo server'				CONFIG_USER_ECHO_SERVER
 bool 'ebtables'					CONFIG_USER_EBTABLES
+bool 'factory mac update'			CONFIG_USER_FACTORY_MAC_UPDATE
 bool 'storage(enable chmod, fdisk in busybox)'	CONFIG_USER_STORAGE
 #dep_bool '  stupid ftpd'			CONFIG_USER_STUPID_FTPD $CONFIG_USER_STORAGE
 dep_bool '  proftpd (FTP Server)'               CONFIG_USER_PROFTPD $CONFIG_USER_STORAGE

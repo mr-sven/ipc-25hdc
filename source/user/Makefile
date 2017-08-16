@@ -134,6 +134,7 @@ dir_$(CONFIG_USER_SDPARM) 		    += sdparm-1.02
 dir_$(CONFIG_USER_3G)	 		    += hso-1.6
 dir_$(CONFIG_USER_SNMPD) 		    += snmpd
 
+dir_$(CONFIG_USER_FACTORY_MAC_UPDATE)	    += factory_mac_update
 
 #TEST
 dir_$(CONFIG_USER_HELLO_WORLD)		    += hello_world

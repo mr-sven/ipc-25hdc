@@ -4,14 +4,14 @@ LDFLAGS += -lnvram
 LIBNVRAM = $(ROOTDIR)/lib/libnvram/libnvram-0.9.28.so
 CONF_H = $(ROOTDIR)/$(LINUXDIR)/include/linux/autoconf.h
 UCONF_H = $(ROOTDIR)/config/autoconf.h
-EXEC = hello
+EXEC = factory_mac_update
 
 all: $(EXEC)
 
-hello: hello.o
+factory_mac_update: factory_mac_update.o
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
-hello.o: $(CONF_H) $(UCONF_H) $(LIBNVRAM)
+factory_mac_update.o: $(CONF_H) $(UCONF_H) $(LIBNVRAM)
 
 romfs:
 	$(ROMFSINST) /bin/$(EXEC)
