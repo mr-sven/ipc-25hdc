@@ -290,6 +290,7 @@ struct v4l2_pix_format
 #define V4L2_PIX_FMT_JPEG     v4l2_fourcc('J','P','E','G') /* JFIF JPEG     */
 #define V4L2_PIX_FMT_DV       v4l2_fourcc('d','v','s','d') /* 1394          */
 #define V4L2_PIX_FMT_MPEG     v4l2_fourcc('M','P','E','G') /* MPEG-1/2/4    */
+#define V4L2_PIX_FMT_H264     v4l2_fourcc('H','2','6','4') /* H264 with start codes */
 
 /*  Vendor-specific formats   */
 #define V4L2_PIX_FMT_WNVA     v4l2_fourcc('W','N','V','A') /* Winnov hw compress */
