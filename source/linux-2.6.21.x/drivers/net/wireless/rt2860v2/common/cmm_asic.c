@@ -2969,8 +2969,8 @@ VOID AsicUpdateWAPIPN(
 VOID AsicVCORecalibration(
 	IN PRTMP_ADAPTER pAd)
 {
-	UCHAR BbpR49 = 0, Tssi = 0;
-#if defined (RT5350)
+//	UCHAR BbpR49 = 0, Tssi = 0;
+#if defined (RT5350) && defined (RTMP_INTERNAL_TX_ALC)
 	UCHAR BbpR47 = 0;
 #endif
 #ifdef RALINK_ATE
