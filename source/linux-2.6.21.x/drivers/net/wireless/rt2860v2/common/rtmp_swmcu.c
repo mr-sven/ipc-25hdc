@@ -48,8 +48,8 @@ INT RtmpAsicSendCommandToSwMcu(
 {
 	BBP_CSR_CFG_STRUC  BbpCsr, BbpCsr2;
 	int             j, k;
-	//UINT16 Temp;
 #ifdef LED_CONTROL_SUPPORT
+	UINT16 Temp;
 	PSWMCU_LED_CONTROL pSWMCULedCntl = &pAd->LedCntl.SWMCULedCntl;
 #endif /* LED_CONTROL_SUPPORT */
 	

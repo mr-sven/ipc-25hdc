@@ -1245,13 +1245,12 @@ INT Set_WscVendorPinCode_Proc(
     IN  PSTRING          arg)
 {
 	PWSC_CTRL   pWscControl;
+#if defined(CONFIG_AP_SUPPORT) || defined(P2P_SUPPORT)
 	POS_COOKIE  pObj = (POS_COOKIE) pAd->OS_Cookie;
 	UCHAR       apidx = pObj->ioctl_if;
+#endif
 
 #ifdef CONFIG_AP_SUPPORT
-/*	POS_COOKIE  pObj = (POS_COOKIE) pAd->OS_Cookie;*/
-/*	UCHAR       apidx = pObj->ioctl_if;*/
-
 	IF_DEV_CONFIG_OPMODE_ON_AP(pAd)
 	{
 #ifdef APCLI_SUPPORT
