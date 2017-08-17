@@ -12,8 +12,7 @@
 #include <errno.h>
 #include <sys/ioctl.h>
 #include <string.h>
-
-#include "logger.h"
+#include <iostream>
 
 #include "V4l2Device.h"
 
@@ -60,7 +59,7 @@ bool V4l2Device::init(unsigned int mandatoryCapabilities)
         {
 		if (initdevice(m_params.m_devName.c_str(), mandatoryCapabilities) == -1)
 		{
-			LOG(ERROR) << "Cannot init device:" << m_params.m_devName;
+			std::cerr << "Cannot init device:" << m_params.m_devName << std::endl;
 		}
 	}
 	else
@@ -77,7 +76,7 @@ int V4l2Device::initdevice(const char *dev_name, unsigned int mandatoryCapabilit
 	m_fd = open(dev_name,  O_RDWR | O_NONBLOCK);
 	if (m_fd < 0) 
 	{
-		LOG(ERROR) << "Cannot open device:" << m_params.m_devName << " " << strerror(errno);
+		std::cerr << "Cannot open device:" << m_params.m_devName << " " << strerror(errno) << std::endl;
 		this->close();
 		return -1;
 	}
@@ -107,19 +106,19 @@ int V4l2Device::checkCapabilities(int fd, unsigned int mandatoryCapabilities)
 	memset(&(cap), 0, sizeof(cap));
 	if (-1 == ioctl(fd, VIDIOC_QUERYCAP, &cap)) 
 	{
-		LOG(ERROR) << "Cannot get capabilities for device:" << m_params.m_devName << " " << strerror(errno);
+		std::cerr << "Cannot get capabilities for device:" << m_params.m_devName << " " << strerror(errno) << std::endl;
 		return -1;
 	}
-	LOG(NOTICE) << "driver:" << cap.driver << " " << std::hex << cap.capabilities;
+	std::cout << "driver:" << cap.driver << " " << std::hex << cap.capabilities << std::endl;
 		
-	if ((cap.capabilities & V4L2_CAP_READWRITE))    LOG(NOTICE) << m_params.m_devName << " support read/write";
-	if ((cap.capabilities & V4L2_CAP_VIDEO_OUTPUT)) LOG(NOTICE) << m_params.m_devName << " support output";
-	if ((cap.capabilities & V4L2_CAP_STREAMING))    LOG(NOTICE) << m_params.m_devName << " support streaming";
-	if ((cap.capabilities & V4L2_CAP_TIMEPERFRAME)) LOG(NOTICE) << m_params.m_devName << " support timeperframe"; 
+	if ((cap.capabilities & V4L2_CAP_READWRITE))    std::cout << m_params.m_devName << " support read/write" << std::endl;
+	if ((cap.capabilities & V4L2_CAP_VIDEO_OUTPUT)) std::cout << m_params.m_devName << " support output" << std::endl;
+	if ((cap.capabilities & V4L2_CAP_STREAMING))    std::cout << m_params.m_devName << " support streaming" << std::endl;
+	if ((cap.capabilities & V4L2_CAP_TIMEPERFRAME)) std::cout << m_params.m_devName << " support timeperframe" << std::endl; 
 	
 	if ( (cap.capabilities & mandatoryCapabilities) != mandatoryCapabilities )
 	{
-		LOG(ERROR) << "Mandatory capability not available for device:" << m_params.m_devName;
+		std::cerr << "Mandatory capability not available for device:" << m_params.m_devName << std::endl;
 		return -1;
 	}
 	
@@ -154,17 +153,17 @@ int V4l2Device::configureFormat(int fd)
 	
 	if (ioctl(fd, VIDIOC_S_FMT, &fmt) == -1)
 	{
-		LOG(ERROR) << "Cannot set format for device:" << m_params.m_devName << " " << strerror(errno);
+		std::cerr << "Cannot set format for device:" << m_params.m_devName << " " << strerror(errno) << std::endl;
 		return -1;
 	}			
 	if (fmt.fmt.pix.pixelformat != m_params.m_format) 
 	{
-		LOG(ERROR) << "Cannot set pixelformat to:" << fourcc(m_params.m_format) << " format is:" << fourcc(fmt.fmt.pix.pixelformat);
+		std::cerr << "Cannot set pixelformat to:" << fourcc(m_params.m_format) << " format is:" << fourcc(fmt.fmt.pix.pixelformat) << std::endl;
 		return -1;
 	}
 	if ((fmt.fmt.pix.width != m_params.m_width) || (fmt.fmt.pix.height != m_params.m_height))
 	{
-		LOG(WARN) << "Cannot set size width:" << fmt.fmt.pix.width << " height:" << fmt.fmt.pix.height;
+		std::cerr << "Cannot set size width:" << fmt.fmt.pix.width << " height:" << fmt.fmt.pix.height << std::endl;
 	}
 	
 	m_format     = fmt.fmt.pix.pixelformat;
@@ -172,7 +171,7 @@ int V4l2Device::configureFormat(int fd)
 	m_height     = fmt.fmt.pix.height;		
 	m_bufferSize = fmt.fmt.pix.sizeimage;
 	
-	LOG(NOTICE) << m_params.m_devName << ":" << fourcc(m_format) << " size:" << m_params.m_width << "x" << m_params.m_height << " bufferSize:" << m_bufferSize;
+	std::cerr << m_params.m_devName << ":" << fourcc(m_format) << " size:" << m_params.m_width << "x" << m_params.m_height << " bufferSize:" << m_bufferSize << std::endl;
 	
 	return 0;
 }
@@ -190,11 +189,11 @@ int V4l2Device::configureParam(int fd)
 
 		if (ioctl(fd, VIDIOC_S_PARM, &param) == -1)
 		{
-			LOG(WARN) << "Cannot set param for device:" << m_params.m_devName << " " << strerror(errno);
+			std::cerr << "Cannot set param for device:" << m_params.m_devName << " " << strerror(errno) << std::endl;
 		}
 	
-		LOG(NOTICE) << "fps:" << param.parm.capture.timeperframe.numerator << "/" << param.parm.capture.timeperframe.denominator;
-		LOG(NOTICE) << "nbBuffer:" << param.parm.capture.readbuffers;
+		std::cout << "fps:" << param.parm.capture.timeperframe.numerator << "/" << param.parm.capture.timeperframe.denominator << std::endl;
+		std::cout << "nbBuffer:" << param.parm.capture.readbuffers << std::endl;
 	}
 	
 	return 0;

@@ -14,12 +14,12 @@
 #include <errno.h> 
 #include <sys/mman.h>
 #include <sys/ioctl.h>
+#include <iostream>
 
 // libv4l2
 #include <linux/videodev2.h>
 
 // project
-#include "logger.h"
 #include "V4l2MmapDevice.h"
 
 V4l2MmapDevice::V4l2MmapDevice(const V4L2DeviceParameters & params, v4l2_buf_type deviceType) : V4l2Device(params, deviceType), n_buffers(0) 
@@ -56,7 +56,7 @@ bool V4l2MmapDevice::start()
 	{
 		if (EINVAL == errno) 
 		{
-			LOG(ERROR) << "Device " << m_params.m_devName << " does not support memory mapping";
+			std::cerr << "Device " << m_params.m_devName << " does not support memory mapping" << std::endl;
 			success = false;
 		} 
 		else 
@@ -67,7 +67,7 @@ bool V4l2MmapDevice::start()
 	}
 	else
 	{
-		LOG(NOTICE) << "Device " << m_params.m_devName << " nb buffer:" << req.count;
+		std::cout << "Device " << m_params.m_devName << " nb buffer:" << req.count << std::endl;
 		
 		// allocate buffers
 		memset(&m_buffer,0, sizeof(m_buffer));
@@ -86,7 +86,7 @@ bool V4l2MmapDevice::start()
 			}
 			else
 			{
-				LOG(INFO) << "Device " << m_params.m_devName << " buffer idx:" << n_buffers << " size:" << buf.length;
+				std::cout << "Device " << m_params.m_devName << " buffer idx:" << n_buffers << " size:" << buf.length << std::endl;
 				m_buffer[n_buffers].length = buf.length;
 				m_buffer[n_buffers].start = mmap (   NULL /* start anywhere */, 
 											buf.length, 
@@ -187,7 +187,7 @@ size_t V4l2MmapDevice::readInternal(char* buffer, size_t bufferSize)
 			if (size > bufferSize)
 			{
 				size = bufferSize;
-				LOG(WARN) << "Device " << m_params.m_devName << " buffer truncated available:" << bufferSize << " needed:" << buf.bytesused;
+				std::cerr << "Device " << m_params.m_devName << " buffer truncated available:" << bufferSize << " needed:" << buf.bytesused << std::endl;
 			}
 			memcpy(buffer, m_buffer[buf.index].start, size);
 
@@ -222,7 +222,7 @@ size_t V4l2MmapDevice::writeInternal(char* buffer, size_t bufferSize)
 			if (size > buf.length)
 			{
 				size = buf.length;
-				LOG(WARN) << "Device " << m_params.m_devName << " buffer truncated available:" << buf.length << " needed:" << size;
+				std::cerr << "Device " << m_params.m_devName << " buffer truncated available:" << buf.length << " needed:" << size << std::endl;
 			}
 			memcpy(m_buffer[buf.index].start, buffer, size);
 			buf.bytesused = size;

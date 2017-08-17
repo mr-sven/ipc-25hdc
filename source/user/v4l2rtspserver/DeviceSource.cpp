@@ -13,10 +13,16 @@
 #include <iomanip>
 #include <sstream>
 #include <pthread.h>
+#include <iostream>
 
 // project
-#include "logger.h"
 #include "DeviceSource.h"
+
+#ifdef DEBUG
+#define LOG_DEBUG(X) std::cout << X << std::endl
+#else
+#define LOG_DEBUG(X)
+#endif
 
 // ---------------------------------
 // V4L2 FramedSource Stats
@@ -27,7 +33,7 @@ int  V4L2DeviceSource::Stats::notify(int tv_sec, int framesize)
 	m_size+=framesize;
 	if (tv_sec != m_fps_sec)
 	{
-		LOG(INFO) << m_msg  << "tv_sec:" <<   tv_sec << " fps:" << m_fps << " bandwidth:"<< (m_size/128) << "kbps";		
+		LOG_DEBUG(m_msg  << "tv_sec:" <<   tv_sec << " fps:" << m_fps << " bandwidth:"<< (m_size/128) << "kbps");
 		m_fps_sec = tv_sec;
 		m_fps = 0;
 		m_size = 0;
@@ -65,7 +71,7 @@ V4L2DeviceSource::V4L2DeviceSource(UsageEnvironment& env, DeviceInterface * devi
 		if (useThread)
 		{
 			pthread_mutex_init(&m_mutex, NULL);
-			pthread_create(&m_thid, NULL, threadStub, this);		
+			pthread_create(&m_thid, NULL, threadStub, this);
 		}
 		else
 		{
@@ -91,7 +97,7 @@ void* V4L2DeviceSource::thread()
 	FD_ZERO(&fdset);
 	timeval tv;
 	
-	LOG(NOTICE) << "begin thread"; 
+	std::cout << "begin thread" << std::endl; 
 	while (!stop) 
 	{
 		int fd = m_device->getFd();
@@ -105,18 +111,18 @@ void* V4L2DeviceSource::thread()
 			{
 				if (this->getNextFrame() <= 0)
 				{
-					LOG(ERROR) << "error:" << strerror(errno); 						
+					std::cerr << "error:" << strerror(errno) << std::endl;
 					stop=1;
 				}
 			}
 		}
 		else if (ret == -1)
 		{
-			LOG(ERROR) << "stop " << strerror(errno); 
+			std::cerr << "stop " << strerror(errno) << std::endl;
 			stop=1;
 		}
 	}
-	LOG(NOTICE) << "end thread"; 
+	std::cout << "end thread" << std::endl;
 	return NULL;
 }
 
@@ -129,7 +135,7 @@ void V4L2DeviceSource::doGetNextFrame()
 // stopping FrameSource callback
 void V4L2DeviceSource::doStopGettingFrames()
 {
-	LOG(NOTICE) << "V4L2DeviceSource::doStopGettingFrames";	
+	std::cout << "V4L2DeviceSource::doStopGettingFrames" << std::endl;
 	FramedSource::doStopGettingFrames();
 }
 
@@ -144,12 +150,12 @@ void V4L2DeviceSource::deliverFrame()
 		pthread_mutex_lock (&m_mutex);
 		if (m_captureQueue.empty())
 		{
-			LOG(DEBUG) << "Queue is empty";		
+			LOG_DEBUG("Queue is empty");
 		}
 		else
-		{				
+		{
 			timeval curTime;
-			gettimeofday(&curTime, NULL);			
+			gettimeofday(&curTime, NULL);
 			Frame * frame = m_captureQueue.front();
 			m_captureQueue.pop_front();
 	
@@ -166,7 +172,7 @@ void V4L2DeviceSource::deliverFrame()
 			timeval diff;
 			timersub(&curTime,&(frame->m_timestamp),&diff);
 
-			LOG(DEBUG) << "deliverFrame\ttimestamp:" << curTime.tv_sec << "." << curTime.tv_usec << "\tsize:" << fFrameSize <<"\tdiff:" <<  (diff.tv_sec*1000+diff.tv_usec/1000) << "ms\tqueue:" << m_captureQueue.size();		
+			LOG_DEBUG("deliverFrame\ttimestamp:" << curTime.tv_sec << "." << curTime.tv_usec << "\tsize:" << fFrameSize <<"\tdiff:" <<  (diff.tv_sec*1000+diff.tv_usec/1000) << "ms\tqueue:" << m_captureQueue.size());
 			
 			fPresentationTime = frame->m_timestamp;
 			memcpy(fTo, frame->m_buffer, fFrameSize);
@@ -177,7 +183,7 @@ void V4L2DeviceSource::deliverFrame()
 		if (fFrameSize > 0)
 		{
 			// send Frame to the consumer
-			FramedSource::afterGetting(this);			
+			FramedSource::afterGetting(this);
 		}
 	}
 }
@@ -195,31 +201,31 @@ void V4L2DeviceSource::incomingPacketHandler()
 int V4L2DeviceSource::getNextFrame() 
 {
 	timeval ref;
-	gettimeofday(&ref, NULL);											
+	gettimeofday(&ref, NULL);
 	char buffer[m_device->getBufferSize()];	
-	int frameSize = m_device->read(buffer,  m_device->getBufferSize());	
+	int frameSize = m_device->read(buffer,  m_device->getBufferSize());
 	if (frameSize < 0)
 	{
-		LOG(NOTICE) << "V4L2DeviceSource::getNextFrame errno:" << errno << " "  << strerror(errno);		
+		std::cout << "V4L2DeviceSource::getNextFrame errno:" << errno << " "  << strerror(errno) << std::endl;
 	}
 	else if (frameSize == 0)
 	{
-		LOG(NOTICE) << "V4L2DeviceSource::getNextFrame no data errno:" << errno << " "  << strerror(errno);		
+		std::cout << "V4L2DeviceSource::getNextFrame no data errno:" << errno << " "  << strerror(errno) << std::endl;
 	}
 	else
 	{
 		timeval tv;
-		gettimeofday(&tv, NULL);												
+		gettimeofday(&tv, NULL);
 		timeval diff;
 		timersub(&tv,&ref,&diff);
 		m_in.notify(tv.tv_sec, frameSize);
-		LOG(DEBUG) << "getNextFrame\ttimestamp:" << ref.tv_sec << "." << ref.tv_usec << "\tsize:" << frameSize <<"\tdiff:" <<  (diff.tv_sec*1000+diff.tv_usec/1000) << "ms";
+		LOG_DEBUG("getNextFrame\ttimestamp:" << ref.tv_sec << "." << ref.tv_usec << "\tsize:" << frameSize <<"\tdiff:" <<  (diff.tv_sec*1000+diff.tv_usec/1000) << "ms");
 		processFrame(buffer,frameSize,ref);
 		if (m_outfd != -1) 
 		{
 			write(m_outfd, buffer, frameSize);
-		}		
-	}			
+		}
+	}
 	return frameSize;
 }	
 
@@ -227,7 +233,7 @@ int V4L2DeviceSource::getNextFrame()
 void V4L2DeviceSource::processFrame(char * frame, int frameSize, const timeval &ref) 
 {
 	timeval tv;
-	gettimeofday(&tv, NULL);												
+	gettimeofday(&tv, NULL);
 	timeval diff;
 	timersub(&tv,&ref,&diff);
 		
@@ -240,9 +246,9 @@ void V4L2DeviceSource::processFrame(char * frame, int frameSize, const timeval &
 		memcpy(buf, frame.first, size);
 		queueFrame(buf,size,ref);
 
-		LOG(DEBUG) << "queueFrame\ttimestamp:" << ref.tv_sec << "." << ref.tv_usec << "\tsize:" << size <<"\tdiff:" <<  (diff.tv_sec*1000+diff.tv_usec/1000) << "ms";		
+		LOG_DEBUG("queueFrame\ttimestamp:" << ref.tv_sec << "." << ref.tv_usec << "\tsize:" << size <<"\tdiff:" <<  (diff.tv_sec*1000+diff.tv_usec/1000) << "ms");
 		frameList.pop_front();
-	}			
+	}
 }	
 
 // post a frame to fifo
@@ -251,20 +257,20 @@ void V4L2DeviceSource::queueFrame(char * frame, int frameSize, const timeval &tv
 	pthread_mutex_lock (&m_mutex);
 	while (m_captureQueue.size() >= m_queueSize)
 	{
-		LOG(DEBUG) << "Queue full size drop frame size:"  << (int)m_captureQueue.size() ;		
+		LOG_DEBUG("Queue full size drop frame size:"  << (int)m_captureQueue.size());
 		delete m_captureQueue.front();
 		m_captureQueue.pop_front();
 	}
-	m_captureQueue.push_back(new Frame(frame, frameSize, tv));	
+	m_captureQueue.push_back(new Frame(frame, frameSize, tv));
 	pthread_mutex_unlock (&m_mutex);
 	
 	// post an event to ask to deliver the frame
 	envir().taskScheduler().triggerEvent(m_eventTriggerId, this);
 }	
 
-// split packet in frames					
+// split packet in frames
 std::list< std::pair<unsigned char*,size_t> > V4L2DeviceSource::splitFrames(unsigned char* frame, unsigned frameSize) 
-{				
+{
 	std::list< std::pair<unsigned char*,size_t> > frameList;
 	if (frame != NULL)
 	{
@@ -273,5 +279,3 @@ std::list< std::pair<unsigned char*,size_t> > V4L2DeviceSource::splitFrames(unsi
 	return frameList;
 }
 
-
-	

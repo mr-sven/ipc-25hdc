@@ -11,7 +11,6 @@
 **                                                                                    
 ** -------------------------------------------------------------------------*/
 
-#include "logger.h"
 #include "JPEGVideoSource.hh"
 
 class MJPEGVideoSource : public JPEGVideoSource

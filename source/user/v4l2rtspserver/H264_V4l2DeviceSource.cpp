@@ -15,8 +15,14 @@
 #include <Base64.hh>
 
 // project
-#include "logger.h"
 #include "H264_V4l2DeviceSource.h"
+
+#ifdef DEBUG
+#define LOG_DEBUG(X) std::cout << X << std::endl
+#else
+#define LOG_DEBUG(X)
+#endif
+
 
 // ---------------------------------
 // H264 V4L2 FramedSource
@@ -31,13 +37,13 @@ std::list< std::pair<unsigned char*,size_t> > H264_V4L2DeviceSource::splitFrames
 	size_t bufSize = frameSize;
 	size_t size = 0;
 	unsigned char* buffer = this->extractFrame(frame, bufSize, size);
-	while (buffer != NULL)				
+	while (buffer != NULL)
 	{	
-		switch (m_frameType&0x1F)					
+		switch (m_frameType&0x1F)
 		{
-			case 7: LOG(INFO) << "SPS size:" << size << " bufSize:" << bufSize; m_sps.assign((char*)buffer,size); break;
-			case 8: LOG(INFO) << "PPS size:" << size << " bufSize:" << bufSize; m_pps.assign((char*)buffer,size); break;
-			case 5: LOG(INFO) << "IDR size:" << size << " bufSize:" << bufSize; 
+			case 7: LOG_DEBUG("SPS size:" << size << " bufSize:" << bufSize); m_sps.assign((char*)buffer,size); break;
+			case 8: LOG_DEBUG("PPS size:" << size << " bufSize:" << bufSize); m_pps.assign((char*)buffer,size); break;
+			case 5: LOG_DEBUG("IDR size:" << size << " bufSize:" << bufSize); 
 				if (m_repeatConfig && !m_sps.empty() && !m_pps.empty())
 				{
 					frameList.push_back(std::pair<unsigned char*,size_t>((unsigned char*)m_sps.c_str(), m_sps.size()));
@@ -50,17 +56,17 @@ std::list< std::pair<unsigned char*,size_t> > H264_V4L2DeviceSource::splitFrames
 		
 		if (m_auxLine.empty() && !m_sps.empty() && !m_pps.empty())
 		{
-			u_int32_t profile_level_id = 0;					
+			u_int32_t profile_level_id = 0;
 			if (m_sps.size() >= 4) profile_level_id = (m_sps[1]<<16)|(m_sps[2]<<8)|m_sps[3]; 
 		
 			char* sps_base64 = base64Encode(m_sps.c_str(), m_sps.size());
-			char* pps_base64 = base64Encode(m_pps.c_str(), m_pps.size());		
+			char* pps_base64 = base64Encode(m_pps.c_str(), m_pps.size());
 
 			std::ostringstream os; 
 			os << "profile-level-id=" << std::hex << std::setw(6) << std::setfill('0') << profile_level_id;
 			os << ";sprop-parameter-sets=" << sps_base64 <<"," << pps_base64;
 			m_auxLine.assign(os.str());
-			LOG(NOTICE) << m_auxLine;
+			std::cout << m_auxLine << std::endl;
 			
 			delete [] sps_base64;
 			delete [] pps_base64;
@@ -84,11 +90,11 @@ std::list< std::pair<unsigned char*,size_t> > H265_V4L2DeviceSource::splitFrames
 	{
 		switch ((m_frameType&0x7E)>>1)					
 		{
-			case 32: LOG(INFO) << "VPS size:" << size << " bufSize:" << bufSize; m_vps.assign((char*)buffer,size); break;
-			case 33: LOG(INFO) << "SPS size:" << size << " bufSize:" << bufSize; m_sps.assign((char*)buffer,size); break;
-			case 34: LOG(INFO) << "PPS size:" << size << " bufSize:" << bufSize; m_pps.assign((char*)buffer,size); break;
+			case 32: LOG_DEBUG("VPS size:" << size << " bufSize:" << bufSize); m_vps.assign((char*)buffer,size); break;
+			case 33: LOG_DEBUG("SPS size:" << size << " bufSize:" << bufSize); m_sps.assign((char*)buffer,size); break;
+			case 34: LOG_DEBUG("PPS size:" << size << " bufSize:" << bufSize); m_pps.assign((char*)buffer,size); break;
 			case 19: 
-			case 20: LOG(INFO) << "IDR size:" << size << " bufSize:" << bufSize; 
+			case 20: LOG_DEBUG("IDR size:" << size << " bufSize:" << bufSize); 
 				if (m_repeatConfig && !m_vps.empty() && !m_sps.empty() && !m_pps.empty())
 				{
 					frameList.push_back(std::pair<unsigned char*,size_t>((unsigned char*)m_vps.c_str(), m_vps.size()));
@@ -103,14 +109,14 @@ std::list< std::pair<unsigned char*,size_t> > H265_V4L2DeviceSource::splitFrames
 		{		
 			char* vps_base64 = base64Encode(m_vps.c_str(), m_vps.size());
 			char* sps_base64 = base64Encode(m_sps.c_str(), m_sps.size());
-			char* pps_base64 = base64Encode(m_pps.c_str(), m_pps.size());		
+			char* pps_base64 = base64Encode(m_pps.c_str(), m_pps.size());
 
 			std::ostringstream os; 
 			os << "sprop-vps=" << vps_base64;
 			os << ";sprop-sps=" << sps_base64;
 			os << ";sprop-pps=" << pps_base64;
 			m_auxLine.assign(os.str());
-			LOG(NOTICE) << m_auxLine;
+			std::cout << m_auxLine << std::endl;
 			
 			delete [] vps_base64;
 			delete [] sps_base64;
@@ -125,7 +131,7 @@ std::list< std::pair<unsigned char*,size_t> > H265_V4L2DeviceSource::splitFrames
 
 // extract a frame
 unsigned char*  H26X_V4L2DeviceSource::extractFrame(unsigned char* frame, size_t& size, size_t& outsize)
-{						
+{
 	unsigned char * outFrame = NULL;
 	outsize = 0;
 	unsigned int markerlength = 0;
@@ -143,7 +149,7 @@ unsigned char*  H26X_V4L2DeviceSource::extractFrame(unsigned char* frame, size_t
 	if (startFrame != NULL) {
 		m_frameType = startFrame[markerlength];
 		
-		int remainingSize = size-(startFrame-frame+markerlength);		
+		int remainingSize = size-(startFrame-frame+markerlength);
 		unsigned char *endFrame = (unsigned char*)memmem(&startFrame[markerlength], remainingSize, H264marker, sizeof(H264marker));
 		if (endFrame == NULL) {
 			endFrame = (unsigned char*)memmem(&startFrame[markerlength], remainingSize, H264shortmarker, sizeof(H264shortmarker));
@@ -170,7 +176,7 @@ unsigned char*  H26X_V4L2DeviceSource::extractFrame(unsigned char* frame, size_t
 		}
 		size -= outsize;		
 	} else if (size>= sizeof(H264shortmarker)) {
-		 LOG(INFO) << "No marker found";
+		 LOG_DEBUG("No marker found");
 	}
 
 	return outFrame;
