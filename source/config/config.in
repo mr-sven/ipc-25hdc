@@ -20,6 +20,7 @@ bool 'Build vstr'		CONFIG_LIB_VSTR_FORCE
 bool 'Build zlib'		CONFIG_LIB_ZLIB_FORCE
 bool 'Build uClibc (libstdc++)'	CONFIG_LIB_LIBSTDC_PLUS_FORCE
 dep_bool ' Hello World Example (c++)'  CONFIG_USER_HELLO_WORLD $CONFIG_LIB_LIBSTDC_PLUS_FORCE
+dep_bool ' V4L2 RTSP Server (c++)'     CONFIG_USER_V4L2_RTSP_SERVER $CONFIG_LIB_LIBSTDC_PLUS_FORCE
 
 comment 'Force build extra libraries in uClibc'
 bool 'Build libcrypt'		CONFIG_LIB_CRYPT_FORCE

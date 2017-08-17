@@ -139,6 +139,7 @@ dir_$(CONFIG_USER_FACTORY_MAC_UPDATE)	    += factory_mac_update
 #TEST
 dir_$(CONFIG_USER_HELLO_WORLD)		    += hello_world
 #--
+dir_$(CONFIG_USER_V4L2_RTSP_SERVER)	    += v4l2rtspserver
 
 all: config
 	$(MAKE) -j$(HOST_NCPU) $(sort $(dir_y) $(dir_v) $(dir_p)) || exit $$?
