@@ -21,6 +21,8 @@
 # This file and most of the menuconfiguration system have been taken wholesle from
 # the uClibc package availalble at www.uclibc.org
 
+-include $(TOPDIR).config
+
 ifndef CROSS
 CROSS=
 endif
