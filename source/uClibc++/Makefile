@@ -38,11 +38,13 @@ distclean: clean
 
 headers: include/system_configuration.h
 
-romfs install:
+romfs:
 ifeq ($(CONFIG_LIB_LIBSTDC_PLUS_FORCE),y)
+ifneq ($(BUILD_ONLY_STATIC_LIB),y)
 	for dir in $(SUBDIRS) ; do \
-		$(MAKE) -C $$dir install; \
+		$(MAKE) -C $$dir romfs; \
 	done
+endif
 endif
 
 
