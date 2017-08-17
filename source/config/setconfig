@@ -311,6 +311,39 @@ if [ "$PASS" != "final" ]; then
 		fi
 		make -C lib oldconfig
 	fi
+	# uClibc++ config
+	if [ ! -f uClibc++/.config ] || var_isset CONFIG_DEFAULTS_OVERRIDE; then
+		if [ ! -f "vendors/$VENDOR/$PRODUCT/config/2M_8M_config.uclibc++$TMP" ] &&
+			 [ ! -f "vendors/$VENDOR/$PRODUCT/config/2M_16M_config.uclibc++$TMP" ] &&
+			 [ ! -f "vendors/$VENDOR/$PRODUCT/config/4M_16M_config.uclibc++$TMP" ] &&
+			 [ ! -f "vendors/$VENDOR/$PRODUCT/config/4M_32M_config.uclibc++$TMP" ] &&
+			 [ ! -f "vendors/$VENDOR/$PRODUCT/config/8M_32M_config.uclibc++$TMP" ] &&
+			 [ ! -f "vendors/$VENDOR/$PRODUCT/config/8M_64M_config.uclibc++$TMP" ]; then
+			echo; echo; echo; echo
+			echo "*********************** NOTICE ****************************"
+			echo "There is no preset config for busybox on platform $VENDOR/$PRODUCT." 
+			echo
+			echo "If you know what you are doing press <ENTER> otherwise"
+			echo "Type ^C to abort."
+			read dummy
+		else
+			if var_isset CONFIG_DEFSETTING_2M8M; then
+				cp "vendors/$VENDOR/$PRODUCT/config/2M_8M_config.uclibc++$TMP" uClibc++/.config
+			elif var_isset CONFIG_DEFSETTING_2M16M; then
+				cp "vendors/$VENDOR/$PRODUCT/config/2M_16M_config.uclibc++$TMP" uClibc++/.config
+			elif var_isset CONFIG_DEFSETTING_4M16M; then
+				cp "vendors/$VENDOR/$PRODUCT/config/4M_16M_config.uclibc++$TMP" uClibc++/.config
+			elif var_isset CONFIG_DEFSETTING_4M32M; then
+				cp "vendors/$VENDOR/$PRODUCT/config/4M_32M_config.uclibc++$TMP" uClibc++/.config
+			elif var_isset CONFIG_DEFSETTING_8M32M; then
+				cp "vendors/$VENDOR/$PRODUCT/config/8M_32M_config.uclibc++$TMP" uClibc++/.config
+			elif var_isset CONFIG_DEFSETTING_8M64M; then
+				cp "vendors/$VENDOR/$PRODUCT/config/8M_64M_config.uclibc++$TMP" uClibc++/.config
+			fi
+
+		fi
+		make -C uClibc++ oldconfig
+	fi
 	#
 	# everything about modules is optional,  optional modules dir
 	# and optional modules config files
