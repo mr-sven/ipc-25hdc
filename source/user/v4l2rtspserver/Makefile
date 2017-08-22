@@ -1,5 +1,5 @@
 EXE = v4l2rtspserver
-OBJS = DeviceSource.o H264_V4l2DeviceSource.o HTTPServer.o MJPEGVideoSource.o ServerMediaSubsession.o v4l2rtspserver.o
+OBJS = DeviceSource.o H264_V4l2DeviceSource.o ServerMediaSubsession.o v4l2rtspserver.o
 
 LIVE555_DIR = live555
 V4L2WRAPPER_DIR = v4l2wrapper
@@ -9,7 +9,7 @@ LDFLAGS += -lpthread -lV4L2Wrapper -lliveMedia -lBasicUsageEnvironment -lUsageEn
 
 #stdlibc++ known issue: 
 #If your program  needs libstdc++, please turn off code optimization
-CFLAGS += -O0 -I $(V4L2WRAPPER_DIR)/include -I $(LIVE555_DIR)/liveMedia/include -I $(LIVE555_DIR)/groupsock/include -I $(LIVE555_DIR)/UsageEnvironment/include -I $(LIVE555_DIR)/BasicUsageEnvironment/include -pthread
+CFLAGS += -O2 -I $(V4L2WRAPPER_DIR)/include -I $(LIVE555_DIR)/liveMedia/include -I $(LIVE555_DIR)/groupsock/include -I $(LIVE555_DIR)/UsageEnvironment/include -I $(LIVE555_DIR)/BasicUsageEnvironment/include -pthread
 
 .PHONY: libs all clean romfs
 

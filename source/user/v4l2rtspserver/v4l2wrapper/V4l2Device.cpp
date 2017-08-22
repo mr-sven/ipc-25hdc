@@ -171,7 +171,7 @@ int V4l2Device::configureFormat(int fd)
 	m_height     = fmt.fmt.pix.height;		
 	m_bufferSize = fmt.fmt.pix.sizeimage;
 	
-	std::cerr << m_params.m_devName << ":" << fourcc(m_format) << " size:" << m_params.m_width << "x" << m_params.m_height << " bufferSize:" << m_bufferSize << std::endl;
+	std::cout << m_params.m_devName << ":" << fourcc(m_format) << " size:" << m_params.m_width << "x" << m_params.m_height << " bufferSize:" << m_bufferSize << std::endl;
 	
 	return 0;
 }
@@ -195,6 +195,7 @@ int V4l2Device::configureParam(int fd)
 		std::cout << "fps:" << param.parm.capture.timeperframe.numerator << "/" << param.parm.capture.timeperframe.denominator << std::endl;
 		std::cout << "nbBuffer:" << param.parm.capture.readbuffers << std::endl;
 	}
+
 	
 	return 0;
 }
