@@ -33,15 +33,34 @@
 // ---------------------------------
 struct V4L2DeviceParameters 
 {
-	V4L2DeviceParameters(const char* devname, unsigned int format, unsigned int width, unsigned int height, int fps, int verbose) : 
-		m_devName(devname), m_format(format), m_width(width), m_height(height), m_fps(fps), m_verbose(verbose) {};
+	V4L2DeviceParameters(
+		const char* devname,
+		unsigned int format,
+		unsigned int width,
+		unsigned int height,
+		unsigned int fps,
+		bool ait,
+		unsigned char aitMirrFlip,
+		unsigned char aitIRCutMode) :
+		m_devName(devname),
+		m_format(format),
+		m_width(width),
+		m_height(height),
+		m_fps(fps),
+		m_ait(ait),
+		m_aitMirrFlip(aitMirrFlip),
+		m_aitIRCutMode(aitIRCutMode){};
+
+	//V4L2DeviceParameters(void) {};
 
 	std::string m_devName;
 	unsigned int m_format;
 	unsigned int m_width;
 	unsigned int m_height;
-	int m_fps;
-	int m_verbose;
+	unsigned int m_fps;
+	bool m_ait;
+	unsigned char m_aitMirrFlip;
+	unsigned char m_aitIRCutMode;
 };
 
 // ---------------------------------

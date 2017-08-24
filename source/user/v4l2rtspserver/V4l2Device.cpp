@@ -14,6 +14,7 @@
 #include <string.h>
 #include <iostream>
 
+#include "AitXU.h"
 #include "V4l2Device.h"
 
 // -----------------------------------------
@@ -96,6 +97,25 @@ int V4l2Device::initdevice(const char *dev_name, unsigned int mandatoryCapabilit
 		return -1;
 	}
 	
+	if (m_params.m_ait)
+	{
+		AitXU ait(m_fd, m_params.m_devName);
+		ait.Init();
+
+		char buf[20];
+		ait.GetFWBuildDate(buf, 20);
+		std::cout << "AIT Firmware Build Date: " << buf << std::endl;
+
+		ait.GetFWVersion(buf, 20);
+		std::cout << "AIT Firmware Version: " << buf << std::endl;
+
+		ait.SetFrameRate(m_params.m_fps);
+		ait.SetMirrFlip(m_params.m_aitMirrFlip);
+		ait.SetIRCutMode(m_params.m_aitIRCutMode);
+		ait.SetPFrameCount(30);
+		ait.SetBitrate(2048);
+	}
+
 	return m_fd;
 }
 
@@ -171,7 +191,7 @@ int V4l2Device::configureFormat(int fd)
 	m_height     = fmt.fmt.pix.height;		
 	m_bufferSize = fmt.fmt.pix.sizeimage;
 	
-	std::cout << m_params.m_devName << ":" << fourcc(m_format) << " size:" << m_params.m_width << "x" << m_params.m_height << " bufferSize:" << m_bufferSize << std::endl;
+	std::cout << std::dec << m_params.m_devName << ":" << fourcc(m_format) << " size:" << m_params.m_width << "x" << m_params.m_height << " bufferSize:" << m_bufferSize << std::endl;
 	
 	return 0;
 }
@@ -192,7 +212,7 @@ int V4l2Device::configureParam(int fd)
 			std::cerr << "Cannot set param for device:" << m_params.m_devName << " " << strerror(errno) << std::endl;
 		}
 	
-		std::cout << "fps:" << param.parm.capture.timeperframe.numerator << "/" << param.parm.capture.timeperframe.denominator << std::endl;
+		std::cout << std::dec << "fps:" << param.parm.capture.timeperframe.numerator << "/" << param.parm.capture.timeperframe.denominator << std::endl;
 		std::cout << "nbBuffer:" << param.parm.capture.readbuffers << std::endl;
 	}
 

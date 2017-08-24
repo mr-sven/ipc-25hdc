@@ -78,57 +78,6 @@ std::list< std::pair<unsigned char*,size_t> > H264_V4L2DeviceSource::splitFrames
 	return frameList;
 }
 
-// split packet in frames					
-std::list< std::pair<unsigned char*,size_t> > H265_V4L2DeviceSource::splitFrames(unsigned char* frame, unsigned frameSize) 
-{				
-	std::list< std::pair<unsigned char*,size_t> > frameList;
-	
-	size_t bufSize = frameSize;
-	size_t size = 0;
-	unsigned char* buffer = this->extractFrame(frame, bufSize, size);
-	while (buffer != NULL)				
-	{
-		switch ((m_frameType&0x7E)>>1)					
-		{
-			case 32: LOG_DEBUG("VPS size:" << size << " bufSize:" << bufSize); m_vps.assign((char*)buffer,size); break;
-			case 33: LOG_DEBUG("SPS size:" << size << " bufSize:" << bufSize); m_sps.assign((char*)buffer,size); break;
-			case 34: LOG_DEBUG("PPS size:" << size << " bufSize:" << bufSize); m_pps.assign((char*)buffer,size); break;
-			case 19: 
-			case 20: LOG_DEBUG("IDR size:" << size << " bufSize:" << bufSize); 
-				if (m_repeatConfig && !m_vps.empty() && !m_sps.empty() && !m_pps.empty())
-				{
-					frameList.push_back(std::pair<unsigned char*,size_t>((unsigned char*)m_vps.c_str(), m_vps.size()));
-					frameList.push_back(std::pair<unsigned char*,size_t>((unsigned char*)m_sps.c_str(), m_sps.size()));
-					frameList.push_back(std::pair<unsigned char*,size_t>((unsigned char*)m_pps.c_str(), m_pps.size()));
-				}
-			break;
-			default: break;
-		}
-		
-		if (m_auxLine.empty() && !m_vps.empty() && !m_sps.empty() && !m_pps.empty())
-		{		
-			char* vps_base64 = base64Encode(m_vps.c_str(), m_vps.size());
-			char* sps_base64 = base64Encode(m_sps.c_str(), m_sps.size());
-			char* pps_base64 = base64Encode(m_pps.c_str(), m_pps.size());
-
-			std::ostringstream os; 
-			os << "sprop-vps=" << vps_base64;
-			os << ";sprop-sps=" << sps_base64;
-			os << ";sprop-pps=" << pps_base64;
-			m_auxLine.assign(os.str());
-			std::cout << m_auxLine << std::endl;
-			
-			delete [] vps_base64;
-			delete [] sps_base64;
-			delete [] pps_base64;
-		}
-		frameList.push_back(std::pair<unsigned char*,size_t>(buffer, size));
-		
-		buffer = this->extractFrame(&buffer[size], bufSize, size);
-	}
-	return frameList;
-}
-
 // extract a frame
 unsigned char*  H26X_V4L2DeviceSource::extractFrame(unsigned char* frame, size_t& size, size_t& outsize)
 {
