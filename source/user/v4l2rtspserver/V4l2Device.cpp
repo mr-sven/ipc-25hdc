@@ -131,10 +131,12 @@ int V4l2Device::checkCapabilities(int fd, unsigned int mandatoryCapabilities)
 	}
 	std::cout << "driver:" << cap.driver << " " << std::hex << cap.capabilities << std::endl;
 		
-	if ((cap.capabilities & V4L2_CAP_READWRITE))    std::cout << m_params.m_devName << " support read/write" << std::endl;
-	if ((cap.capabilities & V4L2_CAP_VIDEO_OUTPUT)) std::cout << m_params.m_devName << " support output" << std::endl;
-	if ((cap.capabilities & V4L2_CAP_STREAMING))    std::cout << m_params.m_devName << " support streaming" << std::endl;
-	if ((cap.capabilities & V4L2_CAP_TIMEPERFRAME)) std::cout << m_params.m_devName << " support timeperframe" << std::endl; 
+	if ((cap.capabilities & V4L2_CAP_READWRITE))     std::cout << m_params.m_devName << " support read/write" << std::endl;
+	if ((cap.capabilities & V4L2_CAP_VIDEO_OUTPUT))  std::cout << m_params.m_devName << " support output" << std::endl;
+	if ((cap.capabilities & V4L2_CAP_STREAMING))     std::cout << m_params.m_devName << " support streaming" << std::endl;
+	if ((cap.capabilities & V4L2_CAP_TIMEPERFRAME))  std::cout << m_params.m_devName << " support timeperframe" << std::endl;
+	if ((cap.capabilities & V4L2_CAP_VIDEO_CAPTURE)) std::cout << m_params.m_devName << " support capture" << std::endl;
+	if ((cap.capabilities & V4L2_CAP_VIDEO_OVERLAY)) std::cout << m_params.m_devName << " support overlay" << std::endl;
 	
 	if ( (cap.capabilities & mandatoryCapabilities) != mandatoryCapabilities )
 	{
