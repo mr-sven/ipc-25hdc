@@ -490,6 +490,7 @@ extern int ioctl_decode P((struct tcb *, long, long));
 extern int term_ioctl P((struct tcb *, long, long));
 extern int sock_ioctl P((struct tcb *, long, long));
 extern int proc_ioctl P((struct tcb *, int, int));
+extern int usb_ioctl P((struct tcb *, long, long));
 extern int stream_ioctl P((struct tcb *, int, int));
 #ifdef LINUX
 extern int rtc_ioctl P((struct tcb *, long, long));

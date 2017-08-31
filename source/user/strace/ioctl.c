@@ -152,6 +152,8 @@ long code, arg;
 #ifdef LINUX
 	case 'p':
 		return rtc_ioctl(tcp, code, arg);
+	case 'u': case 'U': case 'V':
+		return usb_ioctl(tcp, code, arg);
 #endif
 	default:
 		break;
