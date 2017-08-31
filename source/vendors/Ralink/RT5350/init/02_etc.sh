@@ -25,4 +25,3 @@ cp /etc_ro/default/FACTORY.dat /etc/default/FACTORY.dat
 # preserve factory mac
 echo factory_mac=`nvram_get factory_mac` >> /etc/default/FACTORY.dat
 echo factory_wifimac=`nvram_get factory_wifimac` >> /etc/default/FACTORY.dat
-echo WAN_MAC_ADDR=`nvram_get WAN_MAC_ADDR` >> /etc/default/FACTORY.dat
