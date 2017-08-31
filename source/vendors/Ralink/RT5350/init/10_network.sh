@@ -28,9 +28,6 @@ ifconfig lo 127.0.0.1 up
 # wifi config
 wifi_enabled=`nvram_get wifi_enabled`
 
-# lan config
-lan_enabled=`nvram_get lan_enabled`
-
 if [ "$wifi_enabled" == "y" ] ; then
 
     # load nvram data
@@ -73,24 +70,22 @@ EOL
     interfaceMode $WIFI_INT wifi
 fi
 
-if [ "$lan_enabled" -eq "n" ] ; then
 
-    LAN_INT=eth2
+LAN_INT=eth2
 
-    # enable lan interface
-    ifconfig $LAN_INT up
+# enable lan interface
+ifconfig $LAN_INT up
 
-    # switch config
-    switch reg w 14 5555      # PFC1: Priority Flow Control –1
-    switch reg w 40 1001      # PVIDC0: PVID Configuration 0
-    switch reg w 44 1001      # PVIDC1: PVID Configuration 1
-    switch reg w 48 1001      # PVIDC2: PVID Configuration 2
-    switch reg w 4c 1         # PVIDC3: PVID Configuration 3
-    switch reg w 50 2001      # VLANI0: VLAN Identifier 0
-    switch reg w 70 ffffffff  # VMSC0: VLAN Member Port Configuration 0
-    switch reg w 98 7f7f      # POC2: Port Control 2
-    switch reg w a4 5         # LEDP0: LED Port0
-    switch clear
+# switch config
+switch reg w 14 5555      # PFC1: Priority Flow Control –1
+switch reg w 40 1001      # PVIDC0: PVID Configuration 0
+switch reg w 44 1001      # PVIDC1: PVID Configuration 1
+switch reg w 48 1001      # PVIDC2: PVID Configuration 2
+switch reg w 4c 1         # PVIDC3: PVID Configuration 3
+switch reg w 50 2001      # VLANI0: VLAN Identifier 0
+switch reg w 70 ffffffff  # VMSC0: VLAN Member Port Configuration 0
+switch reg w 98 7f7f      # POC2: Port Control 2
+switch reg w a4 5         # LEDP0: LED Port0
+switch clear
 
-    interfaceMode $LAN_INT lan
-fi
+interfaceMode $LAN_INT lan
