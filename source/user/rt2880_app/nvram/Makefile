@@ -9,11 +9,7 @@ UCONF_H	= $(ROOTDIR)/config/autoconf.h
 
 all: $(EXEC)
 
-ifdef CONFIG_RT2880_L2_MANAGE
-nvram_daemon: md5c.o rmmsg.o ramad.o nvram_daemon.o
-else
 nvram_daemon: nvram_daemon.o
-endif
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 ralink_init: ralink_init.o

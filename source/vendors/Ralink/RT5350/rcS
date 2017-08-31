@@ -9,6 +9,12 @@ echo "`nvram_get HostName`" > /etc/hostname
 
 cat /etc_ro/motd
 
+#run syslogd
+syslogd
+
+# run klogd
+klogd
+
 # start init scripts
 for i in /etc_ro/init/*.sh; do
     if [ -r $i ]; then
@@ -21,13 +27,6 @@ done
 
 . /etc/profile
 
-#nvram_daemon&
 #goahead&
-
-#for telnet debugging
-#telnetd
-
-#for syslogd
-
 #/sbin/internet.sh
 #/sbin/ntp.sh

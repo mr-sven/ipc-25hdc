@@ -6,6 +6,8 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
+#include <sys/time.h>
+
 #include <linux/autoconf.h>
 
 #include "nvram.h"
@@ -15,11 +17,11 @@
 #define GPIO_DEV "/dev/gpio"
 #endif
 
+#define RESET_DELAY_SEC          10
 
-#ifdef CONFIG_RT2880_L2_MANAGE
-int ramad_start(void);
-#endif
+
 static char *saved_pidfile;
+struct timeval buttonDownTime;
 
 void loadDefault(int chip_id)
 {
@@ -27,25 +29,7 @@ void loadDefault(int chip_id)
     {
     case 2860:
 	system("ralink_init clear 2860");
-#if defined CONFIG_LAN_WAN_SUPPORT || defined CONFIG_MAC_TO_MAC_MODE 
-	system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_vlan");
-#elif defined(CONFIG_ICPLUS_PHY)
-	system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_oneport");
-#else
-	system("ralink_init renew 2860 /etc_ro/Wireless/RT2860AP/RT2860_default_novlan");
-#endif
-	break;
-    case 2880:
-	system("ralink_init clear rtdev");
-#if defined (CONFIG_RTDEV)
-	system("ralink_init renew rtdev /etc_ro/Wireless/iNIC/RT2860AP.dat");
-#elif defined (CONFIG_RTDEV_PLC)
-	system("ralink_init renew rtdev /etc_ro/PLC/plc_default.dat");
-#endif
-	break;
-    case 2561: 
-	system("ralink_init clear rtdev");
-	system("ralink_init renew rtdev /etc_ro/Wireless/RT61AP/RT2561_default");
+	system("ralink_init renew 2860 /etc/default/FACTORY.dat");
 	break;
     default:
 	printf("%s:Wrong chip id\n",__FUNCTION__);
@@ -55,43 +39,25 @@ void loadDefault(int chip_id)
 
 /*
  * gpio interrupt handler -
- *   SIGUSR1 - notify goAhead to start WPS (by sending SIGUSR1)
- *   SIGUSR2 - restore default value
+ *   SIGUSR1 - short press
+ *   SIGUSR2 - long press
  */
 static void nvramIrqHandler(int signum)
 {
-	if (signum == SIGUSR1) {
-#ifdef CONFIG_RALINK_RT2880
-		int gopid;
-		FILE *fp = fopen("/var/run/goahead.pid", "r");
-
-		if (NULL == fp) {
-			printf("nvram: goAhead is not running\n");
+	struct timeval buttonUpTime;
+	if (signum == SIGUSR1) 
+	{
+		gettimeofday(&buttonDownTime, NULL);
+	}
+	else if (signum == SIGUSR2) 
+	{
+		gettimeofday(&buttonUpTime, NULL);
+		if (buttonUpTime.tv_sec - buttonDownTime.tv_sec < RESET_DELAY_SEC)
+		{
 			return;
 		}
-		fscanf(fp, "%d", &gopid);
-		if (gopid < 2) {
-			printf("nvram: goAhead pid(%d) <= 1\n", gopid);
-			return;
-		}
-
-		//send SIGUSR1 signal to goAhead for WPSPBCStart();
-		printf("notify goahead to start WPS PBC..\n");
-		kill(gopid, SIGUSR1);
-		fclose(fp);
-#else
-		//RT2883, RT3052, RT3883 use a different gpio number for WPS,
-		//which will be registered in goahead instead
-#endif
-	} else if (signum == SIGUSR2) {
 		printf("load default and reboot..\n");
 		loadDefault(2860);
-#if defined (CONFIG_RTDEV) || \
-    defined (CONFIG_RTDEV_PLC)
-		loadDefault(2880);
-#elif defined (CONFIG_RT2561_AP) || defined (CONFIG_RT2561_AP_MODULE)
-		loadDefault(2561);
-#endif
 		system("reboot");
 	}
 }
@@ -113,23 +79,7 @@ int initGpio(void)
 	ralink_gpio_reg_info info;
 
 	info.pid = getpid();
-#if defined (CONFIG_RALINK_RT2880)
 	info.irq = 0;
-#elif defined (CONFIG_RALINK_RT3052) && ((CONFIG_RALINK_I2S) || defined (CONFIG_RALINK_I2S_MODULE))
-	info.irq = 43;
-#elif defined (CONFIG_RALINK_RT3883)
-	//RT3883 uses gpio 27 for load-to-default
-	info.irq = 27;
-#elif defined (CONFIG_RALINK_RT6855A)
-#if defined (CONFIG_RT6855A_PCIE_PORT0_ENABLE)
-	info.irq = 0;	// rt6855 reset default
-#else
-	info.irq = 2;	// rt6856 reset default
-#endif
-#else
-	//RT2883, RT3052, RT3352, RT6855 use gpio 10 for load-to-default
-	info.irq = 10;
-#endif	
 
 	fd = open(GPIO_DEV, O_RDONLY);
 	if (fd < 0) {
@@ -137,56 +87,9 @@ int initGpio(void)
 		return -1;
 	}
 	//set gpio direction to input
-#if !defined (CONFIG_RALINK_RT6855A)
-	if (info.irq < 24) {
-		if (ioctl(fd, RALINK_GPIO_SET_DIR_IN, (1<<info.irq)) < 0)
-			goto ioctl_err;
-	}
-#if defined (RALINK_GPIO_HAS_2722)
-	else if (22 <= info.irq) {
-		if (ioctl(fd, RALINK_GPIO2722_SET_DIR_IN, (1<<(info.irq-22))) < 0)
-			goto ioctl_err;
-	}
-#elif defined (RALINK_GPIO_HAS_4524)
-	else if (24 <= info.irq && info.irq < 40) {
-		if (ioctl(fd, RALINK_GPIO3924_SET_DIR_IN, (1<<(info.irq-24))) < 0)
-			goto ioctl_err;
-	}
-	else {
-		if (ioctl(fd, RALINK_GPIO4540_SET_DIR_IN, (1<<(info.irq-40))) < 0)
-			goto ioctl_err;
-	}
-#elif defined (RALINK_GPIO_HAS_5124)
-	else if (24 <= info.irq && info.irq < 40) {
-		if (ioctl(fd, RALINK_GPIO3924_SET_DIR_IN, (1<<(info.irq-24))) < 0)
-			goto ioctl_err;
-	}
-	else {
-		if (ioctl(fd, RALINK_GPIO5140_SET_DIR_IN, (1<<(info.irq-40))) < 0)
-			goto ioctl_err;
-	}
-#elif defined (RALINK_GPIO_HAS_9524)
-	else if (24 <= info.irq && info.irq < 40) {
-		if (ioctl(fd, RALINK_GPIO3924_SET_DIR_IN, (1<<(info.irq-24))) < 0)
-			goto ioctl_err;
-	}
-	else if (40 <= info.irq && info.irq < 72) {
-		if (ioctl(fd, RALINK_GPIO7140_SET_DIR_IN, (1<<(info.irq-40))) < 0)
-			goto ioctl_err;
-	}
-	else {
-		if (ioctl(fd, RALINK_GPIO9572_SET_DIR_IN, (1<<(info.irq-72))) < 0)
-			goto ioctl_err;
-	}
-#endif
-#else
-	if (info.irq < 16) {
-		if (ioctl(fd, RALINK_GPIO_SET_DIR_IN, info.irq) < 0)
-			goto ioctl_err;
-	} else {
+	if (ioctl(fd, RALINK_GPIO_SET_DIR_IN, (1<<info.irq)) < 0)
 		goto ioctl_err;
-	}
-#endif
+
 	//enable gpio interrupt
 	if (ioctl(fd, RALINK_GPIO_ENABLE_INTP) < 0)
 		goto ioctl_err;
@@ -195,6 +98,9 @@ int initGpio(void)
 	if (ioctl(fd, RALINK_GPIO_REG_IRQ, &info) < 0)
 		goto ioctl_err;
 	close(fd);
+
+	//load default time
+	gettimeofday(&buttonDownTime, NULL);
 
 	//issue a handler to handle SIGUSR1 and SIGUSR2
 	signal(SIGUSR1, nvramIrqHandler);
@@ -253,19 +159,7 @@ int main(int argc,char **argv)
 		loadDefault(2860);
 	}
 	
-	if (strcmp(nvram_bufget(RTDEV_NVRAM, "WebInit"),"1")) {
-#if defined (CONFIG_RTDEV) || \
-    defined (CONFIG_RTDEV_PLC)
-		loadDefault(2880);
-#elif defined (CONFIG_RT2561_AP) || defined (CONFIG_RT2561_AP_MODULE)
-		loadDefault(2561);
-#endif
-	}
 	nvram_close(RT2860_NVRAM);
-#if defined (CONFIG_RTDEV) || \
-	defined (CONFIG_RT2561_AP) || defined (CONFIG_RT2561_AP_MODULE)
-	nvram_close(RTDEV_NVRAM);
-#endif
 
 	if (initGpio() != 0)
 		exit(EXIT_FAILURE);
@@ -273,14 +167,9 @@ int main(int argc,char **argv)
 	fd = pidfile_acquire("/var/run/nvramd.pid");
 	pidfile_write_release(fd);
 
-#ifdef CONFIG_RT2880_L2_MANAGE
-	//start the management daemon (blocking)
-	ramad_start();
-#else
 	while (1) {
 		pause();
 	}
-#endif
 
 	exit(EXIT_SUCCESS);
 }

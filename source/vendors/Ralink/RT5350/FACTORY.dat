@@ -10,3 +10,7 @@ EncrypType=AES
 WPAPSK=123456
 CountryRegion=1
 CountryCode=DE
+lan_enabled=y
+lan_mode=dhcp
+wifi_enabled=n
+wifi_mode=dhcp
