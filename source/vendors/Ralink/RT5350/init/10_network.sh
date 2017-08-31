@@ -73,7 +73,7 @@ EOL
     interfaceMode $WIFI_INT wifi
 fi
 
-if [ "$lan_enabled" == "y" ] ; then
+if [ "$lan_enabled" -eq "n" ] ; then
 
     LAN_INT=eth2
 
