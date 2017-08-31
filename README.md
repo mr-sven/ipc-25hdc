@@ -98,3 +98,9 @@ $ touch user/openssl-0.9.8e/Makefile
 $ make
 
 ```
+
+Imported software parts
+------------
+ - v4l2rtspserver [Unlicense](https://github.com/mpromonet/v4l2rtspserver/blob/master/LICENSE)
+ - liblivemedia-dev [License LGPL](http://www.live555.com/liveMedia/)
+ - libv4l2cpp [Unlicense](https://github.com/mpromonet/libv4l2cpp/blob/master/LICENSE)
