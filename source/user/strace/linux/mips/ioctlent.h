@@ -310,7 +310,7 @@
 	{"linux/if_tun.h",	"TUNSETIFF",	0x54ca},
 	{"linux/if_tun.h",	"TUNSETPERSIST",	0x54cb},
 	{"linux/if_tun.h",	"TUNSETOWNER",	0x54cc},
-	{"linux/usbdevice_fs.h",	"USBDEVFS_CONTROL",	0x5500},
+/*	{"linux/usbdevice_fs.h",	"USBDEVFS_CONTROL",	0x5500},
 	{"linux/usbdevice_fs.h",	"USBDEVFS_BULK",	0x5502},
 	{"linux/usbdevice_fs.h",	"USBDEVFS_RESETEP",	0x5503},
 	{"linux/usbdevice_fs.h",	"USBDEVFS_SETINTERFACE",	0x5504},
@@ -327,7 +327,7 @@
 	{"linux/usbdevice_fs.h",	"USBDEVFS_IOCTL",	0x5512},
 	{"linux/usbdevice_fs.h",	"USBDEVFS_HUB_PORTINFO",	0x5513},
 	{"linux/usbdevice_fs.h",	"USBDEVFS_RESET",	0x5514},
-	{"linux/usbdevice_fs.h",	"USBDEVFS_CLEAR_HALT",	0x5515},
+	{"linux/usbdevice_fs.h",	"USBDEVFS_CLEAR_HALT",	0x5515},*/
 	{"linux/watchdog.h",	"WDIOC_GETSUPPORT",	0x5700},
 	{"linux/watchdog.h",	"WDIOC_GETSTATUS",	0x5701},
 	{"linux/watchdog.h",	"WDIOC_GETBOOTSTATUS",	0x5702},

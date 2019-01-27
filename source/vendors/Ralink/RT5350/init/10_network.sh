@@ -70,7 +70,6 @@ EOL
     interfaceMode $WIFI_INT wifi
 fi
 
-
 LAN_INT=eth2
 
 # enable lan interface

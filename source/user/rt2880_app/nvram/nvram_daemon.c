@@ -39,8 +39,8 @@ void loadDefault(int chip_id)
 
 /*
  * gpio interrupt handler -
- *   SIGUSR1 - short press
- *   SIGUSR2 - long press
+ *   SIGUSR1 - notify goAhead to start WPS (by sending SIGUSR1)
+ *   SIGUSR2 - restore default value
  */
 static void nvramIrqHandler(int signum)
 {

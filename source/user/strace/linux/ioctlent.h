@@ -557,7 +557,7 @@
 	{"linux/usbdevice_fs.h",	"USBDEVFS_CONTROL",	0x5500},
 	{"linux/uinput.h",	"UI_DEV_CREATE",	0x5501},
 	{"linux/uinput.h",	"UI_DEV_DESTROY",	0x5502},
-	{"linux/usbdevice_fs.h",	"USBDEVFS_BULK",	0x5502},
+/*	{"linux/usbdevice_fs.h",	"USBDEVFS_BULK",	0x5502},
 	{"linux/usbdevice_fs.h",	"USBDEVFS_RESETEP",	0x5503},
 	{"linux/usbdevice_fs.h",	"USBDEVFS_SETINTERFACE",	0x5504},
 	{"linux/usbdevice_fs.h",	"USBDEVFS_SETCONFIGURATION",	0x5505},
@@ -575,7 +575,7 @@
 	{"linux/usbdevice_fs.h",	"USBDEVFS_RESET",	0x5514},
 	{"linux/usbdevice_fs.h",	"USBDEVFS_CLEAR_HALT",	0x5515},
 	{"linux/usbdevice_fs.h",	"USBDEVFS_DISCONNECT",	0x5516},
-	{"linux/usbdevice_fs.h",	"USBDEVFS_CONNECT",	0x5517},
+	{"linux/usbdevice_fs.h",	"USBDEVFS_CONNECT",	0x5517},*/
 	{"linux/uinput.h",	"UI_SET_EVBIT",	0x5564},
 	{"linux/uinput.h",	"UI_SET_KEYBIT",	0x5565},
 	{"linux/uinput.h",	"UI_SET_RELBIT",	0x5566},
