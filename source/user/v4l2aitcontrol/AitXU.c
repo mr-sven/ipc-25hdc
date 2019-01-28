@@ -126,7 +126,7 @@ int AitXU_SetMirrFlip(int fd, __u8 mode)
 	struct AitIspCmd cmd = { AIT_ISP_EXTENDED_CMD, AIT_ISP_EX_MIRRFLIP, mode, 0 };
 	int ret = AitXU_IspCmd(fd, cmd);
 
-	printf("AitXU_SetMirrFlip: mode = %d, ret = %d", mode, ret);
+	printf("AitXU_SetMirrFlip: mode = %d, ret = %d\n", mode, ret);
 	return ret;
 }
 
@@ -135,7 +135,7 @@ int AitXU_SetIRCutMode(int fd, __u8 mode)
 	struct AitIspCmd cmd = { AIT_ISP_EXTENDED_CMD, AIT_ISP_EX_IRCUTMODE, (mode << 8), 0 };
 	int ret = AitXU_IspCmd(fd, cmd);
 
-	printf("AitXU_SetIRCutMode: mode = %d, ret = %d", mode, ret);
+	printf("AitXU_SetIRCutMode: mode = %d, ret = %d\n", mode, ret);
 	return ret;
 }
 
@@ -144,7 +144,7 @@ int AitXU_SetMjpgQuality(int fd, __u8 quality)
 	struct AitIspCmd cmd = { AIT_ISP_EXTENDED_CMD, AIT_ISP_EX_MJPEG_QUALITY, quality, 0 };
 	int ret = AitXU_IspCmd(fd, cmd);
 
-	printf("AitXU_SetMjpgQuality: quality = %d, ret = %d", quality, ret);
+	printf("AitXU_SetMjpgQuality: quality = %d, ret = %d\n", quality, ret);
 	return ret;
 }
 
@@ -162,7 +162,7 @@ int AitXU_SetFrameRate(int fd, __u8 rate)
 	struct AitIspCmd cmd = { AIT_ISP_FRAMERATE, rate, 0, 0 };
 	int ret = AitXU_IspCmd(fd, cmd);
 
-	printf("AitXU_SetFrameRate: rate = %d, ret = %d", rate, ret);
+	printf("AitXU_SetFrameRate: rate = %d, ret = %d\n", rate, ret);
 	return ret;
 }
 
@@ -176,7 +176,7 @@ int AitXU_SetBitrate(int fd, int rate)
 	struct AitIspCmd cmd = { AIT_ISP_BITRATE, 0xff, rate, 0 };
 	int ret = AitXU_IspCmd(fd, cmd);
 
-	printf("AitXU_SetBitrate: rate = %d, ret = %d", rate, ret);
+	printf("AitXU_SetBitrate: rate = %d, ret = %d\n", rate, ret);
 	return ret;
 }
 
@@ -185,7 +185,7 @@ int AitXU_SetIFrame(int fd)
 	struct AitIspCmd cmd = { AIT_ISP_IFRAME, 0, 0, 0 };
 	int ret = AitXU_IspCmd(fd, cmd);
 
-	printf("AitXU_SetIFrame: ret = %d", ret);
+	printf("AitXU_SetIFrame: ret = %d\n", ret);
 	return ret;
 }
 
@@ -218,7 +218,7 @@ int AitXU_SetPFrameCount(int fd, __u8 count)
 	struct AitMmpCmd cmd = { AIT_MMP_PFRAMECOUNT, count, 0, 0 };
 	int ret = AitXU_XuCmd(fd, (__u8 *) &cmd, AIT_SET_MMP_CONTROL, sizeof(struct AitMmpCmd), UVC_SET_CUR);
 
-	printf("AitXU_SetPFrameCount: count = %d, ret = %d", count, ret);
+	printf("AitXU_SetPFrameCount: count = %d, ret = %d\n", count, ret);
 	return ret;
 }
 
@@ -227,7 +227,7 @@ int AitXU_SetEncRes(int fd, __u8 res)
 	struct AitMmpCmd cmd = { AIT_MMP_ENCODERES, res, 0, 0 };
 	int ret = AitXU_XuCmd(fd, (__u8 *) &cmd, AIT_SET_MMP_CONTROL, sizeof(struct AitMmpCmd), UVC_SET_CUR);
 
-	printf("AitXU_SetEncRes: res = %d, ret = %d", res, ret);
+	printf("AitXU_SetEncRes: res = %d, ret = %d\n", res, ret);
 	return ret;
 }
 
@@ -236,7 +236,7 @@ int AitXU_SetMode(int fd, __u8 mode)
 	struct AitMmpCmd cmd = { AIT_MMP_MODE, mode, 0, 0 };
 	int ret = AitXU_XuCmd(fd, (__u8 *) &cmd, AIT_SET_MMP_CONTROL, sizeof(struct AitMmpCmd), UVC_SET_CUR);
 
-	printf("AitXU_SetMode: mode = %d, ret = %d", mode, ret);
+	printf("AitXU_SetMode: mode = %d, ret = %d\n", mode, ret);
 	return ret;
 }
 
@@ -245,7 +245,7 @@ int AitXU_TriggerMJPEG(int fd)
 	struct AitMmp16Cmd cmd = { AIT_MMP16_TRIGGER, 0 };
 	int ret = AitXU_XuCmd(fd, (__u8 *) &cmd, AIT_SET_MMP16_CONTROL, sizeof(cmd), UVC_SET_CUR);
 
-	printf("AitXU_TriggerMJPEG: ret = %d", ret);
+	printf("AitXU_TriggerMJPEG: ret = %d\n", ret);
 	return ret;
 }
 

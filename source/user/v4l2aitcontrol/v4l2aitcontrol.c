@@ -17,15 +17,15 @@ void print_usage(char *progname)
 {
 	fprintf(stderr, "------------------------------------------------------------------\n");
 	fprintf(stderr, "Usage: %s\n" \
-					" [-h | --help ]........: display this help\n" \
-					" [-v | --version ].....: display version information\n" \
-					" [-i | --init ]........: init Ait Device\n" \
-					" [-r | --framerate ]...: sets the specified framerate: 5-30\n" \
-					" [-b | --bitrate ].....: sets the specified bitrate\n" \
-					" [-m | --mirror ]......: sets mirror mode: 0 = default, 1 = flip, 2 = mirror, 3 = mirror & flip\n" \
-					" [-q | --quality ].....: sets the MJPEG quality: 1-255\n" \
-					" [-n | --irmode ]......: sets the IR Cut mode: 0 = default, 1 = day, 2 = night\n" \
-					" [-p | --pframecount ].: sets the P-Frame count: 1-255\n", progname);
+					" [--help ]........: display this help\n" \
+					" [--version ].....: display version information\n" \
+					" [--init ]........: init Ait Device\n" \
+					" [--framerate ]...: sets the specified framerate: 5-30\n" \
+					" [--bitrate ].....: sets the specified bitrate\n" \
+					" [--mirror ]......: sets mirror mode: 0 = default, 1 = flip, 2 = mirror, 3 = mirror & flip\n" \
+					" [--quality ].....: sets the MJPEG quality: 1-255\n" \
+					" [--irmode ]......: sets the IR Cut mode: 0 = default, 1 = day, 2 = night\n" \
+					" [--pframecount ].: sets the P-Frame count: 1-255\n", progname);
 	fprintf(stderr, "------------------------------------------------------------------\n");
 }
 
