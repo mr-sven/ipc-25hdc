@@ -82,6 +82,13 @@ struct AitIspCmd {
 	__u32 data1;
 };
 
+struct AitMmpCmd {
+	__u8 cmd0;
+	__u8 cmd1;
+	__u16 data0;
+	__u32 data1;
+};
+
 int AitXU_Init(int fd);
 int AitXU_SetMirrFlip(int fd, __u8 mode);
 int AitXU_SetIRCutMode(int fd, __u8 mode);
