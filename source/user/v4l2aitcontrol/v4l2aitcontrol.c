@@ -40,12 +40,12 @@ void init_ait(int fd)
 	AitXU_GetFWBuildDate(fd, data, 8);
 	printf("AIT Firmware Build Date: 20%.2s.%.3s.%.2s\n", &data[1], &data[3], &data[6]);
 
-    struct versionDev {
+	struct versionDev {
 		__u16 reseverd;
 		__u16 major;
 		__u16 minor;
 		__u16 patch;
-    } version;
+	} version;
 
 	AitXU_GetFWVersion(fd, (__u8 *)&version, sizeof(version));
 	printf("AIT Firmware Build Date: %d.%d.%d\n", __bswap_16(version.major), __bswap_16(version.minor), __bswap_16(version.patch));
@@ -54,15 +54,17 @@ void init_ait(int fd)
 void read_reg(int fd, int reg)
 {
 	__u8 data[8];
+	__u8 cnt;
+
 	memset(data, 0, 8);
 	AitXU_ReadReg(fd, reg, data);
 
-    printf("Register 0x%04x: \n", reg);
-    for (__u8 cnt = 0; cnt < 8; cnt++)
-    {
-        printf(" 0x%02x", data[cnt]);
-    }
-    printf("\n");
+	printf("Register 0x%04x: \n", reg);
+	for (cnt = 0; cnt < 8; cnt++)
+	{
+		printf(" 0x%02x", data[cnt]);
+	}
+	printf("\n");
 }
 
 int main(int argc, char *argv[])
