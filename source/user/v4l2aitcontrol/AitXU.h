@@ -122,6 +122,6 @@ int AitXU_SetPFrameCount(int fd, __u8 count);
 int AitXU_SetEncRes(int fd, __u8 res);
 int AitXU_SetMode(int fd, __u8 mode);
 int AitXU_TriggerMJPEG(int fd);
-int AitXU_ReadReg(int fd, __u16 reg, __u16 * res);
+int AitXU_ReadReg(int fd, __u16 reg, __u8 * data);
 
 #endif /* _AITXU_H_ */
