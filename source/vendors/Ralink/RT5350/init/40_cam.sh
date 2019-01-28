@@ -47,7 +47,7 @@ if [ "$cam_enabled" == "y" ] ; then
     fi
 
     # configure device
-    v4l2aitcontrol --framerate $cam_framerate --quality $cam_quality --mirror $cal_mirror_flip
+    v4l2aitcontrol --framerate $cam_framerate --quality $cam_quality --mirror $cam_mirror_flip
     v4l2aitcontrol --irmode $cam_ir_mode
 
     # load cam stream port
