@@ -15,7 +15,7 @@ if [ "$cam_enabled" == "y" ] ; then
 
     # check if ir led enabled
     cam_ir_enabled=`nvram_get cam_ir_enabled`
-    if ["$cam_ir_enabled" == "y"] ; then
+    if [ "$cam_ir_enabled" == "y" ] ; then
         gpio i 1
     fi
 
@@ -47,6 +47,22 @@ if [ "$cam_enabled" == "y" ] ; then
     fi
 
     # configure device
-    v4l2aitcontrol --framerate $cam_framerate --quality $cam_quality --mirror $cal_mirror_flip --irmode $cam_ir_mode
+    v4l2aitcontrol --framerate $cam_framerate --quality $cam_quality --mirror $cal_mirror_flip
+    v4l2aitcontrol --irmode $cam_ir_mode
+
+    # load cam stream port
+    cam_port=`nvram_get cam_port`
+    if [ -z "$cam_port" ] ; then
+        cam_port=8080
+    fi
+
+    # load cam resolution
+    cam_resolution=`nvram_get cam_resolution`
+    if [ -z "$cam_resolution" ] ; then
+        cam_resolution=1280x720
+    fi
+
+    # start uvc stream
+    uvc_stream -b -r $cam_resolution -f $cam_framerate -p $cam_port --disable_control
 
 fi
