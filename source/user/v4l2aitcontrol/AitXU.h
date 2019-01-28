@@ -20,9 +20,14 @@
 #define AIT_ISP_FRAMERATE					0x02
 #define AIT_ISP_FRAMERATE_MAX				30
 #define AIT_ISP_FRAMERATE_MIN				5
+
 #define AIT_ISP_IFRAME						0x04
+
 #define AIT_ISP_BITRATE						0x08
 #define AIT_ISP_BITRATE_MAX					0xffff
+
+#define AIT_ISP_REGISTER					0x0A
+
 #define AIT_ISP_FW_VERSION					0x0B
 #define AIT_ISP_FW_BUILDDATE				0x0C
 #define AIT_ISP_EXTENDED_CMD				0xFF
@@ -49,13 +54,13 @@
 #define AIT_MMP_PFRAMECOUNT					0x09
 #define AIT_MMP_PFRAMECOUNT_MAX				0xff
 
-#define AIT_MMP_ENCODERES					0x0C
+#define AIT_MMP_ENCODERES					0x0B
 
 #define AIT_RES_1							1
 #define AIT_RES_2							2
 #define AIT_RES_H264_1280X720				3
 
-#define AIT_MMP_MODE						0x0d
+#define AIT_MMP_MODE						0x0C
 
 #define AIT_MODE_88							0x88
 
@@ -70,6 +75,8 @@
 // Multimedia Processor 16
 #define AIT_SET_MMP16_CONTROL				14
 #define AIT_GET_MMP16_CONTROL				15
+
+#define AIT_MMP16_TRIGGER					0x03
 
 
 typedef struct uvc_xu_tbl_info {
@@ -96,6 +103,12 @@ struct AitMmpCmd {
 	__u32 data1;
 };
 
+struct AitMmp16Cmd {
+	__u8 cmd0;
+	__u8 cmd1;
+	__u8 data[14];
+};
+
 int AitXU_Init(int fd);
 int AitXU_SetMirrFlip(int fd, __u8 mode);
 int AitXU_SetIRCutMode(int fd, __u8 mode);
@@ -108,5 +121,7 @@ int AitXU_GetFWVersion(int fd, __u8 * data, int len);
 int AitXU_SetPFrameCount(int fd, __u8 count);
 int AitXU_SetEncRes(int fd, __u8 res);
 int AitXU_SetMode(int fd, __u8 mode);
+int AitXU_TriggerMJPEG(int fd);
+int AitXU_ReadReg(int fd, __u16 reg, __u16 * res);
 
 #endif /* _AITXU_H_ */

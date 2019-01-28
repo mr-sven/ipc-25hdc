@@ -51,6 +51,20 @@ void init_ait(int fd)
 	printf("AIT Firmware Build Date: %d.%d.%d\n", __bswap_16(version.major), __bswap_16(version.minor), __bswap_16(version.patch));
 }
 
+void read_reg(int fd, int reg)
+{
+	__u8 data[8];
+	memset(data, 0, 8);
+	AitXU_ReadReg(fd, reg, data);
+
+    printf("Register 0x%04x: \n", reg);
+    for (__u8 cnt = 0; cnt < 8; cnt++)
+    {
+        printf(" 0x%02x", data[cnt]);
+    }
+    printf("\n");
+}
+
 int main(int argc, char *argv[])
 {
 	char *dev = "/dev/video0";
@@ -79,6 +93,7 @@ int main(int argc, char *argv[])
 		{"quality",		required_argument,	0, 'q'},
 		{"irmode",		required_argument,	0, 'n'},
 		{"pframecount",	required_argument,	0, 'p'},
+		{"reg",			required_argument,	0, 'R'},
 		{0,				0,					0, 0}
 	};
 
@@ -107,6 +122,9 @@ int main(int argc, char *argv[])
 				break;
 			case 'p':
 				pframecount = atoi(optarg);
+				break;
+			case 'R':
+				read_reg(fd, atoi(optarg));
 				break;
 			default:
 				print_usage(argv[0]);

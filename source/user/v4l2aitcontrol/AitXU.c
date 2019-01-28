@@ -17,10 +17,11 @@ uvc_xu_tbl_info xu_control_tbl[] = {
 // Multimedia Processor
 	{ "Set MMP", AIT_SET_MMP_CONTROL, sizeof(struct AitMmpCmd), 0, AIT_XU_SET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED },
 	{ "Get MMP", AIT_GET_MMP_CONTROL, sizeof(struct AitMmpCmd), 0, AIT_XU_GET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED },
+// Multimedia Processor 16
+	{"Set MMP16", AIT_SET_MMP16_CONTROL, sizeof(struct AitMmp16Cmd), 0, AIT_XU_SET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},
+	{"Get MMP16 Result", AIT_GET_MMP16_CONTROL, sizeof(struct AitMmp16Cmd), 0, AIT_XU_GET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},
 
-/*	{"Set MMP16", AIT_SET_MMP16_CONTROL, sizeof(struct AitMmp16Cmd), 0, AIT_XU_SET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},
- {"Get MMP16 Result", AIT_GET_MMP16_CONTROL, sizeof(struct AitMmp16Cmd), 0, AIT_XU_GET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},
- {"Set ISP EX", AIT_SET_ISPEX_CONTROL, sizeof(struct AitIspExCmd), 0, AIT_XU_GET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},
+/* {"Set ISP EX", AIT_SET_ISPEX_CONTROL, sizeof(struct AitIspExCmd), 0, AIT_XU_GET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},
  {"Set ISP EX Result", AIT_GET_ISPEX_CONTROL, sizeof(struct AitIspExCmd), 0, AIT_XU_GET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},
  {"Set MMP MEM", AIT_SET_MMPMEM_CONTROL, sizeof(struct AitMmpMemCmd), 0, AIT_XU_SET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},
  {"Get MMP MEM", AIT_GET_MMPMEM_CONTROL, sizeof(struct AitMmpMemCmd), 0, AIT_XU_GET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},*/
@@ -237,4 +238,21 @@ int AitXU_SetMode(int fd, __u8 mode)
 
 	printf("AitXU_SetMode: mode = %d, ret = %d", mode, ret);
 	return ret;
+}
+
+int AitXU_TriggerMJPEG(int fd)
+{
+	struct AitMmp16Cmd cmd = { AIT_MMP16_TRIGGER, 0 };
+	int ret = AitXU_XuCmd(fd, (__u8 *) &cmd, AIT_SET_MMP16_CONTROL, sizeof(cmd), UVC_SET_CUR);
+
+	printf("AitXU_TriggerMJPEG: ret = %d", ret);
+	return ret;
+}
+
+int AitXU_ReadReg(int fd, __u16 reg, __u8 * data)
+{
+	struct AitIspCmd cmd = { AIT_ISP_REGISTER, 0, reg, 0 };
+
+	AitXU_IspCmd(fd, cmd);
+	return AitXU_XuCmd(fd, data, AIT_GET_ISP_CONTROL, 8, UVC_GET_CUR);
 }
