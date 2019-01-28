@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
 				pframecount = atoi(optarg);
 				break;
 			case 'R':
-				read_reg(fd, atoi(optarg));
+				read_reg(fd, strtol(optarg, NULL, 0));
 				break;
 			default:
 				print_usage(argv[0]);
