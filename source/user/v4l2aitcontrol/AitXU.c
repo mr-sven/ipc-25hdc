@@ -117,21 +117,21 @@ static inline int AitXU_IspCmd(int fd, struct AitIspCmd data)
 	return AitXU_XuCmd(fd, (__u8 *) &data, AIT_SET_ISP_CONTROL, sizeof(struct AitIspCmd), UVC_SET_CUR);
 }
 
-int H264SetMirr(int fd, __u8 mode)
+int AitXU_SetMirrFlip(int fd, __u8 mode)
 {
-	struct AitIspCmd cmd = { UVC_XUCMD_EXT_CMD, AIT_XUCMD_EXT_H264SETMIRROR, mode, 0 };
+	struct AitIspCmd cmd = { AIT_ISP_EXTENDED_CMD, AIT_ISP_EX_MIRRFLIP, mode, 0 };
 	return AitXU_IspCmd(fd, cmd);
 }
 
-int H264SetIRCutMode(int fd, __u8 mode)
+int AitXU_SetIRCutMode(int fd, __u8 mode)
 {
-	struct AitIspCmd cmd = { UVC_XUCMD_EXT_CMD, AIT_XUCMD_EXT_H264SETIRCUTMODE, (mode << 8), 0 };
+	struct AitIspCmd cmd = { AIT_ISP_EXTENDED_CMD, AIT_ISP_EX_IRCUTMODE, (mode << 8), 0 };
 	return AitXU_IspCmd(fd, cmd);
 }
 
-int MjpgSetQuality(int fd, __u8 quality)
+int AitXU_SetMjpgQuality(int fd, __u8 quality)
 {
-	struct AitIspCmd cmd = { UVC_XUCMD_EXT_CMD, AIT_XUCMD_EXT_MJPGSETQUALITY, quality, 0 };
+	struct AitIspCmd cmd = { AIT_ISP_EXTENDED_CMD, AIT_ISP_EX_MJPEG_QUALITY, quality, 0 };
 	return AitXU_IspCmd(fd, cmd);
 }
 
@@ -146,7 +146,7 @@ int AitXU_SetFrameRate(int fd, __u8 rate)
 	{
 		rate = 30;
 	}
-	struct AitIspCmd cmd = { UVC_XUCMD_SETFRAMERATE, rate, 0, 0 };
+	struct AitIspCmd cmd = { AIT_ISP_FRAMERATE, rate, 0, 0 };
 	return AitXU_IspCmd(fd, cmd);
 }
 
@@ -157,13 +157,13 @@ int AitXU_SetBitrate(int fd, int rate)
 		return 1;
 	}
 
-	struct AitIspCmd cmd = { UVC_XUCMD_SETBITRATE, 0xff, rate, 0 };
+	struct AitIspCmd cmd = { AIT_ISP_BITRATE, 0xff, rate, 0 };
 	return AitXU_IspCmd(fd, cmd);
 }
 
 int AitXU_SetIFrame(int fd)
 {
-	struct AitIspCmd cmd = { UVC_XUCMD_SETIFRAME, 0, 0, 0 };
+	struct AitIspCmd cmd = { AIT_ISP_IFRAME, 0, 0, 0 };
 	return AitXU_IspCmd(fd, cmd);
 }
 
@@ -173,7 +173,7 @@ int AitXU_GetFWBuildDate(int fd, __u8 * data, int len)
 	{
 		return 1;
 	}
-	struct AitIspCmd cmd = { UVC_XUCMD_GETFWBUILDDATE, 0, 0, 0 };
+	struct AitIspCmd cmd = { AIT_ISP_FW_BUILDDATE, 0, 0, 0 };
 	AitXU_IspCmd(fd, cmd);
 
 	return AitXU_XuCmd(fd, data, AIT_GET_ISP_CONTROL, 8, UVC_GET_CUR);
@@ -185,7 +185,7 @@ int AitXU_GetFWVersion(int fd, __u8 * data, int len)
 	{
 		return 1;
 	}
-	struct AitIspCmd cmd = { UVC_XUCMD_GETFWVERSION, 0, 0, 0 };
+	struct AitIspCmd cmd = { AIT_ISP_FW_VERSION, 0, 0, 0 };
 	AitXU_IspCmd(fd, cmd);
 
 	return AitXU_XuCmd(fd, data, AIT_GET_ISP_CONTROL, 8, UVC_GET_CUR);

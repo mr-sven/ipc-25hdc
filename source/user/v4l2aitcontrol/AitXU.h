@@ -13,35 +13,57 @@
 #define AIT_XU_GET							(UVC_CONTROL_GET_CUR | UVC_CONTROL_GET_DEF | UVC_CONTROL_GET_MIN | UVC_CONTROL_GET_MAX)
 #define AIT_XU_SET							(UVC_CONTROL_SET_CUR | UVC_CONTROL_GET_DEF | UVC_CONTROL_GET_MIN | UVC_CONTROL_GET_MAX)
 
+// Image Signal Processor
 #define AIT_SET_ISP_CONTROL					1
 #define AIT_GET_ISP_CONTROL					2
-#define AIT_SET_MMP_CONTROL					4
-#define AIT_GET_MMP_CONTROL					5
-#define AIT_SET_ISPEX_CONTROL				6
-#define AIT_GET_ISPEX_CONTROL				7
-#define AIT_GET_MMPMEM_CONTROL				8
-#define AIT_SET_MMPMEM_CONTROL				9
-#define AIT_SET_MMP16_CONTROL				14
-#define AIT_GET_MMP16_CONTROL				15
 
-#define UVC_XUCMD_SETFRAMERATE				0x02
-#define UVC_XUCMD_SETIFRAME					0x04
-#define UVC_XUCMD_SETBITRATE				0x08
-#define UVC_XUCMD_GETFWVERSION				0x0B
-#define UVC_XUCMD_GETFWBUILDDATE			0x0C
-#define UVC_XUCMD_EXT_CMD					0xFF
+#define AIT_ISP_FRAMERATE					0x02
+#define AIT_ISP_IFRAME						0x04
+#define AIT_ISP_BITRATE						0x08
+#define AIT_ISP_FW_VERSION					0x0B
+#define AIT_ISP_FW_BUILDDATE				0x0C
+#define AIT_ISP_EXTENDED_CMD				0xFF
 
-#define AIT_XUCMD_EXT_H264SETMIRROR			0x11
-#define AIT_XUCMD_EXT_MJPGSETQUALITY		0x13
-#define AIT_XUCMD_EXT_H264SETIRCUTMODE		0x27
+#define AIT_ISP_EX_MIRRFLIP					0x11
 
 #define AIT_FM_NORMAL						0
 #define AIT_FM_FLIP							1
 #define AIT_FM_MIRROR						2
 
+#define AIT_ISP_EX_MJPEG_QUALITY			0x13
+
+#define AIT_ISP_EX_IRCUTMODE				0x27
+
 #define AIT_IR_DEFAULT						0
 #define AIT_IR_DAY							1
 #define AIT_IR_NIGHT						2
+
+// Multimedia Processor
+#define AIT_SET_MMP_CONTROL					4
+#define AIT_GET_MMP_CONTROL					5
+
+#define AIT_MMP_PFRAMECOUNT					0x09
+#define AIT_MMP_ENCODERES					0x0C
+#define AIT_MMP_MODE						0x0d
+
+// Image Signal Processor Extension
+#define AIT_SET_ISPEX_CONTROL				6
+#define AIT_GET_ISPEX_CONTROL				7
+
+// Multimedia Processor Memory
+#define AIT_GET_MMPMEM_CONTROL				8
+#define AIT_SET_MMPMEM_CONTROL				9
+
+// Multimedia Processor 16
+#define AIT_SET_MMP16_CONTROL				14
+#define AIT_GET_MMP16_CONTROL				15
+
+
+#define AIT_RES_1							1
+#define AIT_RES_2							2
+#define AIT_RES_H264_1280X720				3
+
+#define AIT_MODE_88							0x88
 
 typedef struct uvc_xu_tbl_info {
 	__u8 name[32];
@@ -61,9 +83,9 @@ struct AitIspCmd {
 };
 
 int AitXU_Init(int fd);
-int H264SetMirr(int fd, __u8 mode);
-int H264SetIRCutMode(int fd, __u8 mode);
-int MjpgSetQuality(int fd, __u8 quality);
+int AitXU_SetMirrFlip(int fd, __u8 mode);
+int AitXU_SetIRCutMode(int fd, __u8 mode);
+int AitXU_SetMjpgQuality(int fd, __u8 quality);
 int AitXU_SetFrameRate(int fd, __u8 rate);
 int AitXU_SetBitrate(int fd, int rate);
 int AitXU_SetIFrame(int fd);
