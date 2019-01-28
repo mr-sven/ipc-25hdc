@@ -136,7 +136,7 @@ dir_$(CONFIG_USER_SNMPD) 		    += snmpd
 
 dir_$(CONFIG_USER_FACTORY_MAC_UPDATE)	    += factory_mac_update
 
-dir_y += v4l2aitcontrol
+dir_$(CONFIG_USER_V4L2_AIT_CONTROL)	    += v4l2aitcontrol
 
 #TEST
 dir_$(CONFIG_USER_HELLO_WORLD)		    += hello_world

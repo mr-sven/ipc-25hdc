@@ -236,6 +236,7 @@ bool 'snmpd(v1)'				CONFIG_USER_SNMPD
 
 bool 'totd (DNS proxy)'				CONFIG_USER_TOTD
 bool 'uvc_stream'				CONFIG_USER_UVC_STREAM
+bool 'v4l2aitcontrol'				CONFIG_USER_V4L2_AIT_CONTROL
 bool 'linux-igd'				CONFIG_USER_UPNP_IGD
 bool 'wpa-supplicant'				CONFIG_USER_WPA_SUPPLICANT
 if [ "$CONFIG_USER_WPA_SUPPLICANT" = "y" ]; then
