@@ -18,8 +18,11 @@
 #define AIT_GET_ISP_CONTROL					2
 
 #define AIT_ISP_FRAMERATE					0x02
+#define AIT_ISP_FRAMERATE_MAX				30
+#define AIT_ISP_FRAMERATE_MIN				5
 #define AIT_ISP_IFRAME						0x04
 #define AIT_ISP_BITRATE						0x08
+#define AIT_ISP_BITRATE_MAX					0xffff
 #define AIT_ISP_FW_VERSION					0x0B
 #define AIT_ISP_FW_BUILDDATE				0x0C
 #define AIT_ISP_EXTENDED_CMD				0xFF
@@ -31,6 +34,7 @@
 #define AIT_FM_MIRROR						2
 
 #define AIT_ISP_EX_MJPEG_QUALITY			0x13
+#define AIT_ISP_EX_MJPEG_QUALITY_MAX		0xff
 
 #define AIT_ISP_EX_IRCUTMODE				0x27
 
@@ -43,6 +47,7 @@
 #define AIT_GET_MMP_CONTROL					5
 
 #define AIT_MMP_PFRAMECOUNT					0x09
+#define AIT_MMP_PFRAMECOUNT_MAX				0xff
 
 #define AIT_MMP_ENCODERES					0x0C
 

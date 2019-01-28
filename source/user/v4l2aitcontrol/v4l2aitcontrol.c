@@ -19,7 +19,13 @@ void print_usage(char *progname)
 	fprintf(stderr, "Usage: %s\n" \
 					" [-h | --help ]........: display this help\n" \
 					" [-v | --version ].....: display version information\n" \
-					" [-i | --init].........: init Ait Device\n", progname);
+					" [-i | --init ]........: init Ait Device\n" \
+					" [-r | --framerate ]...: sets the specified framerate: 5-30\n" \
+					" [-b | --bitrate ].....: sets the specified bitrate\n" \
+					" [-m | --mirror ]......: sets mirror mode: 0 = default, 1 = flip, 2 = mirror, 3 = mirror & flip\n" \
+					" [-q | --quality ].....: sets the MJPEG quality: 1-255\n" \
+					" [-n | --irmode ]......: sets the IR Cut mode: 0 = default, 1 = day, 2 = night\n" \
+					" [-p | --pframecount ].: sets the P-Frame count: 1-255\n", progname);
 	fprintf(stderr, "------------------------------------------------------------------\n");
 }
 
@@ -51,6 +57,13 @@ int main(int argc, char *argv[])
 	int fd = 0;
 	int opt = 0;
 
+	int framerate = -1;
+	int bitrate = -1;
+	int mirror = -1;
+	int quality = -1;
+	int irmode = -1;
+	int pframecount = -1;
+
 	if ((fd = open(dev, O_RDWR)) == -1)
 	{
 		fprintf(stderr, "ERROR opening V4L interface \n");
@@ -60,6 +73,12 @@ int main(int argc, char *argv[])
 	static struct option long_options[] = {
 		{"help",		no_argument,		0, 'h'},
 		{"init",		no_argument,		0, 'i'},
+		{"framerate",	required_argument,	0, 'r'},
+		{"bitrate",		required_argument,	0, 'b'},
+		{"mirror",		required_argument,	0, 'm'},
+		{"quality",		required_argument,	0, 'q'},
+		{"irmode",		required_argument,	0, 'n'},
+		{"pframecount",	required_argument,	0, 'p'},
 		{0,				0,					0, 0}
 	};
 
@@ -68,8 +87,26 @@ int main(int argc, char *argv[])
 	{
 		switch (opt)
 		{
-			case 'i' :
+			case 'i':
 				init_ait(fd);
+				break;
+			case 'r':
+				framerate = atoi(optarg);
+				break;
+			case 'b':
+				bitrate = atoi(optarg);
+				break;
+			case 'm':
+				mirror = atoi(optarg);
+				break;
+			case 'q':
+				quality = atoi(optarg);
+				break;
+			case 'n':
+				irmode = atoi(optarg);
+				break;
+			case 'p':
+				pframecount = atoi(optarg);
 				break;
 			default:
 				print_usage(argv[0]);
@@ -77,12 +114,79 @@ int main(int argc, char *argv[])
 				exit(EXIT_FAILURE);
 		}
 	}
+
+	if (framerate != -1)
+	{
+		if (framerate > AIT_ISP_FRAMERATE_MAX || framerate < AIT_ISP_FRAMERATE_MIN)
+		{
+			fprintf(stderr, "framerate out of range\n");
+		}
+		else
+		{
+			AitXU_SetFrameRate(fd, framerate);
+		}
+	}
+
+	if (bitrate != -1)
+	{
+		if (bitrate > AIT_ISP_BITRATE_MAX)
+		{
+			fprintf(stderr, "bitrate out of range\n");
+		}
+		else
+		{
+			AitXU_SetBitrate(fd, bitrate);
+		}
+	}
+
+	if (mirror != -1)
+	{
+		if (mirror > (AIT_FM_FLIP | AIT_FM_MIRROR))
+		{
+			fprintf(stderr, "mirror out of range\n");
+		}
+		else
+		{
+			AitXU_SetMirrFlip(fd, mirror);
+		}
+	}
+
+	if (irmode != -1)
+	{
+		if (irmode > AIT_IR_NIGHT)
+		{
+			fprintf(stderr, "irmode out of range\n");
+		}
+		else
+		{
+			AitXU_SetIRCutMode(fd, irmode);
+		}
+	}
+
+	if (quality != -1)
+	{
+		if (quality > AIT_ISP_EX_MJPEG_QUALITY_MAX)
+		{
+			fprintf(stderr, "quality out of range\n");
+		}
+		else
+		{
+			AitXU_SetMjpgQuality(fd, quality);
+		}
+	}
+
+	if (pframecount != -1)
+	{
+		if (pframecount > AIT_MMP_PFRAMECOUNT_MAX)
+		{
+			fprintf(stderr, "pframecount out of range\n");
+		}
+		else
+		{
+			AitXU_SetPFrameCount(fd, pframecount);
+		}
+	}
+
 	close(fd);
-//
-//	H264SetMirr(fd, AIT_FM_NORMAL);
-//	H264SetIRCutMode(fd, AIT_IR_NIGHT);
-//
-//	AitXU_SetFrameRate(fd, 5);
-//
-//	close(fd);
+
 }

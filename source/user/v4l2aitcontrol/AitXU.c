@@ -149,14 +149,14 @@ int AitXU_SetMjpgQuality(int fd, __u8 quality)
 
 int AitXU_SetFrameRate(int fd, __u8 rate)
 {
-	if (rate < 5)
+	if (rate < AIT_ISP_FRAMERATE_MIN)
 	{
-		rate = 5;
+		rate = AIT_ISP_FRAMERATE_MIN;
 	}
 
-	if (rate > 30)
+	if (rate > AIT_ISP_FRAMERATE_MAX)
 	{
-		rate = 30;
+		rate = AIT_ISP_FRAMERATE_MAX;
 	}
 	struct AitIspCmd cmd = { AIT_ISP_FRAMERATE, rate, 0, 0 };
 	int ret = AitXU_IspCmd(fd, cmd);
@@ -167,7 +167,7 @@ int AitXU_SetFrameRate(int fd, __u8 rate)
 
 int AitXU_SetBitrate(int fd, int rate)
 {
-	if (rate > 0xffff)
+	if (rate > AIT_ISP_BITRATE_MAX)
 	{
 		return 1;
 	}
