@@ -137,6 +137,7 @@ void *client_thread( void *arg ) {
       cd.moved = 0;
     }
     /* wait for fresh frames */
+    pthread_mutex_lock( &db );
     pthread_cond_wait(&db_update, &db);
 
     /* read buffer */
