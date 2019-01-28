@@ -117,22 +117,19 @@ static inline int AitXU_IspCmd(int fd, struct AitIspCmd data)
 
 int H264SetMirr(int fd, __u8 mode)
 {
-    struct AitIspCmd cmd = {0xff, 0x11, mode, 0};
+    struct AitIspCmd cmd = {UVC_XUCMD_EXT_CMD, AIT_XUCMD_EXT_H264SETMIRROR, mode, 0};
     return AitXU_IspCmd(fd, cmd);
 }
 
-//[0] Default
-//[1] Day mode
-//[2] Night mode
 int H264SetIRCutMode(int fd, __u8 mode)
 {
-    struct AitIspCmd cmd = {0xff, 0x27, (mode << 8), 0};
+    struct AitIspCmd cmd = {UVC_XUCMD_EXT_CMD, AIT_XUCMD_EXT_H264SETIRCUTMODE, (mode << 8), 0};
     return AitXU_IspCmd(fd, cmd);
 }
 
 int MjpgSetQuality(int fd, __u8 quality)
 {
-    struct AitIspCmd cmd = {0xff, 0x13, quality, 0};
+    struct AitIspCmd cmd = {UVC_XUCMD_EXT_CMD, AIT_XUCMD_EXT_MJPGSETQUALITY, quality, 0};
     return AitXU_IspCmd(fd, cmd);
 }
 
@@ -147,7 +144,7 @@ int AitXU_SetFrameRate(int fd, __u8 rate)
     {
         rate = 30;
     }
-    struct AitIspCmd cmd = {2, rate, 0, 0};
+    struct AitIspCmd cmd = {UVC_XUCMD_SETFRAMERATE, rate, 0, 0};
     return AitXU_IspCmd(fd, cmd);
 }
 
@@ -158,13 +155,13 @@ int AitXU_SetBitrate(int fd, int rate)
         return 1;
     }
 
-    struct AitIspCmd cmd = {8, 0xff, rate, 0};
+    struct AitIspCmd cmd = {UVC_XUCMD_SETBITRATE, 0xff, rate, 0};
     return AitXU_IspCmd(fd, cmd);
 }
 
 int AitXU_SetIFrame(int fd)
 {
-    struct AitIspCmd cmd = {4, 0, 0, 0};
+    struct AitIspCmd cmd = {UVC_XUCMD_SETIFRAME, 0, 0, 0};
     return AitXU_IspCmd(fd, cmd);
 }
 
@@ -174,7 +171,7 @@ int AitXU_GetFWBuildDate(int fd, __u8 * data, int len)
     {
         return 1;
     }
-    struct AitIspCmd cmd = {12, 0, 0, 0};
+    struct AitIspCmd cmd = {UVC_XUCMD_GETFWBUILDDATE, 0, 0, 0};
     AitXU_IspCmd(fd, cmd);
 
     return AitXU_XuCmd(fd, data, AIT_GET_ISP_CONTROL, 8, UVC_GET_CUR);
@@ -186,7 +183,7 @@ int AitXU_GetFWVersion(int fd, __u8 * data, int len)
     {
         return 1;
     }
-    struct AitIspCmd cmd = {11, 0, 0, 0};
+    struct AitIspCmd cmd = {UVC_XUCMD_GETFWVERSION, 0, 0, 0};
     AitXU_IspCmd(fd, cmd);
 
     return AitXU_XuCmd(fd, data, AIT_GET_ISP_CONTROL, 8, UVC_GET_CUR);

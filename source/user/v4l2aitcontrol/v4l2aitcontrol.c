@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <getopt.h>
 
 #include "AitXU.h"
 
@@ -45,7 +46,7 @@ int main(int argc, char *argv[])
     printf("\n");
 
     H264SetMirr(fd, AIT_FM_NORMAL);
-    H264SetIRCutMode(fd, 2);
+    H264SetIRCutMode(fd, AIT_IR_NIGHT);
 
     AitXU_SetFrameRate(fd, 5);
 

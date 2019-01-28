@@ -24,9 +24,24 @@
 #define AIT_SET_MMPMEM_CONTROL      9
 #define AIT_GET_MMPMEM_CONTROL      8
 
-#define AIT_FM_NORMAL               0
-#define AIT_FM_FLIP                 1
-#define AIT_FM_MIRROR               2
+#define UVC_XUCMD_SETFRAMERATE				0x02
+#define UVC_XUCMD_SETIFRAME				0x04
+#define UVC_XUCMD_SETBITRATE				0x08
+#define UVC_XUCMD_GETFWVERSION				0x0B
+#define UVC_XUCMD_GETFWBUILDDATE			0x0C
+#define UVC_XUCMD_EXT_CMD				0xFF
+
+#define AIT_XUCMD_EXT_H264SETMIRROR			0x11
+#define AIT_XUCMD_EXT_MJPGSETQUALITY			0x13
+#define AIT_XUCMD_EXT_H264SETIRCUTMODE			0x27
+
+#define AIT_FM_NORMAL					0
+#define AIT_FM_FLIP					1
+#define AIT_FM_MIRROR					2
+
+#define AIT_IR_DEFAULT					0
+#define AIT_IR_DAY					1
+#define AIT_IR_NIGHT					2
 
 typedef struct uvc_xu_tbl_info {
     __u8 name[32];
