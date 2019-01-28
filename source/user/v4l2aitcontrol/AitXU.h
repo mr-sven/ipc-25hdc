@@ -43,8 +43,16 @@
 #define AIT_GET_MMP_CONTROL					5
 
 #define AIT_MMP_PFRAMECOUNT					0x09
+
 #define AIT_MMP_ENCODERES					0x0C
+
+#define AIT_RES_1							1
+#define AIT_RES_2							2
+#define AIT_RES_H264_1280X720				3
+
 #define AIT_MMP_MODE						0x0d
+
+#define AIT_MODE_88							0x88
 
 // Image Signal Processor Extension
 #define AIT_SET_ISPEX_CONTROL				6
@@ -58,12 +66,6 @@
 #define AIT_SET_MMP16_CONTROL				14
 #define AIT_GET_MMP16_CONTROL				15
 
-
-#define AIT_RES_1							1
-#define AIT_RES_2							2
-#define AIT_RES_H264_1280X720				3
-
-#define AIT_MODE_88							0x88
 
 typedef struct uvc_xu_tbl_info {
 	__u8 name[32];
@@ -98,5 +100,8 @@ int AitXU_SetBitrate(int fd, int rate);
 int AitXU_SetIFrame(int fd);
 int AitXU_GetFWBuildDate(int fd, __u8 * data, int len);
 int AitXU_GetFWVersion(int fd, __u8 * data, int len);
+int AitXU_SetPFrameCount(int fd, __u8 count);
+int AitXU_SetEncRes(int fd, __u8 res);
+int AitXU_SetMode(int fd, __u8 mode);
 
 #endif /* _AITXU_H_ */

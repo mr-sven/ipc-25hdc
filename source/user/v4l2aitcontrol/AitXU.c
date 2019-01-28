@@ -14,16 +14,16 @@ uvc_xu_tbl_info xu_control_tbl[] = {
 // Image Signal Processor
 	{ "Set ISP", AIT_SET_ISP_CONTROL, sizeof(struct AitIspCmd), 0, AIT_XU_SET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED },
 	{ "Get ISP", AIT_GET_ISP_CONTROL, sizeof(struct AitIspCmd), 0, AIT_XU_GET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED },
-// Image Signal Processor
-	{"Set MMP", AIT_SET_MMP_CONTROL, sizeof(struct AitMmpCmd), 0, AIT_XU_SET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},
-	{"Get MMP", AIT_GET_MMP_CONTROL, sizeof(struct AitMmpCmd), 0, AIT_XU_GET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},
+// Multimedia Processor
+	{ "Set MMP", AIT_SET_MMP_CONTROL, sizeof(struct AitMmpCmd), 0, AIT_XU_SET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED },
+	{ "Get MMP", AIT_GET_MMP_CONTROL, sizeof(struct AitMmpCmd), 0, AIT_XU_GET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED },
 
 /*	{"Set MMP16", AIT_SET_MMP16_CONTROL, sizeof(struct AitMmp16Cmd), 0, AIT_XU_SET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},
-	{"Get MMP16 Result", AIT_GET_MMP16_CONTROL, sizeof(struct AitMmp16Cmd), 0, AIT_XU_GET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},
-	{"Set ISP EX", AIT_SET_ISPEX_CONTROL, sizeof(struct AitIspExCmd), 0, AIT_XU_GET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},
-	{"Set ISP EX Result", AIT_GET_ISPEX_CONTROL, sizeof(struct AitIspExCmd), 0, AIT_XU_GET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},
-	{"Set MMP MEM", AIT_SET_MMPMEM_CONTROL, sizeof(struct AitMmpMemCmd), 0, AIT_XU_SET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},
-	{"Get MMP MEM", AIT_GET_MMPMEM_CONTROL, sizeof(struct AitMmpMemCmd), 0, AIT_XU_GET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},*/
+ {"Get MMP16 Result", AIT_GET_MMP16_CONTROL, sizeof(struct AitMmp16Cmd), 0, AIT_XU_GET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},
+ {"Set ISP EX", AIT_SET_ISPEX_CONTROL, sizeof(struct AitIspExCmd), 0, AIT_XU_GET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},
+ {"Set ISP EX Result", AIT_GET_ISPEX_CONTROL, sizeof(struct AitIspExCmd), 0, AIT_XU_GET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},
+ {"Set MMP MEM", AIT_SET_MMPMEM_CONTROL, sizeof(struct AitMmpMemCmd), 0, AIT_XU_SET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},
+ {"Get MMP MEM", AIT_GET_MMPMEM_CONTROL, sizeof(struct AitMmpMemCmd), 0, AIT_XU_GET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},*/
 // commands added but not maped
 //	{"Set Unknown", 11, 32, 0, AIT_XU_SET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},
 //	{"Get Unknown", 3, 32, 0, AIT_XU_SET, V4L2_CTRL_TYPE_INTEGER, UVC_CTRL_DATA_TYPE_SIGNED},
@@ -69,19 +69,19 @@ int AitXU_Init(int fd)
 			if ((value = ioctl(fd, UVCIOC_CTRL_MAP, &map)) < 0)
 			{
 				ret = 1;
-				printf("AitXU_Init: UVCIOC_CTRL_MAP('%s') error: %s\n", xu_control_tbl[i].name, strerror(errno));
+				fprintf(stderr, "AitXU_Init: UVCIOC_CTRL_MAP('%s') error: %s\n", xu_control_tbl[i].name, strerror(errno));
 			}
 		}
 		else
 		{
 			if (errno == EEXIST)
 			{
-				printf("AitXU_Init: XU add already\n", xu_control_tbl[i].name);
+				printf("AitXU_Init: XU '%s' added already\n", xu_control_tbl[i].name);
 			}
 			else
 			{
 				ret = 1;
-				printf("AitXU_Init: UVCIOC_CTRL_ADD('%s') error: %s\n", xu_control_tbl[i].name, strerror(errno));
+				fprintf(stderr, "AitXU_Init: UVCIOC_CTRL_ADD('%s') error: %s\n", xu_control_tbl[i].name, strerror(errno));
 			}
 		}
 	}
@@ -123,19 +123,28 @@ static inline int AitXU_IspCmd(int fd, struct AitIspCmd data)
 int AitXU_SetMirrFlip(int fd, __u8 mode)
 {
 	struct AitIspCmd cmd = { AIT_ISP_EXTENDED_CMD, AIT_ISP_EX_MIRRFLIP, mode, 0 };
-	return AitXU_IspCmd(fd, cmd);
+	int ret = AitXU_IspCmd(fd, cmd);
+
+	printf("AitXU_SetMirrFlip: mode = %d, ret = %d", mode, ret);
+	return ret;
 }
 
 int AitXU_SetIRCutMode(int fd, __u8 mode)
 {
 	struct AitIspCmd cmd = { AIT_ISP_EXTENDED_CMD, AIT_ISP_EX_IRCUTMODE, (mode << 8), 0 };
-	return AitXU_IspCmd(fd, cmd);
+	int ret = AitXU_IspCmd(fd, cmd);
+
+	printf("AitXU_SetIRCutMode: mode = %d, ret = %d", mode, ret);
+	return ret;
 }
 
 int AitXU_SetMjpgQuality(int fd, __u8 quality)
 {
 	struct AitIspCmd cmd = { AIT_ISP_EXTENDED_CMD, AIT_ISP_EX_MJPEG_QUALITY, quality, 0 };
-	return AitXU_IspCmd(fd, cmd);
+	int ret = AitXU_IspCmd(fd, cmd);
+
+	printf("AitXU_SetMjpgQuality: quality = %d, ret = %d", quality, ret);
+	return ret;
 }
 
 int AitXU_SetFrameRate(int fd, __u8 rate)
@@ -150,7 +159,10 @@ int AitXU_SetFrameRate(int fd, __u8 rate)
 		rate = 30;
 	}
 	struct AitIspCmd cmd = { AIT_ISP_FRAMERATE, rate, 0, 0 };
-	return AitXU_IspCmd(fd, cmd);
+	int ret = AitXU_IspCmd(fd, cmd);
+
+	printf("AitXU_SetFrameRate: rate = %d, ret = %d", rate, ret);
+	return ret;
 }
 
 int AitXU_SetBitrate(int fd, int rate)
@@ -161,13 +173,19 @@ int AitXU_SetBitrate(int fd, int rate)
 	}
 
 	struct AitIspCmd cmd = { AIT_ISP_BITRATE, 0xff, rate, 0 };
-	return AitXU_IspCmd(fd, cmd);
+	int ret = AitXU_IspCmd(fd, cmd);
+
+	printf("AitXU_SetBitrate: rate = %d, ret = %d", rate, ret);
+	return ret;
 }
 
 int AitXU_SetIFrame(int fd)
 {
 	struct AitIspCmd cmd = { AIT_ISP_IFRAME, 0, 0, 0 };
-	return AitXU_IspCmd(fd, cmd);
+	int ret = AitXU_IspCmd(fd, cmd);
+
+	printf("AitXU_SetIFrame: ret = %d", ret);
+	return ret;
 }
 
 int AitXU_GetFWBuildDate(int fd, __u8 * data, int len)
@@ -177,8 +195,8 @@ int AitXU_GetFWBuildDate(int fd, __u8 * data, int len)
 		return 1;
 	}
 	struct AitIspCmd cmd = { AIT_ISP_FW_BUILDDATE, 0, 0, 0 };
-	AitXU_IspCmd(fd, cmd);
 
+	AitXU_IspCmd(fd, cmd);
 	return AitXU_XuCmd(fd, data, AIT_GET_ISP_CONTROL, 8, UVC_GET_CUR);
 }
 
@@ -189,8 +207,34 @@ int AitXU_GetFWVersion(int fd, __u8 * data, int len)
 		return 1;
 	}
 	struct AitIspCmd cmd = { AIT_ISP_FW_VERSION, 0, 0, 0 };
-	AitXU_IspCmd(fd, cmd);
 
+	AitXU_IspCmd(fd, cmd);
 	return AitXU_XuCmd(fd, data, AIT_GET_ISP_CONTROL, 8, UVC_GET_CUR);
 }
 
+int AitXU_SetPFrameCount(int fd, __u8 count)
+{
+	struct AitMmpCmd cmd = { AIT_MMP_PFRAMECOUNT, count, 0, 0 };
+	int ret = AitXU_XuCmd(fd, (__u8 *) &cmd, AIT_SET_MMP_CONTROL, sizeof(struct AitMmpCmd), UVC_SET_CUR);
+
+	printf("AitXU_SetPFrameCount: count = %d, ret = %d", count, ret);
+	return ret;
+}
+
+int AitXU_SetEncRes(int fd, __u8 res)
+{
+	struct AitMmpCmd cmd = { AIT_MMP_ENCODERES, res, 0, 0 };
+	int ret = AitXU_XuCmd(fd, (__u8 *) &cmd, AIT_SET_MMP_CONTROL, sizeof(struct AitMmpCmd), UVC_SET_CUR);
+
+	printf("AitXU_SetEncRes: res = %d, ret = %d", res, ret);
+	return ret;
+}
+
+int AitXU_SetMode(int fd, __u8 mode)
+{
+	struct AitMmpCmd cmd = { AIT_MMP_MODE, mode, 0, 0 };
+	int ret = AitXU_XuCmd(fd, (__u8 *) &cmd, AIT_SET_MMP_CONTROL, sizeof(struct AitMmpCmd), UVC_SET_CUR);
+
+	printf("AitXU_SetMode: mode = %d, ret = %d", mode, ret);
+	return ret;
+}
