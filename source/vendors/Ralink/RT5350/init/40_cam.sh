@@ -28,6 +28,12 @@ if [ "$cam_enabled" == "y" ] ; then
         cam_framerate=5
     fi
 
+    # load bitrate
+    cam_bitrate=`nvram_get cam_bitrate`
+    if [ -z "$cam_bitrate" ] ; then
+        cam_bitrate=2048
+    fi
+
     # load quality
     cam_quality=`nvram_get cam_quality`
     if [ -z "$cam_quality" ] ; then
@@ -48,7 +54,7 @@ if [ "$cam_enabled" == "y" ] ; then
 
     # configure device
     v4l2aitcontrol --framerate $cam_framerate --quality $cam_quality --mirror $cam_mirror_flip
-    v4l2aitcontrol --irmode $cam_ir_mode
+    v4l2aitcontrol --irmode $cam_ir_mode --bitrate $cam_bitrate
 
     # load cam stream port
     cam_port=`nvram_get cam_port`
