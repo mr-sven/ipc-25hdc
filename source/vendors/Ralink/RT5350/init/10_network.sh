@@ -18,7 +18,8 @@ interfaceMode()
             ;;
         static)
             address=`nvram_get ${TYPE}_address`
-            ifconfig $INT $address
+            mask=`nvram_get ${TYPE}_mask`
+            ifconfig $INT $address netmask $mask
             return 0
             ;;
     esac
