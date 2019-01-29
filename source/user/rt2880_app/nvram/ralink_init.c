@@ -153,11 +153,11 @@ int renew_nvram(int mode, char *fname)
 	//Get wan port mac address, please refer to eeprom format doc
 	//0x30000=user configure, 0x32000=rt2860 parameters, 0x40000=RF parameter
 	flash_read_mac(buf);
-	sprintf(wan_mac,"%hhx:%hhx:%hhx:%hhx:%hhx:%hhx\n",buf[0],buf[1],buf[2],buf[3],buf[4],buf[5]);
+	sprintf(wan_mac,"%02X:%02X:%02X:%02X:%02X:%02X",buf[0],buf[1],buf[2],buf[3],buf[4],buf[5]);
 	nvram_bufset(RT2860_NVRAM, "factory_mac", wan_mac);
 
 	flash_read_wifi_mac(buf);
-	sprintf(wan_mac,"%hhx:%hhx:%hhx:%hhx:%hhx:%hhx\n",buf[0],buf[1],buf[2],buf[3],buf[4],buf[5]);
+	sprintf(wan_mac,"%02X:%02X:%02X:%02X:%02X:%02X",buf[0],buf[1],buf[2],buf[3],buf[4],buf[5]);
 	nvram_bufset(RT2860_NVRAM, "factory_wifimac", wan_mac);
 
 	need_commit = 1;
