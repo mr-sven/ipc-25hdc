@@ -101,7 +101,7 @@ switch clear
 interfaceMode $LAN_INT lan
 
 # check if dhcp was enabled
-if [ $? -eq 0 ] && [ $dhcp_enabled eq 0 ] ; then
+if [ $? -eq 0 ] && [ $dhcp_enabled -eq 0 ] ; then
 
     # get default parameter
     gateway=`nvram_get default_gateway`
