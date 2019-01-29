@@ -73,7 +73,7 @@ void get_videooption(int fd)
 	__u8 cnt;
 
 	memset(data, 0, 16);
-	AitXU_GetVideoOption()(fd, data);
+	AitXU_GetVideoOption(fd, data);
 
 	printf("VideoOption:");
 	for (cnt = 0; cnt < 16; cnt++)
