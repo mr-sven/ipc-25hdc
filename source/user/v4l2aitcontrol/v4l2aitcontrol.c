@@ -51,6 +51,8 @@ void init_ait(int fd)
 	printf("AIT Firmware Build Date: %d.%d.%d\n", __bswap_16(version.major), __bswap_16(version.minor), __bswap_16(version.patch));
 }
 
+/*
+// unused
 void read_reg(int fd, int reg)
 {
 	__u8 data[8];
@@ -82,6 +84,7 @@ void get_videooption(int fd)
 	}
 	printf("\n");
 }
+*/
 
 int main(int argc, char *argv[])
 {
@@ -111,8 +114,8 @@ int main(int argc, char *argv[])
 		{"quality",		required_argument,	0, 'q'},
 		{"irmode",		required_argument,	0, 'n'},
 		{"pframecount",	required_argument,	0, 'p'},
-		{"reg",			required_argument,	0, 'R'},
-		{"get",			no_argument,		0, 'g'},
+		//{"reg",			required_argument,	0, 'R'},
+		//{"get",			no_argument,		0, 'g'},
 		{0,				0,					0, 0}
 	};
 
@@ -142,12 +145,12 @@ int main(int argc, char *argv[])
 			case 'p':
 				pframecount = atoi(optarg);
 				break;
-			case 'R':
+			/*case 'R':
 				read_reg(fd, strtol(optarg, NULL, 0));
 				break;
 			case 'g':
 				get_videooption(fd);
-				break;
+				break;*/
 			default:
 				print_usage(argv[0]);
 				close(fd);

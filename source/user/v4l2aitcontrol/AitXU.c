@@ -145,6 +145,7 @@ int AitXU_SetMjpgQuality(int fd, __u8 quality)
 	int ret = AitXU_IspCmd(fd, cmd);
 
 	printf("AitXU_SetMjpgQuality: quality = %d, ret = %d\n", quality, ret);
+	printf("AitXU_SetMjpgQuality: this may not work, try change bitrate instead.\n");
 	return ret;
 }
 
