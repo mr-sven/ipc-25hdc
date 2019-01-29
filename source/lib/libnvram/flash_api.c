@@ -69,6 +69,25 @@ int flash_read_mac(char *buf)
 	return ret;
 }
 
+#if ! defined (NO_WIFI_SOC)
+int flash_read_wifi_mac(char *buf)
+{
+	int fd, ret;
+
+	if (!buf)
+		return -1;
+	fd = mtd_open("Factory", O_RDONLY);
+	if (fd < 0) {
+		fprintf(stderr, "Could not open mtd device\n");
+		return -1;
+	}
+	lseek(fd, 0x04, SEEK_SET);
+	ret = read(fd, buf, 6);
+	close(fd);
+	return ret;
+}
+#endif
+
 int flash_read_NicConf(char *buf)
 {
 	int fd, ret;
