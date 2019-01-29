@@ -5,5 +5,5 @@ touch /var/run/ntpclient
 
 ntp_server=`nvram_get ntp_server`
 if [ -n "$ntp_server" ] ; then
-    ntpclient -h $ntp_server -s &
+    ntpclient -h $ntp_server -s -c 0 &
 fi
