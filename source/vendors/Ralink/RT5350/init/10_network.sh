@@ -14,9 +14,12 @@ interfaceMode()
     case "$mode" in
         dhcp)
             udhcpc -i $INT -n -p /var/run/udhcpc.$INT.pid
+            return 1
             ;;
         static)
-            
+            address=`nvram_get ${TYPE}_address`
+            ifconfig $INT $address
+            return 0
             ;;
     esac
 
@@ -27,6 +30,8 @@ ifconfig lo 127.0.0.1 up
 
 # wifi config
 wifi_enabled=`nvram_get wifi_enabled`
+
+dhcp_enabled=0
 
 if [ "$wifi_enabled" == "y" ] ; then
 
@@ -67,7 +72,11 @@ EOL
     # enable wifi interface
     ifconfig $WIFI_INT up
 
+    # config interface
     interfaceMode $WIFI_INT wifi
+
+    # get return var
+    dhcp_enabled=$?
 fi
 
 LAN_INT=eth2
@@ -87,4 +96,22 @@ switch reg w 98 7f7f      # POC2: Port Control 2
 switch reg w a4 5         # LEDP0: LED Port0
 switch clear
 
+# config interface
 interfaceMode $LAN_INT lan
+
+# check if dhcp was enabled
+if [ $? -eq 0 ] && [ $dhcp_enabled eq 0 ] ; then
+
+    # get default parameter
+    gateway=`nvram_get default_gateway`
+    dns=`nvram_get default_dns`
+    domain=`nvram_get default_domain`
+
+    # set default gateway
+    route add default gw $gateway
+
+    # set dns
+    echo search $domain > /etc/resolv.conf
+    echo nameserver $dns >> /etc/resolv.conf
+
+fi
