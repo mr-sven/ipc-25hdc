@@ -75,6 +75,9 @@
 // Multimedia Processor 16
 #define AIT_SET_MMP16_CONTROL				14
 #define AIT_GET_MMP16_CONTROL				15
+#define AIT_MMP16_VIDEO_OPTION				0x02
+#define AIT_MMP16_VIDEO_OPTION_GET			0x01
+#define AIT_MMP16_VIDEO_OPTION_SET			0x02
 
 #define AIT_MMP16_TRIGGER					0x03
 
@@ -123,5 +126,6 @@ int AitXU_SetEncRes(int fd, __u8 res);
 int AitXU_SetMode(int fd, __u8 mode);
 int AitXU_TriggerMJPEG(int fd);
 int AitXU_ReadReg(int fd, __u16 reg, __u8 * data);
+int AitXU_GetVideoOption(int fd, __u8 * data);
 
 #endif /* _AITXU_H_ */

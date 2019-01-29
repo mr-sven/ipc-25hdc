@@ -59,8 +59,24 @@ void read_reg(int fd, int reg)
 	memset(data, 0, 8);
 	AitXU_ReadReg(fd, reg, data);
 
-	printf("Register 0x%04x: \n", reg);
+	printf("Register 0x%04x: ", reg);
 	for (cnt = 0; cnt < 8; cnt++)
+	{
+		printf(" 0x%02x", data[cnt]);
+	}
+	printf("\n");
+}
+
+void get_videooption(int fd)
+{
+	__u8 data[16];
+	__u8 cnt;
+
+	memset(data, 0, 16);
+	AitXU_GetVideoOption()(fd, data);
+
+	printf("VideoOption:");
+	for (cnt = 0; cnt < 16; cnt++)
 	{
 		printf(" 0x%02x", data[cnt]);
 	}
@@ -96,6 +112,7 @@ int main(int argc, char *argv[])
 		{"irmode",		required_argument,	0, 'n'},
 		{"pframecount",	required_argument,	0, 'p'},
 		{"reg",			required_argument,	0, 'R'},
+		{"get",			no_argument,		0, 'g'},
 		{0,				0,					0, 0}
 	};
 
@@ -127,6 +144,9 @@ int main(int argc, char *argv[])
 				break;
 			case 'R':
 				read_reg(fd, strtol(optarg, NULL, 0));
+				break;
+			case 'g':
+				get_videooption(fd);
 				break;
 			default:
 				print_usage(argv[0]);

@@ -256,3 +256,10 @@ int AitXU_ReadReg(int fd, __u16 reg, __u8 * data)
 	AitXU_IspCmd(fd, cmd);
 	return AitXU_XuCmd(fd, data, AIT_GET_ISP_CONTROL, 8, UVC_GET_CUR);
 }
+
+int AitXU_GetVideoOption(int fd, __u8 * data)
+{
+	struct AitMmp16Cmd cmd = { AIT_MMP16_VIDEO_OPTION, AIT_MMP16_VIDEO_OPTION_GET, 0};
+	int ret = AitXU_XuCmd(fd, (__u8 *) &cmd, AIT_SET_MMP16_CONTROL, sizeof(cmd), UVC_SET_CUR);
+	return AitXU_XuCmd(fd, data, AIT_GET_MMP16_CONTROL, sizeof(cmd), UVC_GET_CUR);
+}
