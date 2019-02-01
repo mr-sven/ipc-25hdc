@@ -1,0 +1,93 @@
+# Dutch translation of watchdog debconf templates.
+# Copyright (C) 2006-2012 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the watchdog package.
+# Kurt De Bree <kdebree(AT)telenet(DOT)be>, 2006
+# Jeroen Schot <schot@a-eskwadraat.nl>, 2012.
+# Frans Spiesschaert <Frans.Spiesschaert@yucom.be>, 2014.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: watchdog 5.11-1\n"
+"Report-Msgid-Bugs-To: watchdog@packages.debian.org\n"
+"POT-Creation-Date: 2014-11-10 03:23+0100\n"
+"PO-Revision-Date: 2014-11-22 20:56+0100\n"
+"Last-Translator: Frans Spiesschaert <Frans.Spiesschaert@yucom.be>\n"
+"Language-Team: Debian Dutch l10n Team <debian-l10n-dutch@lists.debian.org>\n"
+"Language: nl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. Type: boolean
+#. Description
+#: ../templates:2001
+msgid "Start watchdog at boot time?"
+msgstr "watchdog starten tijdens opstarten van het systeem?"
+
+#. Type: boolean
+#. Description
+#: ../templates:2001
+msgid ""
+"Please specify whether watchdog should be started as part of the boot "
+"process. This can be changed later by editing /etc/default/watchdog."
+msgstr ""
+"Gelieve aan te geven of watchdog gestart dient te worden tijdens het "
+"opstarten van het systeem. Dit kan later aangepast worden door /etc/default/"
+"watchdog te wijzigen."
+
+#. Type: boolean
+#. Description
+#: ../templates:3001
+msgid "Start wd_keepalive after stopping watchdog?"
+msgstr "Na het stoppen van watchdog wd_keepalive starten?"
+
+#. Type: boolean
+#. Description
+#: ../templates:3001
+msgid ""
+"Please specify whether stopping watchdog should start wd_keepalive to keep "
+"on triggering the watchdog device. This can be changed later by editing /etc/"
+"default/watchdog."
+msgstr ""
+"Gelieve aan te geven of bij het stoppen van watchdog wd_keepalive gestart "
+"moet worden om het watchdog-apparaat te blijven activeren. Dit kan later "
+"aangepast worden door /etc/default/watchdog te wijzigen."
+
+#. Type: boolean
+#. Description
+#: ../templates:4001
+msgid "Restart watchdog on upgrades?"
+msgstr "watchdog herstarten bij opwaarderingen?"
+
+#. Type: boolean
+#. Description
+#: ../templates:4001
+msgid ""
+"If the kernel is configured with the CONFIG_WATCHDOG_NOWAYOUT option (which "
+"is not the default setting), restarting watchdog will cause a spurious "
+"reboot (the kernel will assume that the watchdog daemon crashed)."
+msgstr ""
+"Indien uw kernel is geconfigureerd met de optie "
+"'CONFIG_WATCHDOG_NOWAYOUT' (hetgeen niet de standaardinstelling is), zal het "
+"herstarten van watchdog ten onrechte een herstart van uw computer "
+"veroorzaken (de kernel zal aannemen dat de watchdog-achtergronddienst is "
+"vastgelopen)."
+
+#. Type: string
+#. Description
+#: ../templates:5001
+msgid "Watchdog module to preload:"
+msgstr "Voor te laden watchdog-module:"
+
+#. Type: string
+#. Description
+#: ../templates:5001
+msgid ""
+"Please choose which watchdog module should be preloaded before starting "
+"watchdog. The 'softdog' module should be suited for all installations. Enter "
+"'none' if you don't want the script to load a module."
+msgstr ""
+"Geef aan welke watchdog-module geladen moet worden voordat watchdog wordt "
+"opgestart. De 'softdog'-module is geschikt voor de meeste installaties. Kies "
+"'none' als u wilt dat het script geen module laadt."

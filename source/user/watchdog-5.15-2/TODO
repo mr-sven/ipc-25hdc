@@ -1,0 +1,9 @@
+Test which applications are running.
+
+RPC calls have to be taken from libtirpc to cope with their removal from glibc
+2.14.
+
+Better tolerance of clock time-jumps (e.g. ntpdate on boot)?
+
+Test file status in process fork in case of NFS hang?
+

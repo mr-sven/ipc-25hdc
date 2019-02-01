@@ -1,0 +1,51 @@
+.TH WD_IDENTIFY 8 "Dec 2015"
+.UC 4
+.SH NAME
+wd_identify \- get watchdog driver identity
+.SH SYNOPSIS
+.B wd_identify
+.RB [ \-c " \fIfilename\fR|" \-\-config\-file " \fIfilename\fR]"
+.RB [ \-v "|" \-\-verbose ]
+.SH DESCRIPTION
+This utility opens
+.IR /dev/watchdog
+and gets the identification string from the watchdog which then is printed. The
+device is closed afterwards.
+.PP
+An exit code of zero indicates success in getting the driver identity, while a
+non-zero exit code indicates an error (not configured in the config file, no
+device driver loaded, or driver failed to respond to ioctl request).
+.PP
+The wd_identify tool can only be used without causing a reboot if your kernel
+is not compiled with the
+.I CONFIG_WATCHDOG_NOWAYOUT
+option enabled.
+.PP
+Note that the
+.B watchdog
+and/or
+.B wd_keepalive
+daemons may have to be stopped to make sure that
+.B wd_identify
+can access the watchdog device.
+.SH OPTIONS
+Available command line options are the following:
+.TP
+.BR \-c " \fIconfig-file\fR, " \-\-config\-file " \fIconfig-file"
+Use
+.I config-file
+as the configuration file instead of the default 
+.IR /etc/watchdog.conf .
+.TP
+.BR \-v ", " \-\-verbose
+Print more diagnostic messages. This covers parsing of the config file and also
+causes the program to read-back the current watchdog time-out value (if
+successful in opening the device).
+.SH FILES
+.TP
+.I /dev/watchdog  
+The watchdog device.
+.SH "SEE ALSO"
+.BR watchdog.conf (5)
+.TP
+.BR watchdog (8)
