@@ -251,6 +251,9 @@ void daemon_mode(void) {
     exit(1);
   }
   if ( fr > 0 ) {
+    FILE *pidfile = fopen("/var/run/uvc_stream.pid", "wb");
+    fprintf(pidfile, "%d\n", fr);
+    fclose(pidfile);
     fprintf(stderr, "forked to background (%d)\n", fr);
     exit(0);
   }
