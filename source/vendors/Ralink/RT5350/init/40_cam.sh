@@ -71,4 +71,6 @@ if [ "$cam_enabled" == "y" ] ; then
     # start uvc stream
     uvc_stream -b -r $cam_resolution -f $cam_framerate -p $cam_port --disable_control
 
+    # store pid for watchdog
+    echo "pidfile = /var/run/uvc_stream.pid" >> /etc/watchdog.conf
 fi

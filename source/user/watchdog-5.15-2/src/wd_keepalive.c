@@ -35,6 +35,7 @@
 #include <unistd.h>
 
 #include "extern.h"
+#include "watch_err.h"
 
 #define TRUE  1
 #define FALSE 0
@@ -80,6 +81,7 @@ int main(int argc, char *const argv[])
 	long count_max = 0L;
 	int c;
 	char *progname;
+	struct list *act;
 
 	/* allow all options watchdog understands too */
 	char *opts = "d:i:n:fsvbql:p:t:c:r:m:a:X:";
@@ -165,6 +167,12 @@ int main(int argc, char *const argv[])
 	/* main loop: update after <tint> seconds */
 	while (_running) {
 		keep_alive();
+		/* in pidmode kill -0 processes */
+		for (act = pidfile_list; act != NULL; act = act->next) {
+			if (check_pidfile(act) != ENOERR) {
+				return 0;
+			}
+		}
 		/* finally sleep some seconds */
 		sleep(tint);
 

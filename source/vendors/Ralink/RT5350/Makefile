@@ -53,6 +53,7 @@ endif
 	$(ROMFSINST) /etc_ro/passwd
 	$(ROMFSINST) /etc_ro/group
 	$(ROMFSINST) /etc_ro/shadow
+	$(ROMFSINST) /etc_ro/watchdog.conf
 
 	$(ROMFSINST) /etc_ro/wlan/RT5350_AP_1T1R_V1_0.bin
 	$(ROMFSINST) /etc_ro/default/FACTORY.dat
