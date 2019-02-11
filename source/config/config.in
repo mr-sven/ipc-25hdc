@@ -317,7 +317,12 @@ bool 'comgt'			CONFIG_USER_COMGT
 bool 'sdparm'			CONFIG_USER_SDPARM
 bool 'watchdog'			CONFIG_USER_WATCHDOG
 bool 'v4l2aitcontrol'		CONFIG_USER_V4L2_AIT_CONTROL
-
+bool 'fwflash'			CONFIG_USER_FIRMWARE_FLASH
+if [ "$CONFIG_USER_FIRMWARE_FLASH" = "y" ]; then
+	define_bool CONFIG_RALINKAPP y
+	define_bool CONFIG_RALINKAPP_FLASH y
+	define_bool CONFIG_USER_MTD_WRITE y
+fi
 endmenu
 
 #############################################################################

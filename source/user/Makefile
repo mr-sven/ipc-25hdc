@@ -134,6 +134,8 @@ dir_$(CONFIG_USER_SDPARM) 		    += sdparm-1.02
 dir_$(CONFIG_USER_3G)	 		    += hso-1.6
 dir_$(CONFIG_USER_SNMPD) 		    += snmpd
 
+dir_$(CONFIG_USER_FIRMWARE_FLASH)	    += fwflash
+
 dir_$(CONFIG_USER_FACTORY_MAC_UPDATE)	    += factory_mac_update
 
 dir_$(CONFIG_USER_V4L2_AIT_CONTROL)	    += v4l2aitcontrol
