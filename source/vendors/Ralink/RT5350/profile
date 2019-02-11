@@ -1,2 +1,4 @@
 
+export PATH='/sbin:/usr/sbin:/bin:/usr/bin'
+
 alias ll='ls -la'
